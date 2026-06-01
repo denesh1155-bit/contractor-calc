@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contractor Markup & Profit Margin Calculator | Free Professional Tool</title>
+  <meta name="description" content="Free contractor markup calculator. Instantly calculate job price from material cost, labor, overhead, and desired profit margin. Understand the difference between markup vs margin." />
+  <meta name="keywords" content="contractor markup calculator, profit margin calculator for contractors, construction markup calculator, material markup tool, subcontractor bid calculator" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- ═══════════════ GOOGLE ADSENSE ═══════════════
+    MONETIZATION SETUP INSTRUCTIONS:
+    1. Replace ca-pub-XXXXXXXXXXXXXXXXX with your real AdSense Publisher ID.
+    2. Replace data-ad-slot values with your actual ad unit slot IDs.
+    3. Remove the "data-adtest='on'" attribute before going live in production.
+    4. Ensure your site is approved by Google AdSense before enabling ads.
+  ════════════════════════════════════════════════ -->
+  <script async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXXX"
+    crossorigin="anonymous">
+  </script>
+</head>
+<body>
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <header class="site-header">
+    <div class="container">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="url(#logoGrad)"/>
+          <path d="M8 22L14 10L18 18L21 14L24 22" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#F97316"/>
+              <stop offset="1" stop-color="#EA580C"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>ContractorCalc<span class="logo-pro">.pro</span></span>
+      </div>
+      <nav class="header-nav">
+        <a href="#calculator">Calculator</a>
+        <a href="#guide">Markup vs Margin</a>
+        <a href="#benchmarks">Benchmarks</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">✦ Free Professional Tool</div>
+      <h1>Contractor Markup &amp;<br/>Profit Margin Calculator</h1>
+      <p class="hero-subtitle">Stop guessing your bid price. Enter your costs, choose your profit goal, and get the exact selling price — instantly. Understand the critical difference between <strong>markup</strong> and <strong>margin</strong>.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">50K+</span><span class="stat-label">calculations / month</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">100%</span><span class="stat-label">free, no signup</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">Instant</span><span class="stat-label">results</span></div>
+      </div>
+    </div>
+    <div class="hero-bg-orb orb1"></div>
+    <div class="hero-bg-orb orb2"></div>
+  </section>
+
+  <!-- ═══════════════ MAIN CALCULATOR ═══════════════ -->
+  <section id="calculator" class="calc-section">
+    <div class="container">
+
+      <!-- Mode Toggle -->
+      <div class="mode-toggle-wrapper">
+        <div class="mode-toggle" role="group" aria-label="Calculation mode">
+          <button id="btn-margin" class="mode-btn active" onclick="setMode('margin')">
+            <span class="mode-icon">%</span> Margin Mode
+          </button>
+          <button id="btn-markup" class="mode-btn" onclick="setMode('markup')">
+            <span class="mode-icon">+</span> Markup Mode
+          </button>
+        </div>
+        <div class="mode-tooltip" id="mode-tooltip">
+          <strong>Margin Mode:</strong> Set your desired profit as a % of the final selling price.
+        </div>
+      </div>
+
+      <div class="calc-grid">
+
+        <!-- ── LEFT: INPUTS ── -->
+        <div class="card inputs-card">
+          <div class="card-header">
+            <h2>📋 Your Costs</h2>
+            <p>Enter project cost breakdown below</p>
+          </div>
+
+          <div class="input-group">
+            <label for="materials">Materials Cost <span class="tooltip-icon" data-tip="Raw materials, supplies, equipment you purchase for this job.">?</span></label>
+            <div class="input-wrap">
+              <span class="input-prefix">$</span>
+              <input type="number" id="materials" min="0" step="0.01" placeholder="0.00" oninput="calculate()" />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="labor">Labor Cost <span class="tooltip-icon" data-tip="Wages paid to workers for this specific job (not overhead salaries).">?</span></label>
+            <div class="input-wrap">
+              <span class="input-prefix">$</span>
+              <input type="number" id="labor" min="0" step="0.01" placeholder="0.00" oninput="calculate()" />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="subcontractor">Subcontractor Cost <span class="tooltip-icon" data-tip="Payments to subcontractors or specialty trades you hire for this job.">?</span></label>
+            <div class="input-wrap">
+              <span class="input-prefix">$</span>
+              <input type="number" id="subcontractor" min="0" step="0.01" placeholder="0.00" oninput="calculate()" />
+            </div>
+          </div>
+
+          <div class="input-divider">
+            <span>Overhead & Profit</span>
+          </div>
+
+          <div class="input-group">
+            <label for="overhead">Overhead Rate <span class="tooltip-icon" data-tip="Your general business expenses allocated to this job: insurance, office, vehicles, tools, etc. Industry average: 10–20%.">?</span></label>
+            <div class="input-wrap">
+              <input type="number" id="overhead" min="0" max="100" step="0.1" value="15" oninput="calculate()" />
+              <span class="input-suffix">%</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="overhead-slider" min="0" max="50" step="0.5" value="15"
+                oninput="document.getElementById('overhead').value=this.value; calculate()" />
+              <div class="slider-labels"><span>0%</span><span>25%</span><span>50%</span></div>
+            </div>
+          </div>
+
+          <!-- Margin mode -->
+          <div class="input-group" id="margin-group">
+            <label for="margin">Desired Profit Margin <span class="tooltip-icon" data-tip="Profit as % of the selling price. Most contractors target 15–25%. Enter this and get your price.">?</span></label>
+            <div class="input-wrap">
+              <input type="number" id="margin" min="0.1" max="90" step="0.1" value="20" oninput="calculate()" />
+              <span class="input-suffix">%</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="margin-slider" min="1" max="60" step="0.5" value="20"
+                oninput="document.getElementById('margin').value=this.value; calculate()" />
+              <div class="slider-labels"><span>1%</span><span>30%</span><span>60%</span></div>
+            </div>
+          </div>
+
+          <!-- Markup mode -->
+          <div class="input-group hidden" id="markup-group">
+            <label for="markup">Desired Markup <span class="tooltip-icon" data-tip="Profit as % of your total cost. A 25% markup on $100 cost = $125 price. Note: this gives ~20% margin.">?</span></label>
+            <div class="input-wrap">
+              <input type="number" id="markup" min="0.1" max="500" step="0.1" value="25" oninput="calculate()" />
+              <span class="input-suffix">%</span>
+            </div>
+            <div class="slider-wrap">
+              <input type="range" id="markup-slider" min="1" max="200" step="0.5" value="25"
+                oninput="document.getElementById('markup').value=this.value; calculate()" />
+              <div class="slider-labels"><span>1%</span><span>100%</span><span>200%</span></div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label for="hours">Total Job Hours <span class="tooltip-icon" data-tip="Optional: Total hours for this job. Used to calculate your effective hourly rate.">?</span> <span class="optional-badge">optional</span></label>
+            <div class="input-wrap">
+              <span class="input-prefix">⏱</span>
+              <input type="number" id="hours" min="0" step="0.5" placeholder="0" oninput="calculate()" />
+            </div>
+          </div>
+
+        </div><!-- /inputs-card -->
+
+        <!-- ── RIGHT: RESULTS ── -->
+        <div class="results-col">
+
+          <!-- Big Price Card -->
+          <div class="card price-card" id="price-card">
+            <div class="price-label">Your Selling Price</div>
+            <div class="price-value" id="selling-price">$0.00</div>
+            <div class="price-sub" id="price-sub">Enter costs on the left to calculate</div>
+            <button class="copy-btn" id="copy-btn" onclick="copyResult()" title="Copy price">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+
+          <!-- Breakdown Card -->
+          <div class="card breakdown-card">
+            <h3>Cost Breakdown</h3>
+            <div class="breakdown-list" id="breakdown-list">
+              <div class="breakdown-item">
+                <div class="breakdown-bar-wrap">
+                  <span class="breakdown-label">Direct Costs</span>
+                  <span class="breakdown-amount" id="b-direct">$0.00</span>
+                </div>
+                <div class="breakdown-bar"><div class="bar-fill bar-direct" id="bar-direct" style="width:0%"></div></div>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-bar-wrap">
+                  <span class="breakdown-label">Overhead</span>
+                  <span class="breakdown-amount" id="b-overhead">$0.00</span>
+                </div>
+                <div class="breakdown-bar"><div class="bar-fill bar-overhead" id="bar-overhead" style="width:0%"></div></div>
+              </div>
+              <div class="breakdown-item">
+                <div class="breakdown-bar-wrap">
+                  <span class="breakdown-label">Profit</span>
+                  <span class="breakdown-amount" id="b-profit">$0.00</span>
+                </div>
+                <div class="breakdown-bar"><div class="bar-fill bar-profit" id="bar-profit" style="width:0%"></div></div>
+              </div>
+            </div>
+
+            <!-- Conversion Box -->
+            <div class="conversion-box" id="conversion-box">
+              <div class="conv-row">
+                <span class="conv-label">Effective Markup</span>
+                <span class="conv-value" id="eff-markup">—</span>
+              </div>
+              <div class="conv-row">
+                <span class="conv-label">Effective Margin</span>
+                <span class="conv-value" id="eff-margin">—</span>
+              </div>
+              <div class="conv-row" id="hourly-row" style="display:none">
+                <span class="conv-label">Effective Hourly Rate</span>
+                <span class="conv-value" id="eff-hourly">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Donut Chart Card -->
+          <div class="card chart-card">
+            <h3>Price Composition</h3>
+            <div class="chart-wrap">
+              <svg id="donut-svg" viewBox="0 0 200 200" width="160" height="160">
+                <circle id="d-direct"   cx="100" cy="100" r="70" fill="none" stroke="#3B82F6" stroke-width="28" stroke-dasharray="0 440" stroke-dashoffset="110" transform="rotate(-90 100 100)" style="transition:stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)"/>
+                <circle id="d-overhead" cx="100" cy="100" r="70" fill="none" stroke="#F97316" stroke-width="28" stroke-dasharray="0 440" stroke-dashoffset="110" transform="rotate(-90 100 100)" style="transition:stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)"/>
+                <circle id="d-profit"   cx="100" cy="100" r="70" fill="none" stroke="#22C55E" stroke-width="28" stroke-dasharray="0 440" stroke-dashoffset="110" transform="rotate(-90 100 100)" style="transition:stroke-dasharray 0.6s cubic-bezier(.4,0,.2,1)"/>
+                <text x="100" y="94"  text-anchor="middle" font-size="13" fill="#94A3B8" font-family="Inter,sans-serif">Net Profit</text>
+                <text id="center-profit" x="100" y="114" text-anchor="middle" font-size="20" font-weight="700" fill="#F1F5F9" font-family="Inter,sans-serif">0%</text>
+              </svg>
+              <div class="chart-legend">
+                <div class="legend-item"><span class="legend-dot" style="background:#3B82F6"></span>Direct Costs</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#F97316"></span>Overhead</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#22C55E"></span>Profit</div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /results-col -->
+      </div><!-- /calc-grid -->
+
+      <!-- ═══════════════ AD UNIT: Below Results ═══════════════
+           Placement: High-intent zone — user has just seen the selling price.
+           Format: Responsive display ad (adapts to container width).
+           Replace data-ad-slot with your actual AdSense slot ID.
+      ════════════════════════════════════════════════════════ -->
+      <div class="ad-unit-wrap" id="ad-below-results" aria-label="Advertisement">
+        <div class="ad-label">Advertisement</div>
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX"
+          data-ad-slot="XXXXXXXXXX"
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+          data-adtest="on">
+        </ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+      <!-- ════════════════════════════════════════════════════ -->
+
+      <!-- Industry Benchmarks Strip -->
+      <div class="benchmarks-strip" id="benchmarks">
+        <div class="benchmarks-title">📊 Industry Margin Benchmarks</div>
+        <div class="benchmarks-grid">
+          <div class="benchmark-item" onclick="applyBenchmark(10)">
+            <div class="b-name">Tight Market</div>
+            <div class="b-range">10–12%</div>
+            <div class="b-desc">High competition, volume jobs</div>
+          </div>
+          <div class="benchmark-item" onclick="applyBenchmark(20)">
+            <div class="b-name">General Contractor</div>
+            <div class="b-range">15–25%</div>
+            <div class="b-desc">Residential remodeling</div>
+          </div>
+          <div class="benchmark-item" onclick="applyBenchmark(30)">
+            <div class="b-name">Specialty Trade</div>
+            <div class="b-range">25–35%</div>
+            <div class="b-desc">HVAC, Electrical, Plumbing</div>
+          </div>
+          <div class="benchmark-item" onclick="applyBenchmark(40)">
+            <div class="b-name">Premium Service</div>
+            <div class="b-range">35–50%</div>
+            <div class="b-desc">Custom, high-end, urgent jobs</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /container -->
+  </section>
+
+  <!-- ═══════════════ EDUCATION: MARKUP VS MARGIN ═══════════════ -->
+  <section id="guide" class="education-section">
+    <div class="container">
+      <div class="section-tag">Essential Knowledge</div>
+      <h2 class="section-title">Markup vs. Margin:<br/>The Difference That Could Cost You Thousands</h2>
+      <p class="section-sub">Most contractors lose money because they confuse these two. Here's the definitive explanation.</p>
+
+      <div class="vs-grid">
+        <div class="vs-card vs-markup">
+          <div class="vs-icon">+%</div>
+          <h3>Markup</h3>
+          <p>Profit expressed as a <strong>percentage of your cost</strong>.</p>
+          <div class="formula-box">
+            <code>Markup % = (Profit ÷ Cost) × 100</code>
+          </div>
+          <div class="example-box">
+            <strong>Example:</strong> Cost = $1,000 | Markup = 25%<br/>
+            Price = $1,000 × 1.25 = <strong>$1,250</strong><br/>
+            Profit = $250
+          </div>
+          <div class="vs-badge markup-badge">Used by: Suppliers, Wholesalers</div>
+        </div>
+
+        <div class="vs-divider">
+          <span>≠</span>
+        </div>
+
+        <div class="vs-card vs-margin">
+          <div class="vs-icon">%₍price₎</div>
+          <h3>Profit Margin</h3>
+          <p>Profit expressed as a <strong>percentage of the selling price</strong>.</p>
+          <div class="formula-box">
+            <code>Margin % = (Profit ÷ Price) × 100</code>
+          </div>
+          <div class="example-box">
+            <strong>Example:</strong> Cost = $1,000 | Margin = 20%<br/>
+            Price = $1,000 ÷ (1 − 0.20) = <strong>$1,250</strong><br/>
+            Profit = $250 (= 20% of $1,250)
+          </div>
+          <div class="vs-badge margin-badge">Used by: Contractors, Accountants</div>
+        </div>
+      </div>
+
+      <!-- Key Insight Box -->
+      <div class="insight-box">
+        <div class="insight-icon">⚠️</div>
+        <div class="insight-content">
+          <strong>The Common Mistake:</strong> If you quote a 20% markup but expect a 20% margin — you're undercharging by ~5%. A <strong>25% markup</strong> gives you only a <strong>20% margin</strong>. They are never equal.
+          <div class="conversion-table">
+            <table>
+              <thead><tr><th>Markup %</th><th>→</th><th>Margin %</th></tr></thead>
+              <tbody>
+                <tr><td>10%</td><td>→</td><td>9.1%</td></tr>
+                <tr><td>20%</td><td>→</td><td>16.7%</td></tr>
+                <tr class="highlight-row"><td>25%</td><td>→</td><td>20.0%</td></tr>
+                <tr><td>33%</td><td>→</td><td>25.0%</td></tr>
+                <tr><td>50%</td><td>→</td><td>33.3%</td></tr>
+                <tr><td>100%</td><td>→</td><td>50.0%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════ FAQ ═══════════════ -->
+  <section class="faq-section">
+    <div class="container">
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">What is a good profit margin for a contractor? <span class="faq-arrow">▾</span></button>
+          <div class="faq-a">Most general contractors target <strong>15–25% net profit margin</strong>. Specialty trades (HVAC, electrical, plumbing) typically achieve 25–35% due to specialized expertise and licensing. Aim for at least 15% to sustainably cover unexpected costs and business growth.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">How do I calculate overhead for a project? <span class="faq-arrow">▾</span></button>
+          <div class="faq-a">Add up all your annual fixed costs (insurance, office rent, vehicle costs, tools, admin salaries, software subscriptions) and divide by your annual revenue. This gives you your overhead rate. The industry average for small contractors is <strong>10–20%</strong>. In this calculator, enter that percentage and it automatically adds it to your job cost.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">Should I mark up subcontractor costs? <span class="faq-arrow">▾</span></button>
+          <div class="faq-a"><strong>Yes.</strong> As a general contractor, you take on risk and manage subcontractors — that has value. A typical markup on subcontractor work is <strong>10–20%</strong>. This is standard practice and entirely legitimate. Enter your subcontractor costs in the calculator and it will be included in your total cost base before applying your profit margin.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">What's the difference between gross margin and net margin? <span class="faq-arrow">▾</span></button>
+          <div class="faq-a"><strong>Gross margin</strong> = (Revenue − Direct Job Costs) / Revenue. It excludes overhead. <strong>Net margin</strong> = (Revenue − All Costs including overhead) / Revenue. This calculator computes <strong>net margin</strong> (after overhead is applied), which is what truly matters for business health. Target at minimum a 15% net margin to stay profitable.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <div class="logo"><span>ContractorCalc<span class="logo-pro">.pro</span></span></div>
+          <p>Free professional calculator for contractors, builders, and tradespeople.</p>
+        </div>
+        <div class="footer-links">
+          <a href="#calculator">Calculator</a>
+          <a href="#guide">Markup vs Margin</a>
+          <a href="#benchmarks">Benchmarks</a>
+          <a href="#faq">FAQ</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 ContractorCalc.pro · Results are estimates for planning purposes only. Always consult a business advisor for financial decisions.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Tooltip popup -->
+  <div class="tooltip-popup" id="tooltip-popup"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
