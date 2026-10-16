@@ -1664,6 +1664,8 @@ const MOODS = [
   ['happy', /გაუხარდ|გაეხარ|ბედნიერ|სიხარულ|გაიცინ|იცინ|გაეცინ|ღიმილ|გაუღიმ|მხიარულ|ხარობ|უხაროდ|კმაყოფ|მადლობ|გმადლობ|ჰოორა|ვაშა/],
   ['love', /უყვარ|სიყვარულ|გულში|საყვარელ/],
 ];
+const ANN_ACT = { walk: 'walk', run: 'run', fly: 'fly', swim: 'swim', jump: 'jump', come: 'come', leave: 'leave', talk: 'talk', sing: 'sing', dance: 'dance', eat: 'eat', drink: 'eat', sleep: 'sleep', wake: 'wake', sit: 'sit', lie: 'sit', look: 'look', think: 'think', work: 'work', give: 'come', hug: 'hug', wave: 'wave', cry: 'sad', laugh: 'joy', hide: 'leave', knock: 'work', play: 'jump', idle: 'idle' };
+const ANN_MOOD = { cry: 'sad', laugh: 'happy', play: 'happy', give: 'happy' };
 const MOVES = new Set(['walk', 'run', 'fly', 'swim', 'leave', 'come', 'jump', 'hug']);
 const SPEED = { walk: 50, run: 125, fly: 85, swim: 60 };
 const MOOD_ACT = { happy: 'joy', sad: 'sad', scared: 'shiver', angry: 'stomp', surprised: 'pop', love: 'idle', sleep: 'sleep' };
@@ -1752,32 +1754,51 @@ function directParagraph(tale, text, i) {
     nameIn = s => whoIn(s, hero, alias);
   }
   cast.forEach(a => { a.ground = SKY.has(a.who) && !set.indoor ? 96 : SWIMMERS.has(a.who) ? 182 : set.indoor ? 172 : 156; });
-  if (set.wantBed && cast.length) Object.assign(cast[0], { bed: true, home: 78, ground: 142 });
+  if (set.wantBed && cast.length) Object.assign(cast[0], { bed: true, fixed: true, home: 78, ground: 142 });
+  // sky folk never wander about a room: they look in through the window, or stay outside
+  if (set.indoor) {
+    const win = { room: [148, 84], hut: [41, 72], kitchen: [40, 68] }[q?.bg || curBg];
+    for (let k = cast.length - 1; k >= 0; k--) {
+      const a = cast[k];
+      if (!['cloudy', 'windy', 'sun', 'star', 'owl', 'moon'].includes(a.who)) continue;
+      if (!win) { cast.splice(k, 1); ids.splice(k, 1); continue; }
+      const sc = Math.min(1, 34 / a.h);
+      Object.assign(a, { window: true, fixed: true, home: win[0], ground: win[1], s: a.s * sc, w: a.w * sc, h: a.h * sc });
+    }
+  }
   const slots = (set.build ? [[56], [40, 160], [28, 150, 178], [22, 56, 148, 180]] : [[100], [66, 138], [42, 100, 160], [30, 78, 124, 170]])[cast.length - 1] || [];
   cast.forEach((a, k) => { a.home = a.home || slots[k]; });
-  const named = sents.map(s => nameIn(s).map(w => ids.indexOf(w)).filter(k => k >= 0));
+  // hand-checked acting, sentence by sentence (plans.json "beats"): who does what, who speaks
+  const anns = q?.beats?.length === sents.length ? q.beats : null;
+  const keyIdx = k => k ? ids.indexOf(k) : -1;
+  const named = anns ? anns.map(A => [...new Set([...(A.who || []), A.say, A.to].map(keyIdx).filter(k => k >= 0))]) : sents.map(s => nameIn(s).map(w => ids.indexOf(w)).filter(k => k >= 0));
   const firstAt = cast.map((_, k) => { const j = named.findIndex(n => n.includes(k)); return j < 0 ? 0 : j; });
   if (cast.length && !firstAt.includes(0)) firstAt[firstAt.indexOf(Math.min(...firstAt))] = 0;
   const sleepyEnd = tale.cat === 'sleep' && set.asleep;
   // the tale opens with its heroes walking into the picture
-  const opening = k => i === 0 && !cast[k].bed && firstAt[k] === 0;
-  let st = cast.map((a, k) => ({ x: firstAt[k] === 0 && !opening(k) ? a.home : offstage(a.home), y: 0, on: firstAt[k] === 0 && !opening(k), face: firstAt[k] === 0 && !opening(k) ? (a.home > 100 ? -1 : 1) : (offstage(a.home) > a.home ? -1 : 1), act: 'idle', after: 'idle', mood: '', fx: [], dur: 0, sleep: !!(a.bed && sleepyEnd) }));
+  const opening = k => i === 0 && !cast[k].fixed && firstAt[k] === 0;
+  let st = cast.map((a, k) => ({ x: a.fixed || firstAt[k] === 0 && !opening(k) ? a.home : offstage(a.home), y: 0, on: firstAt[k] === 0 && !opening(k), face: firstAt[k] === 0 && !opening(k) ? (a.home > 100 ? -1 : 1) : (offstage(a.home) > a.home ? -1 : 1), act: 'idle', after: 'idle', mood: '', fx: [], dur: 0, sleep: !!(a.bed && sleepyEnd) }));
   const start = st.map(p => ({ ...p, fx: [] }));
   let last = cast.length ? 0 : -1, prevCam = null, prevLead;
   const beats = sents.map((s, b) => {
     // speech after a colon is what someone says, not what happens
     const narr = s.includes(':') ? s.slice(0, s.indexOf(':')) : s;
     let act = (ACTS.find(([, re]) => re.test(narr)) || [])[0] || (s.includes(':') || /!$/.test(s) && named[b].length ? 'talk' : 'idle');
-    const mood = (MOODS.find(([, re]) => re.test(s)) || [])[0] || '';
+    let mood = (MOODS.find(([, re]) => re.test(s)) || [])[0] || '';
+    const A = anns?.[b];
+    let speaker = -1;
+    if (A) { act = ANN_ACT[A.do] || 'idle'; mood = A.mood || ANN_MOOD[A.do] || ''; speaker = keyIdx(A.say); }
     const nx = st.map(p => ({ ...p, y: 0, dur: 0, act: p.sleep ? 'sleep' : 'idle', after: p.sleep ? 'sleep' : 'idle', mood: p.sleep ? 'sleep' : '', fx: p.sleep ? ['zzz'] : [], on: p.on && !p.gone, gone: false }));
     const who = named[b];
     const together = who.length > 1 && /ნენ[\s,.!?:]|ერთად|ორივე|ყველამ|ყველანი|ყველა /.test(narr);
     let subj = who.length ? (together ? who : [who[0]]) : last >= 0 && nx[last].on && (act !== 'idle' || mood) ? [last] : [];
-    const target = who.find(k => !subj.includes(k));
+    let target = who.find(k => !subj.includes(k));
+    if (A) { subj = (A.who || []).map(keyIdx).filter(k => k >= 0); target = keyIdx(A.to) >= 0 ? keyIdx(A.to) : undefined; }
     // whoever is named for the first time walks in
     [...new Set([...who, ...(b === 0 ? cast.map((_, k) => k).filter(opening) : [])])].forEach(k => {
       if (nx[k].on) return;
       const a = cast[k], p = nx[k];
+      if (a.fixed) { p.on = true; p.x = a.home; return; }
       p.on = true; p.face = p.x < a.home ? 1 : -1;
       p.dur = clamp(Math.abs(a.home - p.x) / SPEED.walk, 1.2, 2.6); p.x = a.home;
       p.act = SKY.has(a.who) ? 'fly' : SWIMMERS.has(a.who) ? 'swim' : 'walk';
@@ -1787,7 +1808,7 @@ function directParagraph(tale, text, i) {
       if (act === 'wake') { p.sleep = false; p.act = p.after = 'joy'; p.mood = 'happy'; p.fx = ['sparks']; return; }
       if (act === 'sleep') { p.sleep = true; p.act = p.after = 'sleep'; p.mood = 'sleep'; p.fx = ['zzz']; return; }
       let a2 = act;
-      if (a.bed && MOVES.has(a2)) a2 = 'idle';
+      if (a.fixed && MOVES.has(a2)) a2 = 'idle';
       if (MOVES.has(a2)) {
         let tx = p.x;
         const t = target !== undefined && nx[target].on ? nx[target].x : null;
@@ -1811,14 +1832,19 @@ function directParagraph(tale, text, i) {
       p.mood = mood || (['dance', 'sing', 'hug'].includes(a2) ? 'happy' : '');
       p.fx = [...new Set([ACT_FX[a2 === 'leave' || a2 === 'come' ? p.act : a2], MOOD_FX[p.mood], a2 === 'think' ? (/მოიფიქრ|მიხვდ|გაახსენდ/.test(s) ? 'idea' : 'think') : '', a2 === 'look' && /ეძებ|დაეძებ|სად/.test(s) ? 'ask' : ''].filter(Boolean))];
     });
+    // the speech bubble belongs to whoever speaks, and only to them
+    if (A) {
+      nx.forEach((p, k) => { if (k !== speaker) p.fx = p.fx.filter(f => f !== 'talk'); });
+      if (speaker >= 0 && nx[speaker].on) { const p = nx[speaker]; if (!p.fx.includes('talk')) p.fx.push('talk'); if (!p.dur && (!subj.includes(speaker) || p.act === 'idle')) { p.act = p.after = 'talk'; } }
+    }
     // a happy or scared sentence that names several characters moves them all
-    if (mood && !together) who.slice(1).forEach(k => { const p = nx[k]; if (p.dur || p.sleep) return; if (mood === 'happy' || mood === 'scared') { p.mood = mood; p.act = p.after = MOOD_ACT[mood]; p.fx = [MOOD_FX[mood]]; } });
+    if (mood && !together && !A) who.slice(1).forEach(k => { const p = nx[k]; if (p.dur || p.sleep) return; if (mood === 'happy' || mood === 'scared') { p.mood = mood; p.act = p.after = MOOD_ACT[mood]; p.fx = [MOOD_FX[mood]]; } });
     // nobody ends a beat standing on someone else: whoever is in the way steps aside
     const onStage = nx.map((_, k) => k).filter(k => nx[k].on && !nx[k].gone);
     const meant = (k, j) => (act === 'hug' || act === 'come') && (subj.includes(k) && j === target || subj.includes(j) && k === target);
     const near = (k, j, x) => Math.abs(cast[j].ground - cast[k].ground) < 30 && Math.abs(nx[j].x - x) < (cast[j].w + cast[k].w) * .42 + 4;
     for (const k of onStage) {
-      if (cast[k].bed || subj.includes(k) && MOVES.has(act)) continue;
+      if (cast[k].fixed || subj.includes(k) && MOVES.has(act)) continue;
       const others = onStage.filter(j => j !== k && !meant(k, j));
       if (!others.some(j => near(k, j, nx[k].x))) continue;
       let best = nx[k].x, score = -1e9;
@@ -1833,7 +1859,7 @@ function directParagraph(tale, text, i) {
       if (!['walk', 'run', 'fly', 'swim'].includes(p.act)) { p.after = p.act; p.act = SKY.has(cast[k].who) ? 'fly' : SWIMMERS.has(cast[k].who) ? 'swim' : 'walk'; }
     }
     // everyone else turns to look at whoever acts
-    const lead = subj[0] ?? who[0];
+    const lead = speaker >= 0 ? speaker : subj[0] ?? who[0];
     if (lead !== undefined) nx.forEach((p, k) => { if (k !== lead && p.on && !p.dur && !p.gone && !p.sleep && !cast[k].bed) p.face = nx[lead].x > p.x ? 1 : -1; });
     if (subj.length) last = subj[0];
     // camera: close on whoever acts, wide when the narrator just tells
@@ -1948,6 +1974,9 @@ function applyBeat(root, para, bi, instant) {
 function beatAt(id, para, pi, time) {
   const starts = TIMINGS[id]?.starts, total = TIMINGS[id]?.duration || audio.duration || 0;
   if (!starts) return 0;
+  // exact: the voice recording knows when every sentence starts
+  const exact = TIMINGS[id].sents?.[pi];
+  if (exact && exact.length === para.beats.length) { let bi = 0; while (bi + 1 < exact.length && exact[bi + 1] <= time + .05) bi++; return bi; }
   const a = starts[pi], z = starts[pi + 1] ?? total;
   const sum = para.weights.reduce((x, y) => x + y, 0);
   let acc = 0, bi = 0;
@@ -2150,11 +2179,12 @@ function renderShelves() {
   $('testPill').hidden = !testMode;
   $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === tab));
   if (tab === 'paint') {
-    const cats = [['all', 'ყველა'], ['girls', 'გოგონებისთვის'], ['boys', 'ბიჭებისთვის'], ['tales', 'ზღაპრის გმირები']];
-    const shown = PAGES.filter(pg => paintCat === 'all' || pg.cat === paintCat);
+    // one big mixed album: every child colours whatever they like
+    const groups = ['girls', 'boys', 'tales'].map(c => PAGES.filter(pg => pg.cat === c));
+    const shown = Array.from({ length: Math.max(...groups.map(g => g.length)) }, (_, i) => groups.map(g => g[i])).flat().filter(Boolean);
+    const free = shown.filter(pg => pg.free), rest = shown.filter(pg => !pg.free);
     $('shelves').innerHTML = `<div class="shelf-head"><h2>გაფერადება</h2><small>${PAGES.length} სურათი</small></div>
-      <div class="chips">${cats.map(([k, label]) => `<button class="chip" data-pcat="${k}" aria-pressed="${k === paintCat}">${label}</button>`).join('')}</div>
-      <div class="grid">${shown.map(pg => `
+      <div class="grid">${[...free, ...rest].map(pg => `
         <button class="tile page ${pg.free || testMode ? '' : 'locked'}" data-page="${pg.id}" aria-label="${pg.title}">
           <div class="art">${pageThumb(pg)}</div>
           ${pg.free ? '<span class="badge free">უფასო</span>' : testMode ? '' : `<span class="badge">${LOCK}</span>`}
@@ -2394,7 +2424,7 @@ function showScene(i) {
   $(back).style.opacity = 1;
   $(front).style.opacity = 0;
   front = back;
-  if (play && MUSIC.timer) ambience(play[i].amb || '');
+  if (play && MUSIC.playing) ambience(play[i].amb || '');
 }
 // a cartoon: the paragraph sets the scene, every sentence moves the characters
 function showBeat(time) {
@@ -2546,106 +2576,51 @@ function sndInit() {
 const hz = (root, semi) => root * Math.pow(2, semi / 12);
 const env = (g, t, peak, a, d) => { g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(.0002, peak), t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d); };
 
-// ---------- instruments ----------
-function playNote(inst, f, t, dur, vel, bus = SND.music) {
-  const c = SND.ctx, out = c.createGain(); out.connect(bus);
-  const osc = (type, freq, gain, detune = 0) => { const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.value = freq; o.detune.value = detune; g.gain.value = gain; o.connect(g).connect(out); return o; };
-  let oscs = [], end;
-  switch (inst) {
-    case 'box': oscs = [osc('sine', f, 1), osc('sine', f * 2, .28), osc('sine', f * 4.01, .08)]; env(out, t, vel, .004, 1.7); end = t + 1.8; break;
-    case 'celesta': oscs = [osc('sine', f, 1), osc('triangle', f * 2, .18), osc('sine', f * 3, .06)]; env(out, t, vel, .003, 1.2); end = t + 1.3; break;
-    case 'marimba': oscs = [osc('sine', f, 1), osc('sine', f * 3.9, .12)]; env(out, t, vel, .003, .45); end = t + .5; break;
-    case 'harp': { const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600; out.disconnect(); out.connect(lp).connect(bus); oscs = [osc('triangle', f, 1), osc('sine', f * 2, .2)]; env(out, t, vel, .004, 1.1); end = t + 1.2; break; }
-    case 'pizz': oscs = [osc('triangle', f, 1)]; env(out, t, vel, .003, .22); end = t + .3; break;
-    case 'bass': oscs = [osc('sine', f, 1), osc('triangle', f, .3)]; out.gain.setValueAtTime(.0001, t); out.gain.exponentialRampToValueAtTime(vel, t + .02); out.gain.exponentialRampToValueAtTime(.0001, t + Math.max(.3, dur * .95)); end = t + dur; break;
-    case 'flute': { oscs = [osc('sine', f, 1), osc('sine', f * 2, .08)]; const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = 5; lg.gain.value = f * .006; lfo.connect(lg); oscs.forEach(o => lg.connect(o.frequency)); lfo.start(t); lfo.stop(t + dur + .4);
-      out.gain.setValueAtTime(.0001, t); out.gain.exponentialRampToValueAtTime(vel, t + .07); out.gain.setValueAtTime(vel, t + Math.max(.08, dur - .1)); out.gain.exponentialRampToValueAtTime(.0001, t + dur + .25); end = t + dur + .3; break; }
-    case 'pad': { const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; out.disconnect(); out.connect(lp).connect(bus); oscs = [osc('sawtooth', f, .5, -7), osc('sawtooth', f, .5, 7)];
-      out.gain.setValueAtTime(.0001, t); out.gain.exponentialRampToValueAtTime(vel, t + .9); out.gain.setValueAtTime(vel, t + dur); out.gain.exponentialRampToValueAtTime(.0001, t + dur + 1.4); end = t + dur + 1.5; break; }
-    case 'drone': oscs = [osc('sine', f, 1), osc('sine', f * 1.5, .5)]; out.gain.setValueAtTime(.0001, t); out.gain.exponentialRampToValueAtTime(vel, t + 1.2); out.gain.setValueAtTime(vel, t + dur); out.gain.exponentialRampToValueAtTime(.0001, t + dur + 1.2); end = t + dur + 1.3; break;
-  }
-  oscs.forEach(o => { o.start(t); o.stop(end); });
-}
-
-// ---------- composer: a short song for each tale, from its name ----------
-const MODES = { major: [0, 2, 4, 5, 7, 9, 11], mixo: [0, 2, 4, 5, 7, 9, 10], dorian: [0, 2, 3, 5, 7, 9, 10] };
-const PROGS = [[0, 4, 5, 3], [0, 3, 0, 4], [5, 3, 0, 4], [0, 5, 3, 4], [0, 3, 4, 0], [0, 1, 4, 0], [3, 4, 0, 0]];
-const RHYTHM = { 4: [[1, 1, 1, 1], [1.5, .5, 1, 1], [1, .5, .5, 2], [2, 1, 1], [.5, .5, 1, .5, .5, 1]], 3: [[1, 1, 1], [2, 1], [1, .5, .5, 1], [1.5, .5, 1], [3]] };
-const STYLE = {
-  sleep: { mode: 'major', meter: 3, bpm: [62, 72], lead: ['box', 'celesta'], acc: 'pad', arp: 'harp', vol: .24 },
-  ge: { mode: 'dorian', meter: 4, bpm: [84, 98], lead: ['flute', 'pizz'], acc: 'drone', arp: 'harp', vol: .3, alt: 'mixo' },
-  world: { mode: 'major', meter: 4, bpm: [88, 104], lead: ['celesta', 'box', 'flute'], acc: 'bass', arp: 'harp', vol: .3 },
-  short: { mode: 'major', meter: 4, bpm: [100, 116], lead: ['marimba', 'pizz'], acc: 'bass', arp: 'pizz', vol: .3 },
+// ---------- music: real recordings of gentle classics (Musopen, public domain), softened and levelled ----------
+// each section has its own little playlist; every tale starts on its own piece and moves on to the next
+const PLAYLISTS = {
+  sleep: ['bach_aria', 'schubert_andante', 'borodin_nocturne', 'dvorak_lento', 'bach_var13'],
+  ge: ['borodin_steppes', 'grieg_morning', 'dvorak_lento', 'mendelssohn_andante', 'borodin_nocturne'],
+  world: ['grieg_morning', 'brahms_grazioso', 'smetana_vltava', 'mendelssohn_andante', 'haydn_minuet', 'schubert_andante'],
+  short: ['haydn_minuet', 'grieg_anitra', 'brahms_grazioso', 'bach_var13'],
 };
-function compose(tale) {
-  const r = rnd(hashOf(tale.id + 'music') + 3), pick = a => a[Math.floor(r() * a.length)];
-  const st = STYLE[tale.cat] || STYLE.world;
-  const scale = MODES[st.alt && r() > .5 ? st.alt : st.mode];
-  const root = pick([220, 233.1, 246.9, 261.6, 293.7, 196]) * (tale.cat === 'sleep' ? 1 : 1.12);
-  const meter = st.meter, bpm = st.bpm[0] + r() * (st.bpm[1] - st.bpm[0]), lead = pick(st.lead);
-  const deg = d => 12 * Math.floor(d / 7) + scale[((d % 7) + 7) % 7];
-  const notes = [];
-  const section = (prog, startBar, motif) => {
-    let prev = 9;
-    prog.concat(prog).forEach((ch, bi) => {
-      const bar = startBar + bi, t0 = bar * meter, tones = [ch, ch + 2, ch + 4].map(x => x + 7);
-      // accompaniment
-      if (st.acc === 'pad') notes.push({ t: t0, inst: 'pad', semi: deg(ch) - 12, dur: meter * 60 / bpm, vel: .05 }, { t: t0, inst: 'pad', semi: deg(ch + 2) - 12, dur: meter * 60 / bpm, vel: .04 });
-      else if (st.acc === 'drone') { if (bi % 4 === 0) notes.push({ t: t0, inst: 'drone', semi: -12, dur: 4 * meter * 60 / bpm, vel: .05 }); notes.push({ t: t0, inst: 'bass', semi: deg(ch) - 12, dur: 60 / bpm, vel: .12 }); }
-      else { notes.push({ t: t0, inst: 'bass', semi: deg(ch) - 12, dur: 60 / bpm, vel: .16 }); if (meter === 4) notes.push({ t: t0 + 2, inst: 'bass', semi: deg(ch + 4) - 12, dur: 60 / bpm, vel: .12 }); }
-      for (let b = 1; b < meter; b++) notes.push({ t: t0 + b, inst: st.arp, semi: deg(tones[b % 3]), dur: .5, vel: .05 });
-      // melody: the motif comes back, the last bar comes home to the tonic
-      if (bi === 7) { notes.push({ t: t0, inst: lead, semi: deg(7), dur: meter * 60 / bpm, vel: .14 }); return; }
-      const rh = bi % 4 < 2 ? motif[bi % 2] : pick(RHYTHM[meter]);
-      let tt = 0;
-      rh.forEach((len, k) => {
-        let d;
-        if (k === 0) d = tones.reduce((best, x) => Math.abs(x - prev) < Math.abs(best - prev) ? x : best, tones[0]);
-        else d = clamp(prev + (r() > .5 ? 1 : -1) * (r() > .7 ? 2 : 1), 5, 15);
-        prev = d;
-        notes.push({ t: t0 + tt, inst: lead, semi: deg(d), dur: len * 60 / bpm, vel: .13 + (k === 0 ? .03 : 0) });
-        tt += len;
-      });
-    });
-  };
-  const motif = [pick(RHYTHM[meter]), pick(RHYTHM[meter])];
-  const A = pick(PROGS), B = pick(PROGS);
-  section(A, 0, motif); section(B, 8, [pick(RHYTHM[meter]), pick(RHYTHM[meter])]); section(A, 16, motif); section(B, 24, motif);
-  notes.sort((a, b) => a.t - b.t);
-  return { notes, beats: 32 * meter, spb: 60 / bpm, root, vol: st.vol };
+const MUSIC_VOL = { sleep: .38, ge: .5, world: .5, short: .5 };
+const MUSIC = { el: null, gain: null, tale: null, list: [], at: 0, timer: 1, playing: false };
+function musicEl() {
+  if (MUSIC.el) return MUSIC.el;
+  const el = MUSIC.el = new Audio(); el.preload = 'auto';
+  el.addEventListener('ended', () => { MUSIC.at = (MUSIC.at + 1) % MUSIC.list.length; el.src = `music/${MUSIC.list[MUSIC.at]}.mp3`; if (MUSIC.playing) el.play().catch(() => {}); });
+  // through Web Audio, so the level can be set on phones too (iOS ignores element volume)
+  try { const c = sndInit(); const src = c.createMediaElementSource(el); MUSIC.gain = c.createGain(); MUSIC.gain.gain.value = 0; src.connect(MUSIC.gain).connect(SND.master); } catch { MUSIC.gain = null; }
+  return el;
 }
-
-// ---------- the music player: follows the story's play / pause ----------
-const MUSIC = { song: null, pos: 0, start: 0, timer: null, next: 0 };
+function setMusicGain(v, slow) {
+  if (MUSIC.gain && SND.ctx) MUSIC.gain.gain.setTargetAtTime(v, SND.ctx.currentTime, slow ? 1.2 : .3);
+  else if (MUSIC.el) MUSIC.el.volume = Math.min(1, v * 3);
+}
 function musicStart(tale) {
-  const c = sndInit(); if (!c) return;
-  if (!MUSIC.song || MUSIC.song.id !== tale.id) { MUSIC.song = { id: tale.id, ...compose(tale) }; MUSIC.pos = 0; MUSIC.next = 0; }
-  const s = MUSIC.song;
-  SND.music.gain.cancelScheduledValues(c.currentTime); SND.music.gain.setTargetAtTime(musicOn ? s.vol : 0, c.currentTime, .8);
-  MUSIC.start = c.currentTime + .1 - MUSIC.pos * s.spb;
-  clearInterval(MUSIC.timer);
-  MUSIC.timer = setInterval(() => {
-    const now = c.currentTime, ahead = now + .35;
-    const loopLen = s.beats * s.spb;
-    while (true) {
-      const n = s.notes[MUSIC.next % s.notes.length], loop = Math.floor(MUSIC.next / s.notes.length);
-      const t = MUSIC.start + loop * loopLen + n.t * s.spb;
-      if (t > ahead) break;
-      if (t >= now - .05 && musicOn) playNote(n.inst, hz(s.root, n.semi), t, n.dur, n.vel);
-      MUSIC.next++;
-    }
-    MUSIC.pos = (now - MUSIC.start) / s.spb;
-  }, 100);
+  if (!sndInit()) return;
+  const el = musicEl();
+  if (MUSIC.tale !== tale.id) {
+    const base = PLAYLISTS[tale.cat] || PLAYLISTS.world;
+    const k = hashOf(tale.id) % base.length;
+    MUSIC.list = base.slice(k).concat(base.slice(0, k)); MUSIC.at = 0; MUSIC.tale = tale.id;
+    el.src = `music/${MUSIC.list[0]}.mp3`;
+  }
+  MUSIC.playing = true; MUSIC.vol = MUSIC_VOL[tale.cat] || .26;
+  if (musicOn) { el.play().catch(() => {}); setMusicGain(MUSIC.vol, true); }
 }
 function musicPause(stop) {
-  clearInterval(MUSIC.timer); MUSIC.timer = null;
-  if (!SND.ctx) return;
-  const c = SND.ctx; SND.music.gain.setTargetAtTime(0, c.currentTime, .3); SND.amb.gain.setTargetAtTime(0, c.currentTime, .4);
-  if (MUSIC.song) MUSIC.pos = (c.currentTime - MUSIC.start) / MUSIC.song.spb;
-  if (stop) { MUSIC.song = null; ambStop(); }
+  MUSIC.playing = false;
+  if (!MUSIC.el) return;
+  setMusicGain(0);
+  if (SND.amb && SND.ctx) SND.amb.gain.setTargetAtTime(0, SND.ctx.currentTime, .4);
+  const el = MUSIC.el;
+  setTimeout(() => { if (!MUSIC.playing) el.pause(); }, 700);
+  if (stop) { MUSIC.tale = null; ambStop(); }
 }
 // the sleep timer and the end of the tale fade the music with the voice
-function musicLevel(v) { if (SND.ctx && MUSIC.song && MUSIC.timer) SND.music.gain.setTargetAtTime((musicOn ? MUSIC.song.vol : 0) * v, SND.ctx.currentTime, .3); }
+function musicLevel(v) { if (MUSIC.playing) { if (musicOn && MUSIC.el.paused) MUSIC.el.play().catch(() => {}); setMusicGain(musicOn ? MUSIC.vol * v : 0); } }
 
 // ---------- ambience: what the place sounds like ----------
 const AMB = { nodes: [], timers: [], kind: '' };
@@ -2704,7 +2679,7 @@ const SFX = {
   puff: t => whoosh(t, .3, false), ask: t => sweep('sine', 500, 800, t, .25, .07), yum: t => [300, 360].forEach((f, k) => sweep('triangle', f, f * .9, t + k * .15, .1, .07)),
 };
 function beatSounds(para, bi) {
-  if (!sounds || !SND.ctx || !MUSIC.timer) return;
+  if (!sounds || !SND.ctx || !MUSIC.playing) return;
   const t = SND.ctx.currentTime + .05, beat = para.beats[bi], prev = bi ? para.beats[bi - 1] : null;
   const want = [];
   beat.actors.forEach((p, k) => {
