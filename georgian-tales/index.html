@@ -236,6 +236,18 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .tile.page .art { position: relative; background: #fff; }
 .tile.page .art img { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: multiply; }
 
+/* ---------- chips, home strips ---------- */
+.chips { display: flex; gap: 8px; overflow-x: auto; margin: 0 0 16px; padding-bottom: 4px; }
+.chip { flex: none; padding: 10px 14px; border-radius: 999px; background: var(--card); color: var(--ink); font-weight: 700; font-size: .85rem; box-shadow: 0 3px 10px rgba(0,0,0,.1); }
+.chip[aria-pressed="true"] { background: var(--moon); color: var(--on-moon); }
+.strip { margin-bottom: 20px; }
+.strip h3 { font-family: var(--display); font-size: 1rem; margin: 0 0 10px; }
+.strip-row { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.mini { flex: none; width: 120px; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.mini .art { width: 120px; height: 120px; border-radius: 18px; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,.2); }
+.mini .art svg { width: 100%; height: 100%; display: block; }
+.mini span { font-size: .8rem; font-weight: 600; line-height: 1.3; }
+
 /* ---------- bottom tab bar ---------- */
 .wrap { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 110px) !important; }
 .tabs { position: fixed; z-index: 15; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr);
@@ -331,6 +343,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
     <button class="round" id="closePlayer" aria-label="უკან">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
     </button>
+    <button class="round" id="favBtn" aria-label="რჩეულში დამატება" style="margin-left:auto;margin-right:10px"></button>
     <button class="round" id="sleepBtn" aria-label="ეკრანის ჩაქრობა">
       <svg width="24" height="24" viewBox="0 0 24 24"><path d="M15 3a9 9 0 1 0 6 14A8 8 0 0 1 15 3z" fill="#ffd98a"/></svg>
     </button>
@@ -1008,6 +1021,169 @@ Object.assign(SCENES, {
   ],
 });
 
+// ---------- batch 3 characters ----------
+Object.assign(C, {
+  hen: o => shadow(22, 41, 18) + `<path d="M18 34 v6 M26 34 v6" stroke="#ff9f43" stroke-width="2.6" stroke-linecap="round"/><path d="M4 18 q-6 -10 0 -14 q2 6 6 8 q-2 -8 4 -10 q0 8 2 10z" fill="${o.gold ? '#ffc93c' : '#a8743f'}" ${O(1.4)}/>
+    <ellipse cx="20" cy="22" rx="16" ry="13" fill="${o.gold ? '#ffd34d' : '#f4ecdc'}" ${O()}/><path d="M10 20 q8 -4 14 2 q-8 6 -14 -2z" fill="${o.gold ? '#ffc93c' : '#e0d4c0'}"/>
+    <circle cx="32" cy="10" r="8" fill="${o.gold ? '#ffd34d' : '#f4ecdc'}" ${O()}/><path d="M28 3 q2 -5 4 -1 q2 -5 4 0 q2 -3 2 2z" fill="#e2445c" ${O(1.2)}/><path d="M39 10 L45 12 L39 14z" fill="#ffb347" ${O(1.2)}/><path d="M36 15 q2 4 0 6 q-2 -2 0 -6z" fill="#e2445c"/>${eye(34, 8, o.closed, 2.6)}`,
+  cat: o => shadow(26, 45, 20) + `<path class="tail" d="M8 36 Q-6 30 -2 12" stroke="${INK}" stroke-width="6" fill="none" stroke-linecap="round"/><path class="tail" d="M8 36 Q-6 30 -2 12" stroke="#ffb347" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="24" cy="34" rx="18" ry="11" fill="#ffb347" ${O()}/><rect x="12" y="38" width="7" height="8" rx="3" fill="#ffb347" ${O(1.6)}/><rect x="30" y="38" width="7" height="8" rx="3" fill="#ffb347" ${O(1.6)}/>
+    <path d="M30 10 L32 -2 L38 6z M46 6 L52 -2 L52 10z" fill="#ffb347" ${O(1.6)}/><circle cx="41" cy="14" r="12" fill="#ffb347" ${O()}/><path d="M33 6 q8 -2 14 0" stroke="#e08a2a" stroke-width="2.4" fill="none"/>
+    ${eye(37, 13, o.closed, 3)}${eye(46, 13, o.closed, 3)}<path d="M41 18 l-2 -2 h4z" fill="#ff7f9a"/><path d="M41 18 q-2 3 -4 1 M41 18 q2 3 4 1" ${O(1.1)} fill="none"/><path d="M30 18 h-8 M30 20 l-7 2 M52 18 h8 M52 20 l7 2" stroke="${INK}" stroke-width=".8" opacity=".6"/>${o.bell ? `<circle cx="41" cy="27" r="3.4" fill="#ffd34d" ${O(1.2)}/>` : ''}`,
+  hedgehog: o => shadow(24, 33, 20) + `<path d="M2 28 Q0 6 22 4 Q42 4 44 24 L48 28z" fill="#8a6a4a" ${O()}/>${Array.from({ length: 8 }, (_, i) => `<path d="M${6 + i * 5} ${18 - Math.sin(i / 7 * Math.PI) * 10} l2 -7 l3 7" fill="#6a4a3a" ${O(1)}/>`).join('')}
+    <path d="M30 28 Q38 12 50 22 L56 26 Q50 32 30 30z" fill="#e8c9a0" ${O()}/><circle cx="56" cy="25" r="2.6" fill="${INK}"/>${eye(44, 21, o.closed, 2.8)}${blush(46, 27, 2.4)}<rect x="12" y="28" width="6" height="6" rx="2" fill="#e8c9a0" ${O(1.2)}/><rect x="30" y="28" width="6" height="6" rx="2" fill="#e8c9a0" ${O(1.2)}/>
+    ${o.shrooms ? [8, 20, 32].map(x => `<g transform="translate(${x} 2)"><rect x="-1.6" y="-2" width="3.2" height="5" fill="#fff" ${O(.8)}/><path d="M-6 -2 Q0 -10 6 -2z" fill="#e2445c" ${O(1)}/></g>`).join('') : ''}`,
+  owl: o => `<ellipse cx="20" cy="26" rx="17" ry="20" fill="#a8743f" ${O()}/><ellipse cx="20" cy="32" rx="10" ry="12" fill="#e8c9a0"/><path d="M6 10 L4 0 L12 7z M34 10 L36 0 L28 7z" fill="#a8743f" ${O(1.4)}/>
+    <circle cx="13" cy="18" r="7" fill="#fff" ${O(1.4)}/><circle cx="27" cy="18" r="7" fill="#fff" ${O(1.4)}/>${o.closed ? eye(13, 18, true, 3.4) + eye(27, 18, true, 3.4) : `<g class="eye"><circle cx="13.5" cy="18.5" r="3.6" fill="#2a1f3a"/><circle cx="27.5" cy="18.5" r="3.6" fill="#2a1f3a"/><circle cx="14.6" cy="17.2" r="1.2" fill="#fff"/><circle cx="28.6" cy="17.2" r="1.2" fill="#fff"/></g>`}
+    <path d="M18 23 L20 28 L22 23z" fill="#ffb347" ${O(1.2)}/><path d="M12 46 v3 M16 46 v3 M24 46 v3 M28 46 v3" stroke="#ffb347" stroke-width="2"/>`,
+  horse: o => shadow(48, 71, 38) + `<path class="tail" d="M8 30 Q-6 36 -2 56" stroke="${INK}" stroke-width="9" fill="none" stroke-linecap="round"/><path class="tail" d="M8 30 Q-6 36 -2 56" stroke="${o.mane || '#fff6dc'}" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <rect x="14" y="44" width="9" height="26" rx="4" fill="${o.coat || '#f4f4fa'}" ${O()}/><rect x="56" y="44" width="9" height="26" rx="4" fill="${o.coat || '#f4f4fa'}" ${O()}/>
+    <ellipse cx="40" cy="36" rx="32" ry="17" fill="${o.coat || '#f4f4fa'}" ${O()}/><rect x="24" y="46" width="9" height="25" rx="4" fill="${o.coat || '#f4f4fa'}" ${O()}/><rect x="64" y="46" width="9" height="25" rx="4" fill="${o.coat || '#f4f4fa'}" ${O()}/>
+    <path d="M62 30 Q66 6 78 2 L94 16 Q96 26 88 26 L76 22 Q72 30 70 36z" fill="${o.coat || '#f4f4fa'}" ${O()}/><path d="M62 28 Q60 8 72 2 q-2 10 -4 26z" fill="${o.mane || '#fff6dc'}" ${O(1.6)}/><path d="M76 4 l2 -8 l4 7z" fill="${o.coat || '#f4f4fa'}" ${O(1.4)}/>
+    <circle cx="91" cy="20" r="1.6" fill="${INK}"/>${eye(80, 12, o.closed, 3.2)}${blush(84, 20, 2.4)}`,
+  cow: o => shadow(46, 59, 36) + `<rect x="12" y="38" width="9" height="20" rx="4" fill="#fff" ${O()}/><rect x="56" y="38" width="9" height="20" rx="4" fill="#fff" ${O()}/>
+    <ellipse cx="38" cy="30" rx="32" ry="17" fill="#fff" ${O()}/><path d="M22 18 q8 -4 10 6 q-6 6 -12 0z M44 30 q10 -6 14 4 q-6 8 -14 0z" fill="#3a3550"/>
+    <rect x="22" y="40" width="9" height="19" rx="4" fill="#fff" ${O()}/><rect x="62" y="40" width="9" height="19" rx="4" fill="#fff" ${O()}/>
+    <path d="M70 8 q-4 -8 -8 -6 M86 8 q4 -8 8 -6" ${O(2)} fill="none"/><circle cx="78" cy="20" r="13" fill="#fff" ${O()}/><ellipse cx="80" cy="28" rx="10" ry="7" fill="#ffb3c3" ${O(1.6)}/><circle cx="77" cy="28" r="1.4" fill="${INK}"/><circle cx="83" cy="28" r="1.4" fill="${INK}"/>${eye(78, 16, o.closed, 3.2)}`,
+  squirrel: o => shadow(20, 37, 16) + `<path d="M12 34 C-8 30 -6 2 12 6 C18 12 14 22 18 30z" fill="#d97a3a" ${O()}/><ellipse cx="24" cy="26" rx="10" ry="11" fill="#e08a4a" ${O()}/><ellipse cx="26" cy="29" rx="5" ry="6" fill="#f4dcb0"/>
+    <path d="M26 6 l2 -6 l4 6z" fill="#e08a4a" ${O(1.2)}/><circle cx="30" cy="12" r="8" fill="#e08a4a" ${O()}/>${eye(32, 10, o.closed, 2.6)}<circle cx="38" cy="13" r="1.2" fill="${INK}"/>`,
+  deer: o => shadow(34, 63, 26) + `<rect x="14" y="36" width="6" height="26" rx="3" fill="#c98a4a" ${O(1.6)}/><rect x="40" y="36" width="6" height="26" rx="3" fill="#c98a4a" ${O(1.6)}/>
+    <ellipse cx="30" cy="32" rx="24" ry="12" fill="#c98a4a" ${O()}/><g fill="#fff6dc"><circle cx="20" cy="28" r="2"/><circle cx="30" cy="26" r="2"/><circle cx="38" cy="30" r="2"/></g>
+    <path d="M46 28 Q50 14 56 10" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><path d="M46 28 Q50 14 56 10" stroke="#c98a4a" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="58" cy="10" r="9" fill="#c98a4a" ${O()}/><ellipse cx="66" cy="13" rx="5" ry="4" fill="#e8c9a0" ${O(1.4)}/><circle cx="70" cy="12" r="1.4" fill="${INK}"/>${eye(58, 7, o.closed, 2.8)}
+    ${o.antlers ? `<path d="M54 2 l-4 -8 l-4 2 M54 2 l-2 -10 M62 2 l4 -8 l4 2 M62 2 l2 -10" ${O(2)} fill="none"/>` : `<ellipse cx="52" cy="3" rx="3" ry="5" fill="#c98a4a" ${O(1.2)}/>`}`,
+  dolphin: o => `<path d="M2 26 C10 6 42 2 58 16 L66 14 L62 22 C50 34 18 36 2 26z" fill="#7ab8f0" ${O()}/><path d="M30 8 l6 -8 l4 10z" fill="#7ab8f0" ${O(1.6)}/><path d="M2 26 l-8 -6 l2 10z" fill="#7ab8f0" ${O(1.6)}/><path d="M20 26 q16 6 36 -6" fill="#d6ecff"/>${eye(50, 16, o.closed, 2.8)}<path d="M58 22 q3 1 4 -1" ${O(1)} fill="none"/>`,
+  gull: o => `<g class="wings"><path d="M20 14 Q8 0 -6 4 Q6 8 14 18z M28 14 Q40 0 54 4 Q42 8 34 18z" fill="#fff" ${O(1.6)}/></g><ellipse cx="24" cy="18" rx="10" ry="7" fill="#fff" ${O(1.6)}/><circle cx="32" cy="12" r="5" fill="#fff" ${O(1.4)}/><path d="M36 12 l6 2 l-6 1z" fill="#ffc93c"/>${eye(33, 11, o.closed, 2)}`,
+});
+// a golden bird is the blue bird in gold
+C.goldbird = o => _bird(o).replace(/#7ab8f0/g, '#ffd34d').replace(/#5a98d8/g, '#ffb347');
+C.goose = o => C.hen(o).replace(/#f4ecdc/g, '#fff').replace(/<path d="M28 3 q2 -5[^>]*>/, '');
+
+// ---------- batch 3 props ----------
+const boat = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-30 0 L30 0 L22 14 L-22 14z" fill="#4a7ab0" ${O()}/><path d="M0 0 V-44" ${O(2.4)}/><path d="M2 -42 L28 -6 L2 -6z" fill="#fff" ${O(1.8)}/><path d="M-2 -38 L-22 -8 L-2 -8z" fill="#f4ecdc" ${O(1.6)}/><circle cx="-14" cy="6" r="2.4" fill="#ffe9a8"/><circle cx="0" cy="6" r="2.4" fill="#ffe9a8"/><circle cx="14" cy="6" r="2.4" fill="#ffe9a8"/></g>`;
+const lighthouse = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-12 0 L-8 -60 L8 -60 L12 0z" fill="#fff" ${O()}/><path d="M-11 -14 h22 M-10 -30 h20 M-9 -46 h18" stroke="#e2445c" stroke-width="7"/><rect x="-10" y="-74" width="20" height="14" fill="#ffe9a8" class="glow" ${O(1.6)}/><path d="M-12 -74 L0 -84 L12 -74z" fill="#e2445c" ${O(1.6)}/></g>`;
+const beanstalk = (x, h = 190) => `<g class="rise" style="animation-duration:4s"><path d="M${x} 200 C${x - 20} 150 ${x + 20} 110 ${x} 60 S${x + 10} ${200 - h} ${x} ${200 - h}" stroke="#3aa860" stroke-width="7" fill="none" stroke-linecap="round"/>${[160, 120, 80, 40].map((y, i) => `<path d="M${x} ${y} q${i % 2 ? 18 : -18} -10 ${i % 2 ? 26 : -26} 4 q${i % 2 ? -14 : 14} 8 ${i % 2 ? -26 : 26} -4z" fill="#8fd07a" ${O(1.4)}/>`).join('')}</g>`;
+const cloudCastle = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})">${castle(0, 0, .7)}<path d="M-70 10 C-80 10 -80 -6 -66 -6 C-64 -20 -40 -22 -34 -10 C-26 -24 0 -20 2 -8 C14 -22 40 -18 40 -4 C58 -8 64 10 50 10z" fill="#fff" ${O(1.6)}/></g>`;
+const goldEgg = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cx="0" cy="0" rx="9" ry="12" fill="#ffd34d" ${O(1.8)}/><path d="M-4 -6 q2 -4 5 -4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>${sparkle(10, -12, 0, '#fff6c0', 4)}</g>`;
+const crackedEgg = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-10 0 Q-10 -12 0 -12 Q10 -12 10 0 l-4 -4 l-3 4 l-3 -4 l-3 4 l-3 -4z" fill="#ffd34d" ${O(1.6)}/><path d="M-10 4 Q0 12 10 4 l-4 4 l-3 -3 l-3 3 l-3 -3 l-3 3z" fill="#ffd34d" ${O(1.6)}/></g>`;
+const friedEgg = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-14 0 q2 -8 10 -6 q6 -6 12 0 q6 2 4 8 q-6 6 -14 4 q-10 2 -12 -6z" fill="#fff" ${O(1.6)}/><circle cx="0" cy="0" r="5" fill="#ffc93c" ${O(1.2)}/></g>`;
+const goldTree = (x, y, s = 1) => tree(x, y, s, ['#5cb85c', '#4aa34e', '#7fd07a']).replace(/#ff6b6b/g, '#ffd34d');
+const sack = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-14 0 Q-18 -24 -6 -30 L6 -30 Q18 -24 14 0z" fill="#c9a26a" ${O()}/><path d="M-6 -30 l-2 -6 h16 l-2 6" fill="#c9a26a" ${O(1.6)}/></g>`;
+const shroom = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-3" y="-8" width="6" height="8" rx="2" fill="#fff" ${O(1.2)}/><path d="M-10 -8 Q0 -22 10 -8z" fill="#e2445c" ${O(1.4)}/><g fill="#fff"><circle cx="-4" cy="-13" r="1.6"/><circle cx="3" cy="-15" r="1.4"/></g></g>`;
+const nutPile = (x, y) => `<g transform="translate(${x} ${y})">${[[-6, 0], [0, -4], [6, 0]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="4" fill="#a8743f" ${O(1.2)}/>`).join('')}</g>`;
+const carrot = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-4 0 L0 18 L4 0z" fill="#ff9f43" ${O(1.4)}/><path d="M0 0 l-4 -6 M0 0 l0 -7 M0 0 l4 -6" stroke="#3aa860" stroke-width="2"/></g>`;
+const bell = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-8 6 Q-8 -8 0 -8 Q8 -8 8 6z" fill="#ffd34d" ${O(1.6)}/><circle cx="0" cy="8" r="2.4" fill="#ffd34d" ${O(1.2)}/></g>`;
+const fog = () => [0, 1, 2].map(i => `<g class="cloud" style="animation-duration:60s;animation-delay:-${i * 20}s"><ellipse cx="40" cy="${150 + i * 10}" rx="60" ry="8" fill="#e6ecff" opacity=".35"/></g>`).join('');
+const hollowTree = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-14 0 L-10 -90 L10 -90 L14 0z" fill="#7a5232" ${O()}/><ellipse cx="0" cy="-60" rx="6" ry="9" fill="#2a1f2a" ${O(1.4)}/><path d="M-30 -86 C-40 -110 -10 -130 0 -116 C14 -134 44 -116 32 -90 C26 -78 -24 -76 -30 -86z" fill="#2f5a5a" ${O()}/></g>`;
+
+// ---------- batch 3 scenes ----------
+const TINY = { shirt: '#3aa860' };
+Object.assign(SCENES, {
+  g7: [ // ჭინჭრაქა
+    () => BG.hut() + hearth(130, 168, 1) + A('granny', 20, 84, .9, { anim: 'nod' }) + A('king', 70, 80, .9, { crown: false, robe: '#6a7ab0', beard: '#f0f0f6' }),
+    () => BG.hut() + hearth(130, 168, 1) + A('granny', 20, 84, .9, { anim: 'laugh' }) + A('boy', 120, 138, .32, { ...TINY, anim: 'hop' }) + sparkle(130, 110) + sparkle(110, 120, .6),
+    () => BG.village() + A('sheep', 40, 140, .6, { anim: 'hop' }) + A('sheep', 90, 146, .55, { anim: 'hop', delay: .3 }) + A('boy', 140, 132, .36, { ...TINY, hold: 'stick', anim: 'bob' }) + A('cow', 10, 106, .55),
+    () => BG.mountain() + A('devi', 20, 20, .8, { angry: 1, anim: 'stomp' }) + A('horse', 110, 100, .6, { anim: 'nod' }) + pot(170, 166, .6),
+    () => BG.hut() + A('granny', 30, 84, .9, { anim: 'shiver' }) + A('boy', 120, 138, .34, { ...TINY, anim: 'laugh' }),
+    () => BG.night() + barn(120, 160) + A('horse', 40, 100, .6, { anim: 'nod' }) + A('boy', 70, 72, .26, { ...TINY, anim: 'bob' }),
+    () => BG.night() + A('devi', 10, 30, .8, { angry: 1, anim: 'roar' }) + `<g class="run" style="animation-duration:4s">${A('horse', 100, 100, .55, { anim: 'bob' })}${A('boy', 122, 76, .26, { ...TINY })}</g>`,
+    () => BG.room() + A('devi', 20, 40, .7, { closed: 1, anim: 'breathe' }) + zzz(70, 40) + pot(150, 170, .7) + A('boy', 150, 120, .3, { ...TINY, anim: 'walk' }),
+    () => BG.night() + A('devi', 10, 30, .8, { angry: 1, anim: 'stomp' }) + `<path d="M-300 160 L500 160 V200 H-300z" fill="#2f5a3a"/>` + tufts('#4a8a5a') + `<g class="shiver">${tufts('#5aa060')}</g>` + A('boy', 140, 150, .2, { ...TINY }),
+    () => BG.room() + sack(110, 170) + A('devi', 10, 40, .7, { anim: 'laugh' }) + zzz(150, 120),
+    () => BG.room() + sack(110, 170) + `<g transform="translate(96 160)">${['#9a9aa6', '#8a8a96', '#a8a8b6'].map((c, i) => `<circle cx="${i * 10}" cy="0" r="5" fill="${c}" ${O(1.2)}/>`).join('')}</g>` + A('boy', 140, 140, .3, { ...TINY, anim: 'hop' }) + A('devi', 0, 40, .62, { mouth: 'o', anim: 'shiver' }),
+    () => BG.village() + confetti() + A('horse', 10, 100, .6, { anim: 'bob' }) + pot(120, 170, .7) + A('boy', 150, 136, .32, { ...TINY, anim: 'dance' }) + A('sheep', 70, 150, .5, { anim: 'hop' }),
+    () => BG.hut() + hearth(150, 168, .9) + A('granny', 10, 84, .9, { anim: 'nod' }) + A('king', 56, 80, .9, { crown: false, robe: '#6a7ab0', beard: '#f0f0f6', anim: 'nod' }) + A('boy', 104, 140, .34, { ...TINY, anim: 'hop' }) + heart(60, 50) + heart(80, 40, .6),
+  ],
+  g8: [ // ოქროს ფრინველი
+    () => BG.palace() + goldTree(60, 156, 1.3) + A('king', 120, 80, .9, { anim: 'sad' }),
+    () => BG.night() + goldTree(110, 156, 1.3) + A('boy', 40, 96, .7, { shirt: '#4a7ab0', hat: '#6a4030', closed: 1, anim: 'breathe' }) + zzz(80, 80),
+    () => BG.night() + goldTree(110, 156, 1.3) + A('boy', 40, 96, .7, { shirt: '#5a9a5a', hat: '#3a3550', closed: 1, anim: 'breathe' }) + zzz(80, 80),
+    () => BG.night() + goldTree(110, 156, 1.3) + A('boy', 30, 92, .75, { shirt: '#e9784e', anim: 'shiver' }) + `<path d="M58 132 l6 -4 l2 6z" fill="#3a8a4a" ${O(1)}/>`,
+    () => BG.night() + goldTree(110, 156, 1.3) + `<g class="glow">${A('goldbird', 100, 50, 1.6, { anim: 'bob' })}</g>` + A('boy', 20, 92, .75, { shirt: '#e9784e', anim: 'throw' }) + `<path d="M90 110 q4 -8 10 -6 q-2 6 -10 6z" fill="#ffd34d" ${O(1)}/>`,
+    () => BG.palace() + A('king', 100, 80, .9, { anim: 'nod' }) + A('boy', 30, 90, .75, { shirt: '#e9784e', anim: 'bob' }) + `<path d="M70 120 q6 -14 16 -10 q-4 10 -16 10z" fill="#ffd34d" ${O(1.2)}/>` + sparkle(80, 104),
+    () => BG.village() + A('boy', 10, 96, .7, { shirt: '#4a7ab0', hat: '#6a4030', anim: 'dance' }) + A('boy', 50, 96, .7, { shirt: '#5a9a5a', hat: '#3a3550', anim: 'dance', delay: .3 }) + A('boy', 130, 92, .75, { shirt: '#e9784e', anim: 'walk' }) + confetti(),
+    () => BG.nightForest() + A('wolf', 70, 92, .9, { anim: 'nod' }) + A('boy', 20, 92, .75, { shirt: '#e9784e' }),
+    () => BG.palace() + `<rect x="120" y="110" width="40" height="44" rx="20" fill="none" stroke="#ffd34d" stroke-width="3"/>` + A('goldbird', 124, 124, 1.1, { anim: 'bob' }) + A('boy', 30, 92, .75, { shirt: '#e9784e', anim: 'walk' }) + A('wolf', 0, 112, .6),
+    () => BG.day() + A('goldbird', 110, 60, 1.6, { anim: 'nod' }) + A('boy', 30, 90, .8, { shirt: '#e9784e', anim: 'nod' }) + heart(100, 50),
+    () => BG.palace() + A('king', 90, 80, .9, { anim: 'laugh' }) + A('boy', 40, 90, .75, { shirt: '#e9784e', anim: 'hop' }) + A('goldbird', 150, 70, 1, { anim: 'bob' }) + A('wolf', 150, 116, .55),
+    () => BG.palace() + goldTree(150, 156, 1.2) + A('goldbird', 136, 60, 1.1, { anim: 'bob' }) + notes(110, 50) + A('king', 30, 82, .85) + A('boy', 80, 92, .7, { shirt: '#e9784e', anim: 'dance' }),
+  ],
+  s5: [ // ზღვის ნანა
+    () => BG.dusk() + sea() + lighthouse(170, 142, .8) + boat(80, 140, .9),
+    () => BG.dusk() + sea() + `<g class="rise" style="animation-direction:reverse;animation-duration:10s"><circle cx="100" cy="138" r="24" fill="#ff9f43" ${O(2)}/></g>` + boat(60, 140, .7),
+    () => BG.night() + sea() + `<g class="sway" style="animation-duration:4s">${boat(90, 140, .9)}</g>`,
+    () => BG.night() + sea() + boat(50, 140, .7) + `<g class="hop" style="animation-duration:2.6s">${A('dolphin', 110, 130, .9)}</g>`,
+    () => BG.night() + sea() + boat(150, 140, .6) + A('tortoise', 40, 156, .7, { closed: 1, anim: 'breathe' }),
+    () => BG.night(true) + sea() + [0, 1, 2, 3].map(i => A('fish', 50 + i * 24, 166 + (i % 2) * 8, .8, { closed: i > 1, anim: 'bob', delay: i * .3 })).join(''),
+    () => BG.night() + sea() + boat(100, 140, 1) + A('gull', 92, 80, .8, { anim: 'bob' }),
+    () => BG.night(true) + sea() + moonFace(100, 50, 22) + `<path d="M100 140 L80 200 H120z" fill="#ffe9a8" opacity=".25"/>` + boat(100, 150, .7),
+    () => BG.night() + sea() + windLines() + `<g class="sway" style="animation-duration:5s">${boat(100, 140, .9)}</g>`,
+    () => BG.night() + sea() + lighthouse(150, 142, 1) + boat(70, 140, .7),
+    () => BG.night(true) + sea() + moonFace(150, 40, 16) + `<g class="sway" style="animation-duration:6s">${boat(80, 140, .9)}</g>` + A('gull', 72, 82, .6, { closed: 1 }) + zzz(110, 100),
+    () => BG.night(true) + sea() + starsField(14) + `<g class="sway" style="animation-duration:6s">${boat(100, 140, 1)}</g>`,
+    () => BG.night(true) + sea() + moonFace(100, 60, 26) + windLines(),
+    () => BG.room() + bed() + A('boy', 60, 86, .8, { closed: 1, anim: 'breathe' }) + blanket() + `<g transform="translate(132 30) scale(.4)">${boat(0, 40, 1)}</g>`,
+  ],
+  s6: [ // ტყის ღამე
+    () => BG.nightForest() + fog() + windLines(),
+    () => BG.nightForest() + hollowTree(100, 170, 1) + A('owl', 86, 74, .9, { anim: 'nod' }),
+    () => BG.nightForest() + hollowTree(80, 170, 1) + A('squirrel', 70, 80, .7, { closed: 1, anim: 'breathe' }) + `<g class="flutter" style="animation-duration:14s">${A('owl', 140, 40, .6)}</g>`,
+    () => BG.nightForest() + A('hedgehog', 70, 140, 1, { closed: 1, anim: 'breathe' }) + leaves(4),
+    () => BG.night(true) + water() + A('deer', 20, 98, 1, { antlers: 0, anim: 'nod' }) + A('deer', 100, 118, .6, { closed: 1, anim: 'breathe' }),
+    () => BG.nightForest() + fireflies() + fireflies().replace(/cx="(\d+)"/g, (m, v) => `cx="${(+v + 40) % 200}"`),
+    () => BG.nightForest() + `<path d="M120 170 Q110 120 150 110 Q190 120 180 170z" fill="#2a1f2a" ${O()}/>` + A('bear', 128, 120, .7, { fur: '#7a5232', belly: '#b8875a', closed: 1, anim: 'breathe' }) + zzz(170, 110) + A('owl', 40, 60, .8, { anim: 'laugh' }),
+    () => BG.nightForest() + fog() + fog() + flowers() + shroom(60, 170, 1.4) + shroom(130, 176, 1.2),
+    () => BG.nightForest() + hollowTree(160, 170, 1.2) + A('owl', 146, 46, .8, { anim: 'nod' }) + `<g class="appear" style="animation-direction:reverse;animation-duration:6s">${fireflies()}</g>`,
+    () => BG.nightForest() + `<g class="sway" style="animation-duration:6s">${tree(60, 160, 1, ['#2f5a5a', '#386a66', '#284e50'])}${tree(140, 162, 1.1, ['#2f5a5a', '#386a66', '#284e50'])}</g>` + windLines(),
+    () => BG.nightForest() + starsField(10) + `<ellipse cx="100" cy="176" rx="60" ry="10" fill="#3a8a5a" ${O(1.6)}/>` + A('boy', 70, 140, .6, { closed: 1, anim: 'breathe' }) + A('owl', 150, 60, .6),
+    () => BG.night(true) + moonFace(100, 60, 24) + starsField(14) + fog(),
+    () => BG.nightForest() + hollowTree(100, 170, 1) + A('owl', 86, 74, .9, { closed: 1, anim: 'breathe' }) + zzz(120, 70),
+    () => BG.room() + bed() + A('boy', 60, 86, .8, { closed: 1, anim: 'breathe' }) + blanket() + A('owl', 140, 30, .5, { closed: 1 }),
+  ],
+  w4: [ // ოქროს კვერცხი
+    () => BG.village() + A('granny', 20, 84, .85, { anim: 'nod' }) + A('king', 64, 80, .85, { crown: false, robe: '#6a7ab0', beard: '#f0f0f6' }) + A('hen', 130, 130, 1.1, { anim: 'bob' }),
+    () => BG.hut() + nest(110, 160) + A('hen', 90, 126, 1.2, { anim: 'nod' }) + goldEgg(110, 150) + sparkle(130, 130),
+    () => BG.hut() + table(100, 160) + goldEgg(100, 148) + A('king', 30, 80, .9, { crown: false, robe: '#6a7ab0', beard: '#f0f0f6', hold: 'stick', anim: 'poke' }),
+    () => BG.hut() + table(100, 160) + goldEgg(100, 148) + A('granny', 30, 84, .9, { anim: 'shiver' }),
+    () => BG.hut() + table(100, 160) + crackedEgg(100, 150) + A('mouse', 120, 140, .9, { anim: 'run' }),
+    () => BG.hut() + A('granny', 20, 84, .85, { sad: 1, anim: 'sad' }) + A('king', 64, 80, .85, { crown: false, robe: '#6a7ab0', beard: '#f0f0f6', anim: 'sad' }) + A('hen', 130, 130, 1.1, { anim: 'nod' }),
+    () => BG.village() + A('hen', 80, 118, 1.4, { anim: 'laugh' }) + heart(130, 90),
+    () => BG.hut() + table(100, 160) + friedEgg(96, 152) + bread(120, 154) + A('granny', 10, 84, .85, { anim: 'bob' }) + A('king', 140, 80, .85, { crown: false, robe: '#6a7ab0', beard: '#f0f0f6', anim: 'laugh' }) + A('mouse', 60, 150, .6, { anim: 'hop' }) + A('hen', 70, 120, .7),
+    () => BG.dusk() + A('hen', 50, 120, 1.2, { closed: 1, anim: 'breathe' }) + A('mouse', 120, 146, .7, { closed: 1 }) + zzz(110, 110),
+  ],
+  w5: [ // ჯეკი და ლობიოს ღერო
+    () => BG.village() + A('mom', 20, 84, .85, { anim: 'nod' }) + A('boy', 70, 92, .75, { shirt: '#4a7ab0', anim: 'bob' }) + A('cow', 110, 104, .7),
+    () => BG.day() + A('boy', 20, 92, .75, { shirt: '#4a7ab0' }) + A('cow', 50, 100, .6) + A('king', 130, 80, .85, { crown: false, robe: '#7a5a9a', beard: '#f0f0f6', anim: 'nod' }) + `<g transform="translate(110 132)">${[0, 1, 2].map(i => `<ellipse cx="${i * 6}" cy="0" rx="3" ry="2.2" fill="#a07ae0" ${O(1)}/>`).join('')}</g>` + sparkle(120, 124),
+    () => BG.hut() + A('mom', 30, 82, .95, { frown: 1, anim: 'shiver' }) + A('boy', 110, 92, .75, { shirt: '#4a7ab0', sad: 1 }),
+    () => BG.day() + house(50, 152, .8) + beanstalk(130, 200),
+    () => BG.day() + cloud(40, 0, 1.4) + beanstalk(80, 200) + A('boy', 86, 100, .5, { shirt: '#4a7ab0', anim: 'bob' }) + cloudCastle(150, 70, .7),
+    () => BG.room() + A('devi', 30, 20, .9, { angry: 1, anim: 'roar' }) + `<rect x="150" y="130" width="40" height="40" rx="6" fill="#5a4a6a" ${O()}/>` + A('boy', 156, 136, .3, { shirt: '#4a7ab0', anim: 'shiver' }),
+    () => BG.room() + A('devi', 20, 30, .8, { closed: 1, anim: 'breathe' }) + zzz(70, 30) + A('goose', 130, 130, 1.2, { gold: 1, anim: 'nod' }) + goldEgg(170, 166),
+    () => BG.day() + cloudCastle(50, 70, .6) + A('devi', 0, 10, .45, { angry: 1, anim: 'roar' }) + beanstalk(130, 200) + A('boy', 122, 120, .45, { shirt: '#4a7ab0', anim: 'bob' }) + A('goose', 150, 110, .7, { gold: 1 }),
+    () => BG.day() + house(50, 152, .8) + `<g class="sway">${beanstalk(140, 160)}</g>` + A('boy', 100, 96, .75, { shirt: '#4a7ab0', hold: 'axe', anim: 'poke' }) + A('mom', 10, 90, .7, { anim: 'shiver' }),
+    () => BG.village() + confetti() + A('mom', 20, 84, .85, { anim: 'dance' }) + A('boy', 70, 92, .75, { shirt: '#4a7ab0', anim: 'dance' }) + A('goose', 130, 130, 1, { gold: 1 }) + goldEgg(170, 166),
+    () => BG.dusk() + cloud(40, 10, 1.4) + A('boy', 70, 92, .8, { shirt: '#4a7ab0', anim: 'nod' }) + sparkle(130, 50),
+  ],
+  a9: [ // ზღარბი და სოკოები
+    () => BG.day() + tree(160, 156, 1) + shroom(40, 170, 1.4) + shroom(150, 176, 1.2) + A('hedgehog', 70, 142, 1, { shrooms: 1, anim: 'walk' }),
+    () => BG.day() + tree(150, 156, 1) + A('squirrel', 130, 110, 1, { anim: 'sad' }) + A('hedgehog', 40, 140, 1, { shrooms: 1, anim: 'nod' }),
+    () => BG.day() + A('hare', 110, 90, .9, { anim: 'sad' }) + A('hedgehog', 30, 140, 1, { shrooms: 1, anim: 'nod' }),
+    () => BG.day() + A('mouse', 120, 150, 1, { anim: 'sad' }) + A('mouse', 150, 160, .6, { anim: 'hop' }) + A('hedgehog', 30, 140, 1, { shrooms: 1, anim: 'nod' }),
+    () => BG.hut() + A('hedgehog', 70, 150, 1.1, { anim: 'sad' }),
+    () => BG.hut() + nutPile(30, 170) + carrot(70, 150) + A('squirrel', 10, 130, .9, { anim: 'hop' }) + A('hare', 90, 98, .8, { anim: 'hop' }) + A('mouse', 150, 156, .8, { anim: 'hop' }),
+    () => BG.hut() + table(100, 166) + A('hedgehog', 20, 148, .9, { anim: 'laugh' }) + A('squirrel', 90, 128, .7) + A('mouse', 150, 156, .7) + heart(100, 110),
+  ],
+  a10: [ // თაგვები და კატა
+    () => BG.room() + A('cat', 110, 132, 1.2, { anim: 'nod' }) + A('mouse', 20, 160, .9, { anim: 'shiver' }),
+    () => BG.night(true) + [0, 1, 2, 3].map(i => A('mouse', 20 + i * 40, 150 + (i % 2) * 8, .9, { anim: 'nod', delay: i * .3 })).join(''),
+    () => BG.night(true) + A('mouse', 80, 140, 1.3, { anim: 'hop' }) + bell(140, 110) + notes(150, 90),
+    () => BG.night(true) + confetti() + [0, 1, 2, 3].map(i => A('mouse', 20 + i * 40, 150, .9, { anim: 'dance', delay: i * .2 })).join(''),
+    () => BG.night(true) + A('mouse', 80, 140, 1.4, { anim: 'nod' }) + bulb(150, 60),
+    () => BG.room() + table(140, 170) + A('mouse', 140, 176, .6, { anim: 'shiver' }) + A('mouse', 20, 160, .8, { anim: 'run' }) + A('mouse', 70, 156, .8, { anim: 'shiver' }),
+    () => BG.room() + A('cat', 110, 132, 1.1, { closed: 1, bell: 1, anim: 'breathe' }) + A('mouse', 30, 156, 1, { anim: 'laugh' }) + zzz(160, 120),
+  ],
+});
+
 // one scene as SVG; slabs above and below continue the sky and ground beyond the frame
 function sceneSvg(id, i) {
   const body = SCENES[id][i]();
@@ -1024,7 +1200,6 @@ const LOCKED_ART = {
   l4: () => coverSky('#5a4aa0', '#f0a0b0') + coverHills('#7a5a9a', '#6a4a8a') + sunFace(100, 60) + `<g transform="translate(130 96)"><rect x="0" y="16" width="34" height="60" fill="#f4ecdc" ${O()}/><path d="M-4 18 L17 -8 L38 18z" fill="#d2523e" ${O()}/><rect x="11" y="32" width="12" height="16" rx="6" fill="#ffd98a" ${O(1.6)}/></g>` + A('mom', 30, 90, .8, { princess: 1, dress: '#ffb347' }),
   w1: () => coverSky('#1d2a6a', '#5a6ab0') + coverHills('#4a5a9a', '#3a4a8a') + starsField(8) + castle(110, 150, .7) + `<path d="M40 160 q10 -12 26 -4 l-4 8 h-22z" fill="#d9ecff" ${O(1.6)}/>`,
   w2: () => coverSky('#6cc4ff', '#d6f3ff') + coverHills('#5cb85c', '#4aa34e') + tree(40, 160, .9) + tree(170, 160, .8) + A('mom', 70, 90, .85, { dress: '#e2445c' }) + A('wolf', 120, 110, .55),
-  w4: () => coverSky('#3a2f6a', '#6a5aa0') + coverHills('#4e4290', '#3e3270') + bigMoon(150, 44) + `<g transform="translate(60 80)"><ellipse cx="40" cy="40" rx="34" ry="24" fill="#ffd34d" ${O()}/><path d="M24 20 q16 -20 32 0" fill="#ff9f43" ${O()}/>${eye(30, 38, false, 4)}${eye(50, 38, false, 4)}</g>`,
 };
 
 const TALES = [
@@ -1034,14 +1209,19 @@ const TALES = [
   { id: 'g4', title: 'ხუთკუნჭულა', cat: 'ge' },
   { id: 'g5', title: 'მზეთუნახავი', cat: 'ge' },
   { id: 'g6', title: 'მელია და მწყერი', cat: 'ge' },
+  { id: 'g7', title: 'ჭინჭრაქა', cat: 'ge' },
+  { id: 'g8', title: 'ოქროს ფრინველი', cat: 'ge' },
   { id: 's1', title: 'მთვარის სტუმრობა', cat: 'sleep', free: true },
   { id: 's2', title: 'პატარა ღრუბლის მოგზაურობა', cat: 'sleep' },
   { id: 's3', title: 'ძილის მატარებელი', cat: 'sleep' },
   { id: 's4', title: 'ვარსკვლავების თვლა', cat: 'sleep' },
+  { id: 's5', title: 'ზღვის ნანა', cat: 'sleep' },
+  { id: 's6', title: 'ტყის ღამე', cat: 'sleep' },
   { id: 'w1', title: 'კონკია', cat: 'world' },
   { id: 'w2', title: 'წითელქუდა', cat: 'world' },
   { id: 'w3', title: 'სამი გოჭი', cat: 'world' },
-  { id: 'w4', title: 'ოქროს ქათამი', cat: 'world' },
+  { id: 'w4', title: 'ოქროს კვერცხი', cat: 'world' },
+  { id: 'w5', title: 'ჯეკი და ლობიოს ღერო', cat: 'world' },
   { id: 't1', title: 'კურდღელი და კუ', cat: 'short', free: true },
   { id: 't2', title: 'მელა და წერო', cat: 'short', free: true },
   { id: 't3', title: 'დათუნიას ძილი', cat: 'short' },
@@ -1050,6 +1230,8 @@ const TALES = [
   { id: 'a6', title: 'ყვავი და მელია', cat: 'short' },
   { id: 'a7', title: 'მზე და ქარი', cat: 'short' },
   { id: 'a8', title: 'ჭიანჭველა და მტრედი', cat: 'short' },
+  { id: 'a9', title: 'ზღარბი და სოკოები', cat: 'short' },
+  { id: 'a10', title: 'თაგვები და კატა', cat: 'short' },
 ];
 const SHELVES = [
   { cat: 'ge', title: 'ქართული ხალხური ზღაპრები', note: '3–6 წუთი' },
@@ -1074,6 +1256,8 @@ let testMode = store.get('test', true);
 const open_ = t => ready(t) && (t.free || testMode);
 const listened = store.get('listened', {});
 const positions = store.get('pos', {});
+const favs = store.get('favs', {});
+let paintCat = store.get('paintCat', 'all');
 let sleepMin = store.get('sleepMin', 0), sleepAt = 0;
 
 // ---------- mode: cartoon by day, bedtime at night ----------
@@ -1101,8 +1285,11 @@ function renderShelves() {
   $('testPill').hidden = !testMode;
   $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === tab));
   if (tab === 'paint') {
+    const cats = [['all', 'ყველა'], ['girls', 'გოგონებისთვის'], ['boys', 'ბიჭებისთვის'], ['tales', 'ზღაპრის გმირები']];
+    const shown = PAGES.filter(pg => paintCat === 'all' || pg.cat === paintCat);
     $('shelves').innerHTML = `<div class="shelf-head"><h2>გაფერადება</h2><small>${PAGES.length} სურათი</small></div>
-      <div class="grid">${PAGES.map(pg => `
+      <div class="chips">${cats.map(([k, label]) => `<button class="chip" data-pcat="${k}" aria-pressed="${k === paintCat}">${label}</button>`).join('')}</div>
+      <div class="grid">${shown.map(pg => `
         <button class="tile page ${pg.free || testMode ? '' : 'locked'}" data-page="${pg.id}" aria-label="${pg.title}">
           <div class="art">${pageThumb(pg)}</div>
           ${pg.free ? '<span class="badge free">უფასო</span>' : testMode ? '' : `<span class="badge">${LOCK}</span>`}
@@ -1112,7 +1299,10 @@ function renderShelves() {
   }
   const sh = SHELVES.find(x => x.cat === tab);
   const list = TALES.filter(t => t.cat === tab);
-  $('shelves').innerHTML = `<div class="shelf-head"><h2>${sh.title}</h2><small>${list.filter(ready).length} ზღაპარი · ${sh.note}</small></div>
+  const strip = (title, items) => items.length ? `<div class="strip"><h3>${title}</h3><div class="strip-row">${items.map(t => `<button class="mini" data-id="${t.id}" aria-label="${t.title}"><div class="art">${cover(t)}</div><span>${t.title}</span></button>`).join('')}</div></div>` : '';
+  const going = TALES.filter(t => open_(t) && positions[t.id] > 8);
+  const loved = TALES.filter(t => open_(t) && favs[t.id]);
+  $('shelves').innerHTML = strip('გააგრძელე მოსმენა', going) + strip('რჩეული', loved) + `<div class="shelf-head"><h2>${sh.title}</h2><small>${list.filter(ready).length} ზღაპარი · ${sh.note}</small></div>
       <div class="grid">${list.map(t => `
         <button class="tile ${open_(t) ? '' : 'locked'}" data-id="${t.id}" aria-label="${t.title}">
           <div class="art">${cover(t)}</div>
@@ -1122,12 +1312,81 @@ function renderShelves() {
         </button>`).join('')}</div>`;
 }
 $('shelves').addEventListener('click', e => {
-  const tile = e.target.closest('.tile'); if (!tile) return;
+  const chip = e.target.closest('[data-pcat]'); if (chip) { paintCat = chip.dataset.pcat; store.set('paintCat', paintCat); return renderShelves(); }
+  const tile = e.target.closest('.tile, .mini'); if (!tile) return;
   if (tile.dataset.page) { const pg = PAGES.find(x => x.id === tile.dataset.page); return pg.free || testMode ? openPage(pg) : gate(paywall); }
   const t = TALES.find(x => x.id === tile.dataset.id);
   if (!ready(t)) return toast('ეს ზღაპარი მალე დაემატება');
   open_(t) ? openPlayer(t) : gate(paywall);
 });
+
+// ---------- colouring pictures beyond the tales: for girls and for boys ----------
+const wheel = (x, y, r = 12) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#3a3550" ${O()}/><circle cx="${x}" cy="${y}" r="${r * .45}" fill="#c9cfe0" ${O(1.6)}/>`;
+const face = (x, y, r = 14) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${SKIN}" ${O()}/>${eye(x - r * .38, y - r * .05, false, r * .26)}${eye(x + r * .38, y - r * .05, false, r * .26)}<path d="M${x - r * .3} ${y + r * .4} q${r * .3} ${r * .3} ${r * .6} 0" ${O(1.6)} fill="none"/>${blush(x - r * .6, y + r * .3, r * .2)}${blush(x + r * .6, y + r * .3, r * .2)}`;
+const ART = {
+  // girls
+  doll: () => `<path d="M10 -6 q-10 10 -6 28 q6 -6 8 -18z M50 -6 q10 10 6 28 q-6 -6 -8 -18z" fill="#a8743f" ${O()}/>
+    <path d="M-10 110 Q30 60 70 110z" fill="#ff9fd0" ${O()}/><path d="M0 104 q10 -8 20 0 q10 -8 20 0 q10 -8 20 0" fill="none" ${O(1.8)}/><path d="M14 56 L46 56 L52 80 L8 80z" fill="#ff9fd0" ${O()}/>
+    <circle cx="30" cy="66" r="3" fill="#fff" ${O(1.2)}/><rect x="18" y="108" width="8" height="16" rx="3" fill="${SKIN}" ${O(1.6)}/><rect x="34" y="108" width="8" height="16" rx="3" fill="${SKIN}" ${O(1.6)}/>
+    <ellipse cx="20" cy="126" rx="8" ry="4" fill="#e2445c" ${O(1.6)}/><ellipse cx="40" cy="126" rx="8" ry="4" fill="#e2445c" ${O(1.6)}/>
+    ${face(30, 26, 22)}<path d="M8 22 Q8 0 30 0 Q52 0 52 22 Q44 8 30 10 Q16 8 8 22z" fill="#a8743f" ${O()}/><path d="M22 -2 l-10 -8 l0 14z M38 -2 l10 -8 l0 14z" fill="#ff5a6e" ${O(1.6)}/><circle cx="30" cy="-2" r="4" fill="#ff5a6e" ${O(1.4)}/>`,
+  ballerina: () => `<path d="M-6 64 Q30 44 66 64 Q30 80 -6 64z" fill="#ffb3c3" ${O()}/><path d="M18 34 L42 34 L40 60 L20 60z" fill="#ffb3c3" ${O()}/>
+    <path d="M18 38 L-4 18 M42 38 L64 18" stroke="${INK}" stroke-width="7" stroke-linecap="round"/><path d="M18 38 L-4 18 M42 38 L64 18" stroke="${SKIN}" stroke-width="4" stroke-linecap="round"/>
+    <path d="M24 68 L18 110 M36 68 L50 100" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><path d="M24 68 L18 110 M36 68 L50 100" stroke="${SKIN}" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="18" cy="112" rx="6" ry="3.4" fill="#ff7f9a" ${O(1.4)}/><ellipse cx="52" cy="102" rx="6" ry="3.4" fill="#ff7f9a" ${O(1.4)}/>
+    ${face(30, 16, 15)}<path d="M15 12 Q16 -2 30 -2 Q44 -2 45 12 Q38 4 30 5 Q22 4 15 12z" fill="#3a2a1a" ${O()}/><circle cx="30" cy="-6" r="6" fill="#3a2a1a" ${O()}/>`,
+  unicorn: () => C.horse({ coat: '#fff', mane: '#ff9fd0' }) + `<path d="M80 2 L88 -22 L84 4z" fill="#ffd34d" ${O(1.6)}/><path d="M82 -4 l4 -2 M83 -12 l3 -1.4" ${O(1.2)}/>${sparkle(100, -10, 0, '#ffd34d', 6)}`,
+  kitten: () => C.cat({ bell: 1 }) + `<path d="M48 0 l-6 -6 v12z M56 0 l6 -6 v12z" fill="#ff7f9a" ${O(1.4)}/>`,
+  butterfly: () => `<path d="M50 50 C10 -10 -20 30 20 56 C-10 80 20 110 50 70z" fill="#ff9fd0" ${O()}/><path d="M50 50 C90 -10 120 30 80 56 C110 80 80 110 50 70z" fill="#ff9fd0" ${O()}/>
+    <circle cx="24" cy="36" r="8" fill="#ffd34d" ${O(1.6)}/><circle cx="76" cy="36" r="8" fill="#ffd34d" ${O(1.6)}/><circle cx="28" cy="80" r="6" fill="#7ab8f0" ${O(1.6)}/><circle cx="72" cy="80" r="6" fill="#7ab8f0" ${O(1.6)}/>
+    <ellipse cx="50" cy="60" rx="6" ry="24" fill="#a07ae0" ${O()}/><circle cx="50" cy="32" r="8" fill="#a07ae0" ${O()}/><path d="M46 26 q-6 -14 -12 -14 M54 26 q6 -14 12 -14" ${O(1.6)} fill="none"/>${eye(47, 31, false, 2)}${eye(53, 31, false, 2)}`,
+  cupcake: () => `<path d="M10 60 L20 110 H80 L90 60z" fill="#ff9fd0" ${O()}/><path d="M24 64 L30 108 M40 64 L42 108 M58 64 L56 108 M74 64 L70 108" ${O(1.6)}/>
+    <path d="M4 62 Q0 40 20 38 Q24 16 50 18 Q76 16 80 38 Q100 40 96 62z" fill="#fff6dc" ${O()}/><path d="M30 30 q20 -8 40 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="50" cy="10" r="9" fill="#e2445c" ${O()}/><path d="M50 2 q4 -8 10 -8" ${O(1.6)} fill="none"/>${[[24, 48], [40, 34], [62, 44], [76, 54], [36, 54]].map(([x, y]) => `<rect x="${x}" y="${y}" width="6" height="3" rx="1.4" fill="#7ab8f0" ${O(1)}/>`).join('')}`,
+  flowerpot: () => `<path d="M24 90 L30 130 H70 L76 90z" fill="#d98b52" ${O()}/><rect x="18" y="82" width="64" height="12" rx="3" fill="#e0a45a" ${O()}/>
+    <path d="M50 82 V40 M50 70 Q30 64 26 50 M50 60 Q70 54 74 40" ${O(2.4)} fill="none"/><path d="M26 50 q-10 4 -12 -6 q10 -6 12 6z M74 40 q10 4 12 -6 q-10 -6 -12 6z" fill="#8fd07a" ${O(1.6)}/>
+    ${[0, 60, 120, 180, 240, 300].map(a => `<ellipse cx="${50 + Math.cos(a * Math.PI / 180) * 14}" cy="${30 + Math.sin(a * Math.PI / 180) * 14}" rx="10" ry="7" fill="#ff7f9a" transform="rotate(${a} ${50 + Math.cos(a * Math.PI / 180) * 14} ${30 + Math.sin(a * Math.PI / 180) * 14})" ${O(1.6)}/>`).join('')}<circle cx="50" cy="30" r="9" fill="#ffd34d" ${O()}/>`,
+  balloons: () => [[30, 30, '#ff5a6e'], [64, 20, '#ffd34d'], [52, 54, '#7ab8f0']].map(([x, y, c]) => `<path d="M${x} ${y + 22} Q${x - 4} ${y + 60} 50 140" ${O(1.4)} fill="none"/><path d="M${x} ${y + 22} C${x - 30} ${y + 10} ${x - 22} ${y - 26} ${x} ${y - 24} C${x + 22} ${y - 26} ${x + 30} ${y + 10} ${x} ${y + 22}z" fill="${c}" ${O()}/><path d="M${x - 10} ${y - 10} q2 -6 8 -8" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/>`).join('') + `<path d="M40 140 l10 -4 l10 4 l-10 6z" fill="#ff9fd0" ${O(1.4)}/>`,
+  princessCastle: () => castle(0, 0, 1),
+  mermaid: () => `<path d="M24 70 Q10 110 30 130 Q16 140 6 150 Q26 152 36 140 Q46 152 66 150 Q56 140 42 130 Q60 110 44 70z" fill="#3aa860" ${O()}/><path d="M28 90 q6 4 12 0 M26 104 q8 4 16 0" ${O(1.4)} fill="none"/>
+    <path d="M20 50 Q34 40 48 50 L46 72 L22 72z" fill="${SKIN}" ${O()}/><path d="M22 54 q6 -6 12 0 q6 -6 12 0 q-2 8 -12 6 q-10 2 -12 -6z" fill="#a07ae0" ${O(1.6)}/>
+    <path d="M14 18 Q8 50 16 74 Q18 50 20 30z M54 18 Q60 50 52 74 Q50 50 48 30z" fill="#ff9f43" ${O()}/>${face(34, 24, 18)}<path d="M16 22 Q16 2 34 2 Q52 2 52 22 Q44 10 34 12 Q24 10 16 22z" fill="#ff9f43" ${O()}/>${sparkle(64, 10, 0, '#ffd34d', 6)}`,
+  teddy: () => C.bear({}) + `<path d="M16 46 l-8 -6 v12z M32 46 l8 -6 v12z" fill="#ff7f9a" ${O(1.4)}/><circle cx="24" cy="46" r="3" fill="#ff7f9a" ${O(1.2)}/>`,
+  dress: () => `<path d="M40 0 q0 -10 10 -10 q10 0 10 8" ${O(2)} fill="none"/><path d="M10 6 H90" ${O(2.4)}/><path d="M30 6 L36 30 L22 110 Q50 124 78 110 L64 30 L70 6 Q50 18 30 6z" fill="#a07ae0" ${O()}/>
+    <path d="M36 30 h28" ${O(1.8)}/>${[[40, 60], [58, 74], [44, 90], [62, 98], [32, 100]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6" fill="#ffd34d" ${O(1.2)}/>`).join('')}<path d="M42 30 l8 6 l8 -6" fill="#ff9fd0" ${O(1.4)}/>`,
+  icecream: () => `<path d="M24 60 L50 140 L76 60z" fill="#e0a45a" ${O()}/><path d="M30 76 l36 0 M36 94 l26 0 M40 110 l18 0 M34 64 l24 60 M64 64 l-22 64" ${O(1.4)}/>
+    <circle cx="36" cy="52" r="18" fill="#ff9fd0" ${O()}/><circle cx="64" cy="52" r="18" fill="#fff6dc" ${O()}/><circle cx="50" cy="30" r="18" fill="#8fd07a" ${O()}/><circle cx="50" cy="8" r="7" fill="#e2445c" ${O()}/>`,
+  // boys
+  car: () => `<path d="M0 60 Q0 44 14 42 L32 20 H84 L104 42 Q120 44 120 60 V72 H0z" fill="#ff5a6e" ${O()}/><path d="M38 26 H60 V42 H26z M66 26 H82 L96 42 H66z" fill="#d6ecff" ${O(1.8)}/><rect x="104" y="50" width="12" height="7" rx="2" fill="#ffe9a8" ${O(1.4)}/>${wheel(28, 72, 14)}${wheel(92, 72, 14)}`,
+  truck: () => `<rect x="0" y="10" width="80" height="56" rx="4" fill="#ff9f43" ${O()}/><path d="M80 24 H104 L122 46 V66 H80z" fill="#4a7ab0" ${O()}/><path d="M86 30 H102 L114 44 H86z" fill="#d6ecff" ${O(1.6)}/><path d="M10 22 H70 M10 38 H70 M10 54 H70" ${O(1.4)}/>${wheel(22, 70, 13)}${wheel(58, 70, 13)}${wheel(102, 70, 13)}`,
+  firetruck: () => `<rect x="0" y="20" width="96" height="46" rx="4" fill="#e2445c" ${O()}/><path d="M96 28 H116 L128 46 V66 H96z" fill="#e2445c" ${O()}/><path d="M100 34 H114 L122 46 H100z" fill="#d6ecff" ${O(1.6)}/><path d="M10 10 L86 -4 M14 18 L90 4 M24 8 v8 M44 4 v8 M64 0 v8" ${O(2.2)}/><rect x="106" y="12" width="12" height="8" rx="2" fill="#7ab8f0" ${O(1.4)}/><rect x="10" y="34" width="30" height="20" rx="3" fill="#fff" ${O(1.6)}/>${wheel(24, 70, 13)}${wheel(70, 70, 13)}${wheel(110, 70, 13)}`,
+  racecar: () => `<path d="M0 50 L20 36 H60 L74 24 H96 L104 36 H130 L136 56 H0z" fill="#3aa860" ${O()}/><circle cx="66" cy="44" r="10" fill="#fff" ${O(1.6)}/><text x="66" y="48" text-anchor="middle" font-size="12" font-weight="700" fill="${INK}">1</text><path d="M80 28 H94 L98 36 H80z" fill="#d6ecff" ${O(1.4)}/><path d="M118 36 L130 22 H138" ${O(2.4)} fill="none"/>${wheel(24, 58, 14)}${wheel(110, 58, 14)}`,
+  rocket: () => `<path d="M40 0 Q70 30 66 90 H14 Q10 30 40 0z" fill="#f4f4fa" ${O()}/><path d="M14 70 L-6 100 L14 96z M66 70 L86 100 L66 96z" fill="#e2445c" ${O()}/><circle cx="40" cy="44" r="12" fill="#7ab8f0" ${O()}/><path d="M24 90 L30 104 H50 L56 90z" fill="#9a9aa6" ${O()}/>
+    <path d="M30 104 Q40 140 50 104z" fill="#ff9f43" ${O()}/><path d="M35 104 Q40 124 45 104z" fill="#ffd34d" ${O(1.4)}/><path d="M28 16 Q40 6 52 16" fill="#e2445c" ${O(1.6)}/>${sparkle(90, 20, 0, '#ffd34d', 6)}${sparkle(-10, 40, .5, '#ffd34d', 5)}`,
+  plane: () => `<path d="M0 40 Q0 28 20 28 H110 Q130 30 134 40 Q130 50 110 52 H20 Q0 52 0 40z" fill="#7ab8f0" ${O()}/><path d="M50 30 L76 -6 H90 L76 30z M50 50 L76 86 H90 L76 50z" fill="#4a6ad0" ${O()}/><path d="M6 30 L-4 6 H8 L22 30z" fill="#4a6ad0" ${O()}/>
+    ${[40, 56, 72, 88, 104].map(x => `<circle cx="${x}" cy="38" r="4" fill="#fff" ${O(1.4)}/>`).join('')}<path d="M116 32 Q130 34 132 40 H116z" fill="#d6ecff" ${O(1.4)}/>`,
+  tractor: () => `<rect x="20" y="20" width="44" height="40" rx="4" fill="#3aa860" ${O()}/><path d="M28 26 H56 V44 H28z" fill="#d6ecff" ${O(1.6)}/><path d="M64 36 H112 V64 H64z" fill="#3aa860" ${O()}/><rect x="90" y="16" width="8" height="20" fill="#3a3550" ${O(1.6)}/>${wheel(36, 68, 26)}${wheel(98, 76, 14)}`,
+  dino: () => `<path d="M10 90 Q-6 70 6 50 Q30 60 40 70z" fill="#8fd07a" ${O()}/><ellipse cx="60" cy="72" rx="40" ry="26" fill="#8fd07a" ${O()}/><path d="M86 56 Q96 20 110 10 Q132 6 134 24 Q130 34 116 32 Q108 50 100 64z" fill="#8fd07a" ${O()}/>
+    ${[30, 46, 62, 78].map((x, i) => `<path d="M${x} ${48 - (i % 2) * 2} l8 -14 l8 14z" fill="#ffd34d" ${O(1.6)}/>`).join('')}<rect x="38" y="90" width="14" height="26" rx="6" fill="#8fd07a" ${O()}/><rect x="72" y="90" width="14" height="26" rx="6" fill="#8fd07a" ${O()}/>
+    <ellipse cx="60" cy="80" rx="24" ry="12" fill="#d6f0c4"/>${eye(118, 18, false, 4)}<path d="M120 28 q6 2 10 -2" ${O(1.6)} fill="none"/>`,
+  robot: () => `<rect x="16" y="0" width="56" height="44" rx="8" fill="#c9cfe0" ${O()}/><path d="M44 0 V-12" ${O(2.4)}/><circle cx="44" cy="-14" r="5" fill="#ff5a6e" ${O(1.6)}/><circle cx="32" cy="20" r="7" fill="#7ab8f0" ${O(1.6)}/><circle cx="56" cy="20" r="7" fill="#7ab8f0" ${O(1.6)}/><rect x="30" y="32" width="28" height="6" rx="2" fill="#fff" ${O(1.4)}/>
+    <rect x="10" y="50" width="68" height="56" rx="8" fill="#9aa4c8" ${O()}/><rect x="26" y="60" width="36" height="22" rx="4" fill="#ffd34d" ${O(1.6)}/><circle cx="34" cy="94" r="4" fill="#ff5a6e" ${O(1.2)}/><circle cx="54" cy="94" r="4" fill="#3aa860" ${O(1.2)}/>
+    <rect x="-8" y="56" width="16" height="40" rx="7" fill="#c9cfe0" ${O()}/><rect x="80" y="56" width="16" height="40" rx="7" fill="#c9cfe0" ${O()}/><rect x="20" y="106" width="16" height="22" rx="4" fill="#c9cfe0" ${O()}/><rect x="52" y="106" width="16" height="22" rx="4" fill="#c9cfe0" ${O()}/>`,
+  ship: () => `<path d="M0 60 H140 L120 92 H20z" fill="#e2445c" ${O()}/><rect x="24" y="36" width="80" height="24" fill="#fff" ${O()}/>${[34, 54, 74].map(x => `<circle cx="${x}" cy="48" r="5" fill="#7ab8f0" ${O(1.4)}/>`).join('')}<rect x="88" y="10" width="14" height="26" fill="#ff9f43" ${O()}/><rect x="88" y="6" width="14" height="6" fill="#3a3550" ${O(1.6)}/><path d="M0 100 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" stroke="#7ab8f0" stroke-width="3" fill="none"/>`,
+  helicopter: () => `<path d="M10 0 H130" ${O(3)}/><path d="M70 0 V14" ${O(3)}/><path d="M30 40 Q30 14 64 14 Q100 14 104 46 Q100 62 70 62 H40 Q30 62 30 40z" fill="#ffd34d" ${O()}/><path d="M64 20 Q92 20 96 42 H64z" fill="#d6ecff" ${O(1.6)}/><path d="M30 40 H-10 L-14 30 H-6 L0 36" fill="#ffd34d" ${O()}/><path d="M40 62 V72 M90 62 V72 M30 72 H100" ${O(2.6)}/>`,
+  knight: () => `<rect x="14" y="40" width="40" height="44" rx="6" fill="#c9cfe0" ${O()}/><path d="M14 84 H54 L50 110 H18z" fill="#4a6ad0" ${O()}/><rect x="18" y="110" width="12" height="16" rx="3" fill="#9aa4c8" ${O()}/><rect x="38" y="110" width="12" height="16" rx="3" fill="#9aa4c8" ${O()}/>
+    <path d="M34 0 Q60 0 58 30 Q58 42 34 42 Q10 42 10 30 Q8 0 34 0z" fill="#c9cfe0" ${O()}/><path d="M16 22 H52" ${O(3)}/><path d="M34 0 Q40 -14 52 -12" stroke="#e2445c" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M-6 44 Q-6 80 14 92 Q30 80 30 44z" fill="#e2445c" ${O()}/><path d="M12 52 V80 M2 64 H22" stroke="#ffd34d" stroke-width="4"/><path d="M64 40 V100" ${O(4)}/><path d="M56 48 H72" ${O(3)}/>`,
+  ball: () => `<circle cx="50" cy="50" r="48" fill="#fff" ${O()}/><path d="M50 30 L68 44 L62 66 H38 L32 44z" fill="#3a3550" ${O(1.8)}/><path d="M50 30 V4 M68 44 L94 36 M62 66 L78 90 M38 66 L22 90 M32 44 L6 36" ${O(1.8)}/>`,
+};
+const MORE_PAGES = [
+  ['g1', 'doll', 'თოჯინა', 'girls', 1], ['g2', 'ballerina', 'ბალერინა', 'girls'], ['g3', 'unicorn', 'ერთრქა', 'girls'], ['g4', 'kitten', 'კნუტი', 'girls'],
+  ['g5', 'butterfly', 'პეპელა', 'girls'], ['g6', 'cupcake', 'ნამცხვარი', 'girls'], ['g7', 'flowerpot', 'ყვავილი', 'girls'], ['g8', 'balloons', 'ბუშტები', 'girls'],
+  ['g9', 'princessCastle', 'სასახლე', 'girls'], ['g10', 'mermaid', 'ქალთევზა', 'girls'], ['g11', 'teddy', 'სათამაშო დათვი', 'girls'], ['g12', 'dress', 'კაბა', 'girls'], ['g13', 'icecream', 'ნაყინი', 'girls'],
+  ['b1', 'car', 'მანქანა', 'boys', 1], ['b2', 'truck', 'სატვირთო', 'boys'], ['b3', 'firetruck', 'სახანძრო', 'boys'], ['b4', 'racecar', 'სარბოლო მანქანა', 'boys'],
+  ['b5', 'rocket', 'რაკეტა', 'boys'], ['b6', 'plane', 'თვითმფრინავი', 'boys'], ['b7', 'tractor', 'ტრაქტორი', 'boys'], ['b8', 'dino', 'დინოზავრი', 'boys'],
+  ['b9', 'robot', 'რობოტი', 'boys'], ['b10', 'ship', 'გემი', 'boys'], ['b11', 'helicopter', 'ვერტმფრენი', 'boys'], ['b12', 'knight', 'რაინდი', 'boys'], ['b13', 'ball', 'ბურთი', 'boys'],
+].map(([id, art, title, cat, free]) => ({ id, art, title, cat, free: !!free }));
 
 // ---------- colouring pages: the tale characters as line art ----------
 const PAGES = [
@@ -1147,9 +1406,9 @@ const PAGES = [
   { id: 'c14', who: 'fairy', title: 'ფერია' },
   { id: 'c15', who: 'crow', title: 'ყვავი' },
   { id: 'c16', who: 'dog', title: 'ძაღლი' },
-];
+].map(pg => ({ ...pg, cat: 'tales' })).concat(MORE_PAGES);
 // the character alone, zoomed so it fills the page: big areas a small finger can hit
-const pageSvg = pg => `<svg viewBox="0 0 200 200" role="img" aria-label="${pg.title}" data-fit><g data-who>${A(pg.who, 0, 0, 1, { ...(pg.o || {}), anim: 'none' })}</g></svg>`;
+const pageSvg = pg => `<svg viewBox="0 0 200 200" role="img" aria-label="${pg.title}" data-fit><g data-who>${pg.art ? ART[pg.art]() : A(pg.who, 0, 0, 1, { ...(pg.o || {}), anim: 'none' })}</g></svg>`;
 const measure = document.createElement('div');
 measure.style.cssText = 'position:absolute;left:-9999px;top:0;width:200px;height:200px;visibility:hidden';
 document.body.appendChild(measure);
@@ -1259,6 +1518,7 @@ function openPlayer(t) {
   $('layerA').innerHTML = $('layerB').innerHTML = '';
   showScene(0);
   $('playerTitle').textContent = t.title;
+  paintFav();
   $('hint').textContent = mode === 'night' ? 'მთვარეზე დააჭირე — ეკრანი ჩაქრება, ზღაპარი გაგრძელდება' : '';
   $('sleepBtn').hidden = mode !== 'night';
   audio.src = `audio/${t.id}.mp3`;
@@ -1269,6 +1529,9 @@ function openPlayer(t) {
   $('player').hidden = false;
   audio.play().catch(() => {});
 }
+const HEART = on => `<svg width="24" height="24" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="${on ? '#ff7f9a' : 'none'}" stroke="${on ? '#ff7f9a' : '#fff'}" stroke-width="2.2" stroke-linejoin="round"/></svg>`;
+function paintFav() { $('favBtn').innerHTML = HEART(!!favs[current.id]); }
+$('favBtn').onclick = () => { if (favs[current.id]) delete favs[current.id]; else favs[current.id] = 1; store.set('favs', favs); paintFav(); };
 function setPlayIcon() { $('playBtn').innerHTML = audio.paused ? PLAY : PAUSE; $('playBtn').setAttribute('aria-label', audio.paused ? 'დაკვრა' : 'პაუზა'); }
 $('playBtn').onclick = () => audio.paused ? audio.play() : audio.pause();
 $('closePlayer').onclick = () => { audio.pause(); $('player').hidden = true; $('layerA').innerHTML = $('layerB').innerHTML = ''; renderShelves(); };
