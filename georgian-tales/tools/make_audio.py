@@ -6,14 +6,15 @@ from piper import PiperVoice, SynthesisConfig
 
 root = pathlib.Path(__file__).resolve().parent.parent
 voice = PiperVoice.load(sys.argv[1])
-# length_scale > 1 — читаем медленнее, спокойнее, как перед сном
-config = SynthesisConfig(length_scale=1.2)
-SENTENCE_PAUSE, PARAGRAPH_PAUSE = 0.5, 1.0  # секунды тишины
+# length_scale > 1 — читаем медленнее; сказки перед сном (pace в tales.json) ещё медленнее и с длинными паузами
 
 timings = {}  # секунда, с которой начинается каждый абзац — по ним меняются сцены мультика
 for tale in json.loads((root / "tales.json").read_text()):
     wav = root / "audio" / f"{tale['id']}.wav"
     mp3 = root / "audio" / f"{tale['id']}.mp3"
+    slow = "pace" in tale
+    config = SynthesisConfig(length_scale=tale.get("pace", 1.2))
+    SENTENCE_PAUSE, PARAGRAPH_PAUSE = (0.9, 2.2) if slow else (0.5, 1.0)  # секунды тишины
     starts = []
     with wave.open(str(wav), "wb") as out:
         rate = voice.config.sample_rate
