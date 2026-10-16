@@ -214,20 +214,40 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 @keyframes cam { from { transform: scale(1); } to { transform: scale(1.08) translate(-1.5%, -1%); } }
 @keyframes sceneIn { from { transform: scale(1.08); } to { transform: scale(1); } }
 
-/* ---------- colouring room ---------- */
-.paintroom { position: fixed; inset: 0; z-index: 25; background: #fffaf2; display: flex; flex-direction: column; color: #2a2440;
-  padding-top: calc(env(safe-area-inset-top, 0px) + 12px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+/* ---------- colouring room: paint with a finger, outlines stay on top ---------- */
+.paintroom { position: fixed; inset: 0; z-index: 25; background: #fffaf2; display: flex; flex-direction: column; gap: 10px; color: #2a2440;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+  padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
 .paint-top { display: flex; justify-content: space-between; align-items: center; }
 .paint-tools { display: flex; gap: 10px; }
 .round.dark { background: #efe6f3; color: #2a2440; backdrop-filter: none; }
-.canvas { flex: 1; min-height: 0; display: grid; place-items: center; padding-block: 10px; }
-.canvas svg { width: min(100%, 62vh); height: auto; aspect-ratio: 1; max-width: 100%; background: #fff; border-radius: 24px; box-shadow: 0 8px 26px rgba(60, 40, 80, .12); touch-action: manipulation; }
-.canvas .paint { cursor: pointer; transition: fill .15s; }
-.palette { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; max-width: 460px; width: 100%; margin: 0 auto; }
+.canvas { flex: 1; min-height: 0; display: grid; place-items: center; }
+.page-stage { position: relative; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 26px rgba(60, 40, 80, .14); }
+.page-stage #pageArt, .page-stage #pageArt svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.page-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: multiply; touch-action: none; cursor: crosshair; }
+.brushes { display: flex; justify-content: center; gap: 12px; }
+.brushes button { width: 52px; height: 52px; border-radius: 16px; background: #efe6f3; display: grid; place-items: center; }
+.brushes button i { display: block; border-radius: 50%; background: #2a2440; }
+.brushes button[aria-pressed="true"] { background: #2a2440; } .brushes button[aria-pressed="true"] i { background: #fff; }
+.brushes button[aria-pressed="true"] svg { stroke: #fff; }
+.palette { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; max-width: 520px; width: 100%; margin: 0 auto; }
 .palette button { aspect-ratio: 1; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #d8cfe0; }
 .palette button[aria-pressed="true"] { box-shadow: 0 0 0 4px #2a2440; transform: scale(1.08); }
-.tile.page .art { background: #fff; }
+.tile.page .art { position: relative; background: #fff; }
+.tile.page .art img { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: multiply; }
+
+/* ---------- bottom tab bar ---------- */
+.wrap { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px) !important; }
+.tabs { position: fixed; z-index: 15; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr);
+  background: var(--card); box-shadow: 0 -6px 24px rgba(0,0,0,.18);
+  padding-top: 6px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
+  padding-left: max(6px, env(safe-area-inset-left, 0px)); padding-right: max(6px, env(safe-area-inset-right, 0px)); }
+.tabs button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px; border-radius: 14px; color: var(--muted); font-size: .66rem; font-weight: 700; line-height: 1.2; text-align: center; }
+.tabs button svg { width: 26px; height: 26px; }
+.tabs button[aria-pressed="true"] { color: var(--on-moon); background: var(--moon); }
+.shelf-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 14px; }
+.shelf-head h2 { font-family: var(--display); font-weight: 800; font-size: 1.3rem; margin: 0; text-wrap: balance; }
+.shelf-head small { color: var(--muted); font-size: .8rem; flex: none; }
 
 /* ---------- parent gate + paywall ---------- */
 .sheet-bg { position: fixed; inset: 0; z-index: 40; background: rgba(4, 6, 20, .7); display: flex; align-items: flex-end; justify-content: center; }
@@ -297,6 +317,14 @@ header { display: flex; align-items: center; justify-content: space-between; gap
   <p class="weekly">ყოველ კვირას — ახალი ზღაპარი და ახალი სურათი გასაფერადებლად.</p>
 </div>
 
+<nav class="tabs" id="tabs" aria-label="განყოფილებები">
+  <button data-tab="ge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11h-5v-6H9v6z" fill="currentColor"/></svg>ხალხური</button>
+  <button data-tab="sleep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 14A8 8 0 0 1 15 3z" fill="currentColor"/></svg>ძილის წინ</button>
+  <button data-tab="world"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>მსოფლიო</button>
+  <button data-tab="short"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4c1.5 0 2 3 2 6H7c0-3 .5-6 2-6zm6 0c1.5 0 2 3 2 6h-4c0-3 .5-6 2-6zM5 15a7 6 0 0 0 14 0v-3H5z" fill="currentColor"/></svg>პატარა</button>
+  <button data-tab="paint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5S14 15 15 15h2a4 4 0 0 0 4-4c0-4.5-4-8-9-8zM7.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>ხატვა</button>
+</nav>
+
 <div class="player" id="player" hidden>
   <div class="stage" id="stage"><div class="layer" id="layerA"></div><div class="layer" id="layerB" style="opacity:0"></div></div>
   <div class="player-top">
@@ -324,7 +352,13 @@ header { display: flex; align-items: center; justify-content: space-between; gap
       <button class="round dark" id="clearPaint" aria-label="გასუფთავება"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
     </div>
   </div>
-  <div class="canvas" id="canvas"></div>
+  <div class="canvas" id="canvas"><div class="page-stage" id="pageStage"><div id="pageArt"></div><canvas id="paintCanvas"></canvas></div></div>
+  <div class="brushes" id="brushes">
+    <button data-size="8" aria-label="წვრილი ფუნჯი"><i style="width:8px;height:8px"></i></button>
+    <button data-size="18" aria-label="საშუალო ფუნჯი" aria-pressed="true"><i style="width:16px;height:16px"></i></button>
+    <button data-size="34" aria-label="სქელი ფუნჯი"><i style="width:26px;height:26px"></i></button>
+    <button data-eraser="1" aria-label="საშლელი"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2a2440" stroke-width="2" stroke-linejoin="round"><path d="M4 16l9-9 6 6-7 7H8z"/><path d="M9 11l6 6M4 20h16"/></svg></button>
+  </div>
   <div class="palette" id="palette"></div>
 </div>
 
@@ -1052,7 +1086,7 @@ function setMode(m) {
   $('modeNight').setAttribute('aria-pressed', m === 'night');
 }
 $('modeDay').onclick = () => setMode('day');
-$('modeNight').onclick = () => setMode('night');
+$('modeNight').onclick = () => { setMode('night'); setTab('sleep'); };
 setMode(mode);
 
 // ---------- timings: when each paragraph (scene) starts, and how long the tale is ----------
@@ -1060,26 +1094,32 @@ let TIMINGS = {};
 const minutes = id => { const d = TIMINGS[id]?.duration; return d ? `${Math.max(1, Math.round(d / 60))} წთ` : ''; };
 
 // ---------- home shelves ----------
+let tab = store.get('tab', 'ge');
+function setTab(t) { tab = t; store.set('tab', t); $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === t)); renderShelves(); window.scrollTo(0, 0); }
+$('tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); };
 function renderShelves() {
   $('testPill').hidden = !testMode;
-  $('shelves').innerHTML = SHELVES.map(s => `
-    <section class="shelf"><h2>${s.title}<small>${s.note}</small></h2>
-      <div class="grid">${TALES.filter(t => t.cat === s.cat).map(t => `
-        <button class="tile ${open_(t) ? '' : 'locked'}" data-id="${t.id}" aria-label="${t.title}">
-          <div class="art">${cover(t)}</div>
-          ${!ready(t) ? '<span class="badge soon">მალე</span>' : t.free ? '<span class="badge free">უფასო</span>' : testMode ? '' : `<span class="badge">${LOCK}</span>`}
-          <span class="name">${t.title}</span>
-          <span class="len">${ready(t) ? minutes(t.id) : 'მზადდება'}${listened[t.id] ? ' · <b class="done">მოსმენილია</b>' : ''}</span>
-        </button>`).join('')}</div>
-    </section>`).join('') + `
-    <section class="shelf"><h2>გაფერადება<small>${PAGES.length} სურათი</small></h2>
+  $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === tab));
+  if (tab === 'paint') {
+    $('shelves').innerHTML = `<div class="shelf-head"><h2>გაფერადება</h2><small>${PAGES.length} სურათი</small></div>
       <div class="grid">${PAGES.map(pg => `
         <button class="tile page ${pg.free || testMode ? '' : 'locked'}" data-page="${pg.id}" aria-label="${pg.title}">
           <div class="art">${pageThumb(pg)}</div>
           ${pg.free ? '<span class="badge free">უფასო</span>' : testMode ? '' : `<span class="badge">${LOCK}</span>`}
           <span class="name">${pg.title}</span>
-        </button>`).join('')}</div>
-    </section>`;
+        </button>`).join('')}</div>`;
+    return;
+  }
+  const sh = SHELVES.find(x => x.cat === tab);
+  const list = TALES.filter(t => t.cat === tab);
+  $('shelves').innerHTML = `<div class="shelf-head"><h2>${sh.title}</h2><small>${list.filter(ready).length} ზღაპარი · ${sh.note}</small></div>
+      <div class="grid">${list.map(t => `
+        <button class="tile ${open_(t) ? '' : 'locked'}" data-id="${t.id}" aria-label="${t.title}">
+          <div class="art">${cover(t)}</div>
+          ${!ready(t) ? '<span class="badge soon">მალე</span>' : t.free ? '<span class="badge free">უფასო</span>' : testMode ? '' : `<span class="badge">${LOCK}</span>`}
+          <span class="name">${t.title}</span>
+          <span class="len">${ready(t) ? minutes(t.id) : 'მზადდება'}${listened[t.id] ? ' · <b class="done">მოსმენილია</b>' : ''}</span>
+        </button>`).join('')}</div>`;
 }
 $('shelves').addEventListener('click', e => {
   const tile = e.target.closest('.tile'); if (!tile) return;
@@ -1120,34 +1160,60 @@ function toLineArt(root) {
     if (f === 'none' || f === INK || f === '#2a1f3a' || f === '#1a1028') return;
     const op = el.getAttribute('opacity');
     if ((op !== null && +op < 1) || f === '#1a1030') { el.remove(); return; }
-    el.setAttribute('fill', '#ffffff'); el.classList.add('paint');
+    el.setAttribute('fill', '#ffffff');
     if (!el.getAttribute('stroke')) { el.setAttribute('stroke', '#cfc6dc'); el.setAttribute('stroke-width', '1'); }
   });
   root.querySelectorAll('[stroke]').forEach(el => { const st = el.getAttribute('stroke').toLowerCase(); if (st !== INK && st !== '#cfc6dc' && el.getAttribute('fill') === 'none') el.setAttribute('stroke', '#cfc6dc'); });
 }
-const COLORS = ['#ff5a6e', '#ff9f43', '#ffd34d', '#8fd07a', '#3aa860', '#7ab8f0', '#4a6ad0', '#a07ae0', '#ff9fd0', '#f2c9a0', '#a8743f', '#9a9aa6', '#3a3550', '#ffffff'];
-let brush = COLORS[0], undoStack = [];
-const saved = store.get('paint', {});
-function openPage(pg) {
-  $('canvas').innerHTML = pageSvg(pg);
-  const svgEl = $('canvas').firstElementChild; toLineArt(svgEl);
-  const shapes = [...svgEl.querySelectorAll('.paint')];
-  (saved[pg.id] || []).forEach((c, i) => { if (c && shapes[i]) shapes[i].setAttribute('fill', c); });
-  undoStack = [];
-  svgEl.onclick = e => {
-    const el = e.target.closest('.paint'); if (!el) return;
-    undoStack.push([el, el.getAttribute('fill')]);
-    el.setAttribute('fill', brush);
-    saved[pg.id] = shapes.map(x => x.getAttribute('fill') === '#ffffff' ? 0 : x.getAttribute('fill')); store.set('paint', saved);
-  };
-  $('undoPaint').onclick = () => { const u = undoStack.pop(); if (u) { u[0].setAttribute('fill', u[1]); saved[pg.id] = shapes.map(x => x.getAttribute('fill') === '#ffffff' ? 0 : x.getAttribute('fill')); store.set('paint', saved); } };
-  $('clearPaint').onclick = () => { shapes.forEach(x => x.setAttribute('fill', '#ffffff')); undoStack = []; delete saved[pg.id]; store.set('paint', saved); };
-  $('paint').hidden = false;
+const COLORS = ['#ff5a6e', '#ff9f43', '#ffd34d', '#8fd07a', '#3aa860', '#7ab8f0', '#4a6ad0', '#a07ae0', '#ff9fd0', '#f2c9a0', '#a8743f', '#9a9aa6', '#3a3550', '#e8e2f0'];
+let brush = COLORS[0], brushSize = 18, eraser = false, paintHistory = [], page = null;
+const saved = store.get('paint2', {});
+const cnv = $('paintCanvas'), ctx = cnv.getContext('2d');
+let dpr = 1, side = 0, last = null, drawing = false;
+// the page is a square that fills the space between the top bar and the tools
+function fitPage() {
+  const box = $('canvas'); side = Math.floor(Math.min(box.clientWidth, box.clientHeight));
+  $('pageStage').style.width = $('pageStage').style.height = side + 'px';
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  cnv.width = cnv.height = side * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.lineCap = ctx.lineJoin = 'round';
 }
+function restore(url) { if (!url) return; const img = new Image(); img.onload = () => { ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(img, 0, 0, side, side); }; img.src = url; }
+function savePage() { try { saved[page.id] = cnv.toDataURL('image/png'); store.set('paint2', saved); } catch {} }
+function openPage(pg) {
+  page = pg; paintHistory = [];
+  $('pageArt').innerHTML = pageSvg(pg); toLineArt($('pageArt').firstElementChild);
+  $('paint').hidden = false;
+  fitPage(); restore(saved[pg.id]);
+}
+const at = e => { const r = cnv.getBoundingClientRect(); return [(e.clientX - r.left) * side / r.width, (e.clientY - r.top) * side / r.height]; };
+function stroke(a, b) {
+  ctx.globalCompositeOperation = eraser ? 'destination-out' : 'source-over';
+  ctx.strokeStyle = brush; ctx.lineWidth = brushSize * side / 360;
+  ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+}
+cnv.addEventListener('pointerdown', e => {
+  e.preventDefault(); cnv.setPointerCapture(e.pointerId); drawing = true;
+  paintHistory.push(ctx.getImageData(0, 0, cnv.width, cnv.height)); if (paintHistory.length > 15) paintHistory.shift();
+  last = at(e); stroke(last, [last[0] + .01, last[1]]);
+});
+cnv.addEventListener('pointermove', e => { if (!drawing) return; const p = at(e); stroke(last, p); last = p; });
+const endStroke = () => { if (!drawing) return; drawing = false; savePage(); };
+cnv.addEventListener('pointerup', endStroke); cnv.addEventListener('pointercancel', endStroke);
+$('undoPaint').onclick = () => { const h = paintHistory.pop(); if (h) { ctx.putImageData(h, 0, 0); savePage(); } };
+$('clearPaint').onclick = () => { paintHistory.push(ctx.getImageData(0, 0, cnv.width, cnv.height)); ctx.clearRect(0, 0, side, side); savePage(); };
+window.addEventListener('resize', () => { if ($('paint').hidden) return; const url = cnv.toDataURL(); fitPage(); restore(url); });
 $('palette').innerHTML = COLORS.map((c, i) => `<button style="background:${c}" data-c="${c}" aria-label="ფერი ${i + 1}" aria-pressed="${i === 0}"></button>`).join('');
-$('palette').onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; brush = b.dataset.c; $('palette').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+$('palette').onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; brush = b.dataset.c; eraser = false; $('palette').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); $('brushes').querySelector('[data-eraser]').setAttribute('aria-pressed', false); };
+$('brushes').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.eraser) { eraser = true; b.setAttribute('aria-pressed', true); return; }
+  brushSize = +b.dataset.size; eraser = false;
+  $('brushes').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+};
 $('closePaint').onclick = () => { $('paint').hidden = true; renderShelves(); };
-const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML = pageSvg(pg); toLineArt(d.firstElementChild); const sh = [...d.querySelectorAll('.paint')]; (saved[pg.id] || []).forEach((c, i) => { if (c && sh[i]) sh[i].setAttribute('fill', c); }); return d.innerHTML; };
+const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML = pageSvg(pg); toLineArt(d.firstElementChild); return d.innerHTML + (saved[pg.id] ? `<img src="${saved[pg.id]}" alt="">` : ''); };
 
 renderShelves();
 fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; renderShelves(); }).catch(() => {});
