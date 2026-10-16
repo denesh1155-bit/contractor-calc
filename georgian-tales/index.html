@@ -2576,15 +2576,16 @@ function sndInit() {
 const hz = (root, semi) => root * Math.pow(2, semi / 12);
 const env = (g, t, peak, a, d) => { g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(.0002, peak), t + a); g.gain.exponentialRampToValueAtTime(.0001, t + a + d); };
 
-// ---------- music: real recordings of gentle classics (Musopen, public domain), softened and levelled ----------
+// ---------- music: gentle, cheerful children's music by Kevin MacLeod (incompetech.com, CC BY 4.0) ----------
 // each section has its own little playlist; every tale starts on its own piece and moves on to the next
 const PLAYLISTS = {
-  sleep: ['bach_aria', 'schubert_andante', 'borodin_nocturne', 'dvorak_lento', 'bach_var13'],
-  ge: ['borodin_steppes', 'grieg_morning', 'dvorak_lento', 'mendelssohn_andante', 'borodin_nocturne'],
-  world: ['grieg_morning', 'brahms_grazioso', 'smetana_vltava', 'mendelssohn_andante', 'haydn_minuet', 'schubert_andante'],
-  short: ['haydn_minuet', 'grieg_anitra', 'brahms_grazioso', 'bach_var13'],
+  sleep: ['dreamer', 'morning', 'evening', 'friday_morning', 'magic_farm', 'fireflies', 'magic_glade', 'almost_bliss'],
+  ge: ['village_consort', 'carefree', 'galway', 'teddy_waltz', 'rainbows', 'music_box'],
+  world: ['teddy_waltz', 'carefree', 'sugar_plum', 'merry_go', 'rainbows', 'monkeys'],
+  short: ['monkeys', 'fluffing_duck', 'cheery_monday', 'onion_capers', 'doobly_doo', 'carefree'],
 };
-const MUSIC_VOL = { sleep: .38, ge: .5, world: .5, short: .5 };
+const MUSIC_VOL = { sleep: .17, ge: .22, world: .22, short: .22 };
+const MUSIC_CREDITS = 'Carefree, Monkeys Spinning Monkeys, Teddy Bear Waltz, Rainbows, Cheery Monday, Merry Go, Music Box Theme, Village Consort, Galway, Fluffing a Duck, Onion Capers, Doobly Doo, Dance of the Sugar Plum Fairy, Dreamer, Morning, Evening, Fireflies and Stardust, Friday Morning, Magic Scout – Farm, Magic Scout – Northern Glade, Almost Bliss — Kevin MacLeod (incompetech.com), Creative Commons: By Attribution 4.0';
 const MUSIC = { el: null, gain: null, tale: null, list: [], at: 0, timer: 1, playing: false };
 function musicEl() {
   if (MUSIC.el) return MUSIC.el;
@@ -2707,6 +2708,7 @@ $('parentBtn').onclick = () => gate(() => {
       <button class="switch" id="soundSw" role="switch" aria-checked="${sounds}" aria-label="ხმოვანი ეფექტები"></button></div>
     <div class="row"><span>სატესტო რეჟიმი<br><small style="color:#7a7290">ყველა ზღაპარი ღიაა გადახდის გარეშე</small></span>
       <button class="switch" id="testSw" role="switch" aria-checked="${testMode}" aria-label="სატესტო რეჟიმი"></button></div>
+    <p style="font-size:.72rem;color:#7a7290;line-height:1.4;margin:6px 0 10px">მუსიკა: ${MUSIC_CREDITS}</p>
     <button class="cta" data-sub>გამოწერა — 3 დღე უფასოდ</button>
     <button class="link" data-close>დახურვა</button>`);
   $('sheet').onclick = e => {
