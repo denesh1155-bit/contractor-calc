@@ -1193,6 +1193,11 @@ Object.assign(C, {
   bun: o => shadow(20, 41, 18) + `<circle cx="20" cy="20" r="20" fill="#f0b45a" ${O()}/><path d="M6 12 q14 -10 28 0" stroke="#ffd98a" stroke-width="3" fill="none" stroke-linecap="round"/>${eye(13, 18, o.closed, 3.4)}${eye(27, 18, o.closed, 3.4)}${blush(9, 26, 2.8)}${blush(31, 26, 2.8)}<path d="M15 28 q5 4 10 0" ${O(1.6)} fill="none"/>`,
   frog: o => shadow(20, 29, 18) + `<ellipse cx="20" cy="20" rx="18" ry="10" fill="#7fd07a" ${O()}/><circle cx="12" cy="10" r="6" fill="#7fd07a" ${O()}/><circle cx="28" cy="10" r="6" fill="#7fd07a" ${O()}/>${eye(12, 9, o.closed, 3)}${eye(28, 9, o.closed, 3)}<path d="M12 22 q8 5 16 0" ${O(1.4)} fill="none"/><path d="M2 26 l-4 3 M38 26 l4 3" ${O(1.6)}/>`,
   snail: o => shadow(22, 25, 18) + `<path d="M0 24 Q20 26 40 22 L44 16 Q40 14 34 16 L30 24z" fill="#e8c9a0" ${O(1.6)}/><circle cx="22" cy="12" r="12" fill="#c98a4a" ${O()}/><path d="M22 12 m-6 0 a6 6 0 1 1 6 6 a3 3 0 1 1 -2 -4" fill="none" ${O(1.4)}/><path d="M40 16 l2 -8 M44 16 l4 -7" ${O(1.2)}/>${eye(43, 14, o.closed, 1.8)}`,
+  goat: o => shadow(36, 59, 26) + `<rect x="14" y="36" width="7" height="22" rx="3" fill="${o.dark ? '#5a5a6e' : '#f4f4fa'}" ${O(1.6)}/><rect x="44" y="36" width="7" height="22" rx="3" fill="${o.dark ? '#5a5a6e' : '#f4f4fa'}" ${O(1.6)}/>
+    <ellipse cx="32" cy="30" rx="24" ry="13" fill="${o.dark ? '#6a6a80' : '#fff'}" ${O()}/><path d="M8 26 l-6 -6 l2 8z" fill="${o.dark ? '#6a6a80' : '#fff'}" ${O(1.4)}/>
+    <path d="M52 22 Q56 8 62 4" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><path d="M52 22 Q56 8 62 4" stroke="${o.dark ? '#6a6a80' : '#fff'}" stroke-width="6" stroke-linecap="round"/>
+    <path d="M58 -4 q-6 -10 -2 -14 M66 -4 q2 -10 8 -12" ${O(2.4)} fill="none"/><ellipse cx="66" cy="6" rx="9" ry="8" fill="${o.dark ? '#6a6a80' : '#fff'}" ${O()}/><ellipse cx="56" cy="4" rx="5" ry="2.4" fill="${o.dark ? '#6a6a80' : '#fff'}" ${O(1.2)} transform="rotate(-20 56 4)"/>
+    <path d="M70 14 q2 8 -2 10 q-2 -4 0 -10z" fill="#d8d4e0" ${O(1)}/>${eye(66, 4, o.closed, 2.8)}<circle cx="73" cy="8" r="1.2" fill="${INK}"/>`,
   grandpa: o => C.king({ ...o, crown: false, robe: o.robe || '#6a7ab0', beard: '#f0f0f6' }),
 });
 const firefly = (x, y, d = 0) => `<g class="firefly" style="animation-delay:-${d}s"><circle cx="${x}" cy="${y}" r="3" fill="#fff59a"/><circle cx="${x}" cy="${y}" r="8" fill="#fff59a" opacity=".3"/></g>`;
@@ -1205,10 +1210,10 @@ const WHO_WORDS = [
   [/ჩიტ|ბარტყ/, 'bird'], [/თევზ/, 'fish'], [/ცხვ|ბატკ/, 'sheep'], [/ზღარბ/, 'hedgehog'], [/(^|[\s,.!?])ბუ([\s,.!?]|მ |ს |ს,)/, 'owl'], [/ციყვ/, 'squirrel'],
   [/ირემ|ირმ/, 'deer'], [/დელფ/, 'dolphin'], [/თოლი/, 'gull'], [/კატა|კატამ|კატას|კნუტ|ფისო/, 'cat'], [/თაგვ/, 'mouse'], [/ძაღლ|მურია/, 'dog'], [/ცხენ/, 'horse'],
   [/ძროხ/, 'cow'], [/ქათამ|ქათმ/, 'hen'], [/მამალ/, 'rooster'], [/(^|\s)ლომ/, 'lion'], [/მგელ|მგლ/, 'wolf'], [/გოჭ|ღორ/, 'pig'], [/ყვავ(?!ილ)/, 'crow'],
-  [/ჭიანჭველ/, 'ant'], [/ჭრიჭინამ|ჭრიჭინა /, 'hopper'], [/არწივ/, 'eagle'], [/დევი|დევმა|დევს|დევის|დევებ/, 'devi'], [/მეფე|მეფემ|მეფის|მეფეს/, 'king'],
+  [/ჭიანჭველ/, 'ant'], [/(^|\s)თხა|თხამ|თხას|ციკან/, 'goat'], [/ჭრიჭინამ|ჭრიჭინა /, 'hopper'], [/არწივ/, 'eagle'], [/დევი|დევმა|დევს|დევის|დევებ/, 'devi'], [/მეფე|მეფემ|მეფის|მეფეს/, 'king'],
   [/უფლისწ|პრინც/, 'prince'], [/დედოფ|მზეთუნ|ქალიშვ/, 'princess'], [/(^|\s)ვირ/, 'donkey'], [/იხვ/, 'duck'], [/(^|\s)გედ/, 'swan'], [/ფუნთუშ/, 'bun'],
   [/ბაყაყ/, 'frog'], [/ლოკოკინ/, 'snail'], [/ფერია/, 'fairy'], [/ღრუბ/, 'cloudy'],
-  [/ბიჭ|ნიკა|გიორგი/, 'boy'], [/გოგო|მარიამ|ნინო/, 'girl'], [/ბებია|ბებიკო/, 'granny'], [/ბაბუა/, 'grandpa'], [/დედა(?!ბერ| (დათვ|კურდღ|ზღარბ|იხვ|ირემ))|დედიკო/, 'mom'],
+  [/ბიჭ|ნიკა|გიორგი|დათო|ლუკა|საბა/, 'boy'], [/გოგო|მარიამ|ნინო|თამარ|ქეთო|(^|\s)ანა(\s|ს |მ |,)/, 'girl'], [/ბებია|ბებიკო/, 'granny'], [/ბაბუა/, 'grandpa'], [/დედა(?!ბერ| (დათვ|კურდღ|ზღარბ|იხვ|ირემ))|დედიკო/, 'mom'],
 ];
 const FLYERS = new Set(['bird', 'gull', 'owl', 'eagle']), SWIMMERS = new Set(['fish', 'dolphin']);
 const sizeCache = {};
@@ -1220,7 +1225,7 @@ function bbox(who, o) {
   return (sizeCache[key] = { x: b.x, y: b.y, w: b.width, h: b.height });
 }
 const HUMANS = new Set(['king', 'mom', 'princess', 'granny', 'grandpa', 'girl', 'boy', 'prince', 'fairy']);
-const TARGET = { hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
+const TARGET = { fish: 30, dolphin: 40, gull: 34, bird: 34, ant: 30, hopper: 34, mouse: 32, snail: 32, hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
 function place(who, cx, ground, o, small) {
   const opts = who === 'princess' ? { ...o, princess: 1, dress: '#ffb347' } : o;
   const b = bbox(who, opts);
@@ -1235,6 +1240,14 @@ function taleHero(tale) {
   const first = (TEXTS[tale.id] || '').split('\n\n').slice(0, 2).join(' ');
   const found = WHO_WORDS.find(([re, who]) => re.test(first) && !HUMANS.has(who) && who !== 'cloudy');
   return (heroCache[tale.id] = found ? found[1] : null);
+}
+// whoever the tale is about, animal or child — shown when a paragraph names nobody
+const anyHeroCache = {};
+function taleHeroAny(tale) {
+  if (tale.id in anyHeroCache) return anyHeroCache[tale.id];
+  const first = (TEXTS[tale.id] || '').split('\n\n').slice(0, 2).join(' ');
+  const found = WHO_WORDS.find(([re, who]) => re.test(first) && who !== 'cloudy' && who !== 'mom');
+  return (anyHeroCache[tale.id] = found ? found[1] : null);
 }
 const hashOf = str => [...str].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
 function autoScene(tale, text, i) {
@@ -1273,6 +1286,7 @@ function autoScene(tale, text, i) {
   // in an animal tale 'mother' is the hero's mother, not a person
   const hero = taleHero(tale);
   if (hero && !HUMANS.has(hero)) cast.forEach((w, k) => { if (w === 'mom') cast[k] = 'mother:' + hero; });
+  if (!cast.length && taleHeroAny(tale)) cast.push(taleHeroAny(tale));
   if (!cast.length && i === 0 && sleepy) cast.push('moon');
   const anim = asleep ? 'breathe' : has(/ზეიმ|ცეკვ|ლხინ/) ? 'dance' : has(/შეშინ|ეშინ|ცახცახ/) ? 'shiver' : has(/გაიცინ|იცინ|გაეცინ/) ? 'laugh' : has(/ხტ|ჰოპ|გაგორ/) ? 'hop' : null;
   const picks = ['bob', 'nod', 'idle', 'hop', 'nod'];
@@ -1337,6 +1351,8 @@ const TALES = [
   { id: 'g8', title: 'ოქროს ფრინველი', cat: 'ge' },
   { id: 'g9', title: 'მამალი და მელია', cat: 'ge' },
   { id: 'g10', title: 'ბრძენი ნინო', cat: 'ge' },
+  { id: 'g11', title: 'ვირი და მგელი', cat: 'ge' },
+  { id: 'g12', title: 'თხა და შვიდი ციკანი', cat: 'ge' },
   { id: 's1', title: 'მთვარის სტუმრობა', cat: 'sleep', free: true },
   { id: 's2', title: 'პატარა ღრუბლის მოგზაურობა', cat: 'sleep' },
   { id: 's3', title: 'ძილის მატარებელი', cat: 'sleep' },
@@ -1353,6 +1369,14 @@ const TALES = [
   { id: 's14', title: 'ციცინათელა ლუცია', cat: 'sleep' },
   { id: 's15', title: 'ბებიას ნანა', cat: 'sleep' },
   { id: 's16', title: 'წვიმის სიმღერა', cat: 'sleep' },
+  { id: 's17', title: 'ზღარბის თბილი სახლი', cat: 'sleep' },
+  { id: 's18', title: 'ძილის ფერია', cat: 'sleep' },
+  { id: 's19', title: 'მთის ნანა', cat: 'sleep' },
+  { id: 's20', title: 'ირემი და ვარსკვლავები', cat: 'sleep' },
+  { id: 's21', title: 'ფუმფულა ქალაქი', cat: 'sleep' },
+  { id: 's22', title: 'ნელა კუს მოგზაურობა', cat: 'sleep' },
+  { id: 's23', title: 'მთვარის ნავი', cat: 'sleep' },
+  { id: 's24', title: 'ჩიტუნიების ბუდე', cat: 'sleep' },
   { id: 'w1', title: 'კონკია', cat: 'world' },
   { id: 'w2', title: 'წითელქუდა', cat: 'world' },
   { id: 'w3', title: 'სამი გოჭი', cat: 'world' },
@@ -1361,6 +1385,9 @@ const TALES = [
   { id: 'w6', title: 'ფუნთუშა', cat: 'world' },
   { id: 'w7', title: 'ბრემენელი მუსიკოსები', cat: 'world' },
   { id: 'w8', title: 'მახინჯი იხვის ჭუკი', cat: 'world' },
+  { id: 'w9', title: 'სამი დათვი', cat: 'world' },
+  { id: 'w10', title: 'ზღარბი და კურდღელი', cat: 'world' },
+  { id: 'w11', title: 'ოქროს თევზი', cat: 'world' },
   { id: 't1', title: 'კურდღელი და კუ', cat: 'short', free: true },
   { id: 't2', title: 'მელა და წერო', cat: 'short', free: true },
   { id: 't3', title: 'დათუნიას ძილი', cat: 'short' },
@@ -1371,6 +1398,7 @@ const TALES = [
   { id: 'a8', title: 'ჭიანჭველა და მტრედი', cat: 'short' },
   { id: 'a9', title: 'ზღარბი და სოკოები', cat: 'short' },
   { id: 'a10', title: 'თაგვები და კატა', cat: 'short' },
+  { id: 'a11', title: 'ორი თხა ხიდზე', cat: 'short' },
 ];
 const SHELVES = [
   { cat: 'ge', title: 'ქართული ხალხური ზღაპრები', note: '3–6 წუთი' },
