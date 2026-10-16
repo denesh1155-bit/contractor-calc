@@ -1184,6 +1184,130 @@ Object.assign(SCENES, {
   ],
 });
 
+// ---------- batch 4 characters ----------
+Object.assign(C, {
+  rooster: o => C.hen(o).replace(/<path d="M4 18 q-6 -10[^>]*>/, `<path d="M6 20 C-10 10 -6 -10 6 -6 C2 2 8 8 12 14z" fill="#3aa860" ${O(1.4)}/><path d="M6 20 C-4 4 6 -14 14 -4 C10 2 12 10 14 16z" fill="#e2445c" ${O(1.4)}/>`).replace(/#f4ecdc/g, '#ff9f43').replace(/#e0d4c0/g, '#e07a2a'),
+  donkey: o => C.horse({ ...o, coat: '#a0a0b4', mane: '#5a5a6e' }).replace(/<path d="M76 4 l2 -8 l4 7z"[^>]*>/, `<ellipse cx="74" cy="-6" rx="4" ry="12" fill="#a0a0b4" ${O(1.4)} transform="rotate(-14 74 -6)"/><ellipse cx="82" cy="-6" rx="4" ry="12" fill="#a0a0b4" ${O(1.4)} transform="rotate(12 82 -6)"/>`),
+  duck: o => shadow(20, 33, 16) + `<ellipse cx="18" cy="22" rx="15" ry="10" fill="${o.grey ? '#b8b4c8' : '#ffd34d'}" ${O()}/><circle cx="30" cy="10" r="8" fill="${o.grey ? '#b8b4c8' : '#ffd34d'}" ${O()}/><path d="M37 10 q7 0 8 3 q-4 2 -8 1z" fill="#ff9f43" ${O(1.2)}/>${eye(31, 8, o.closed, 2.4)}<path d="M8 20 q8 -4 14 2" stroke="${o.grey ? '#9a96aa' : '#ffc02a'}" stroke-width="2.4" fill="none"/>`,
+  swan: o => `<path d="M10 40 Q0 20 16 22 Q36 24 50 36 Q40 48 18 48z" fill="#fff" ${O()}/><path d="M44 36 Q60 30 54 10 Q52 0 60 0" stroke="${INK}" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M44 36 Q60 30 54 10 Q52 0 60 0" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M61 -3 l8 3 l-8 3z" fill="#ff9f43" ${O(1.2)}/>${eye(60, -1, o.closed, 2)}<path d="M18 32 q12 -6 22 4" stroke="#e6ecff" stroke-width="3" fill="none"/>`,
+  bun: o => shadow(20, 41, 18) + `<circle cx="20" cy="20" r="20" fill="#f0b45a" ${O()}/><path d="M6 12 q14 -10 28 0" stroke="#ffd98a" stroke-width="3" fill="none" stroke-linecap="round"/>${eye(13, 18, o.closed, 3.4)}${eye(27, 18, o.closed, 3.4)}${blush(9, 26, 2.8)}${blush(31, 26, 2.8)}<path d="M15 28 q5 4 10 0" ${O(1.6)} fill="none"/>`,
+  frog: o => shadow(20, 29, 18) + `<ellipse cx="20" cy="20" rx="18" ry="10" fill="#7fd07a" ${O()}/><circle cx="12" cy="10" r="6" fill="#7fd07a" ${O()}/><circle cx="28" cy="10" r="6" fill="#7fd07a" ${O()}/>${eye(12, 9, o.closed, 3)}${eye(28, 9, o.closed, 3)}<path d="M12 22 q8 5 16 0" ${O(1.4)} fill="none"/><path d="M2 26 l-4 3 M38 26 l4 3" ${O(1.6)}/>`,
+  snail: o => shadow(22, 25, 18) + `<path d="M0 24 Q20 26 40 22 L44 16 Q40 14 34 16 L30 24z" fill="#e8c9a0" ${O(1.6)}/><circle cx="22" cy="12" r="12" fill="#c98a4a" ${O()}/><path d="M22 12 m-6 0 a6 6 0 1 1 6 6 a3 3 0 1 1 -2 -4" fill="none" ${O(1.4)}/><path d="M40 16 l2 -8 M44 16 l4 -7" ${O(1.2)}/>${eye(43, 14, o.closed, 1.8)}`,
+  grandpa: o => C.king({ ...o, crown: false, robe: o.robe || '#6a7ab0', beard: '#f0f0f6' }),
+});
+const firefly = (x, y, d = 0) => `<g class="firefly" style="animation-delay:-${d}s"><circle cx="${x}" cy="${y}" r="3" fill="#fff59a"/><circle cx="${x}" cy="${y}" r="8" fill="#fff59a" opacity=".3"/></g>`;
+const rain = () => Array.from({ length: 18 }, (_, i) => `<g class="fall" style="animation-delay:-${i * .3}s;animation-duration:${2 + (i % 3) * .5}s"><path d="M${6 + (i * 23) % 190} ${(i * 9) % 20} l-2 8" stroke="#9fd0ff" stroke-width="2.2" stroke-linecap="round"/></g>`).join('');
+const pond = () => `<ellipse cx="100" cy="172" rx="80" ry="14" fill="#4a90d8" ${O(1.8)}/><path class="wind" d="M60 172 q10 -4 20 0" stroke="#bfe3ff" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
+
+// ---------- automatic scenes: read the paragraph, pick who, where and when ----------
+const WHO_WORDS = [
+  [/კურდღ|ფაფუკა/, 'hare'], [/(^|[\s,.!?])კუ([\s,.!?]|ს |მ |მა |ს,)/, 'tortoise'], [/მელი|მელა/, 'fox'], [/წერო/, 'crane'], [/დათვ|დათუნ/, 'bear'],
+  [/ჩიტ|ბარტყ/, 'bird'], [/თევზ/, 'fish'], [/ცხვ|ბატკ/, 'sheep'], [/ზღარბ/, 'hedgehog'], [/(^|[\s,.!?])ბუ([\s,.!?]|მ |ს |ს,)/, 'owl'], [/ციყვ/, 'squirrel'],
+  [/ირემ|ირმ/, 'deer'], [/დელფ/, 'dolphin'], [/თოლი/, 'gull'], [/კატა|კატამ|კატას|კნუტ|ფისო/, 'cat'], [/თაგვ/, 'mouse'], [/ძაღლ|მურია/, 'dog'], [/ცხენ/, 'horse'],
+  [/ძროხ/, 'cow'], [/ქათამ|ქათმ/, 'hen'], [/მამალ/, 'rooster'], [/(^|\s)ლომ/, 'lion'], [/მგელ|მგლ/, 'wolf'], [/გოჭ|ღორ/, 'pig'], [/ყვავ(?!ილ)/, 'crow'],
+  [/ჭიანჭველ/, 'ant'], [/ჭრიჭინამ|ჭრიჭინა /, 'hopper'], [/არწივ/, 'eagle'], [/დევი|დევმა|დევს|დევის|დევებ/, 'devi'], [/მეფე|მეფემ|მეფის|მეფეს/, 'king'],
+  [/უფლისწ|პრინც/, 'prince'], [/დედოფ|მზეთუნ|ქალიშვ/, 'princess'], [/(^|\s)ვირ/, 'donkey'], [/იხვ/, 'duck'], [/(^|\s)გედ/, 'swan'], [/ფუნთუშ/, 'bun'],
+  [/ბაყაყ/, 'frog'], [/ლოკოკინ/, 'snail'], [/ფერია/, 'fairy'], [/ღრუბ/, 'cloudy'],
+  [/ბიჭ|ნიკა|გიორგი/, 'boy'], [/გოგო|მარიამ|ნინო/, 'girl'], [/ბებია|ბებიკო/, 'granny'], [/ბაბუა/, 'grandpa'], [/დედა(?!ბერ| (დათვ|კურდღ|ზღარბ|იხვ|ირემ))|დედიკო/, 'mom'],
+];
+const FLYERS = new Set(['bird', 'gull', 'owl', 'eagle']), SWIMMERS = new Set(['fish', 'dolphin']);
+const sizeCache = {};
+function bbox(who, o) {
+  const key = who + JSON.stringify(o);
+  if (sizeCache[key]) return sizeCache[key];
+  measure.innerHTML = `<svg viewBox="0 0 200 200"><g>${C[who === 'princess' ? 'mom' : who](o)}</g></svg>`;
+  const b = measure.querySelector('g').getBBox();
+  return (sizeCache[key] = { x: b.x, y: b.y, w: b.width, h: b.height });
+}
+const HUMANS = new Set(['king', 'mom', 'princess', 'granny', 'grandpa', 'girl', 'boy', 'prince', 'fairy']);
+const TARGET = { hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
+function place(who, cx, ground, o, small) {
+  const opts = who === 'princess' ? { ...o, princess: 1, dress: '#ffb347' } : o;
+  const b = bbox(who, opts);
+  const target = (TARGET[who] || 46) * (small ? .75 : 1) * (o.big || 1);
+  const s = Math.min(target / b.h, 110 / b.w);
+  const draw = who === 'princess' ? 'mom' : who;
+  return A(draw, cx - (b.x + b.w / 2) * s, ground - (b.y + b.h) * s, s, opts);
+}
+const heroCache = {};
+function taleHero(tale) {
+  if (tale.id in heroCache) return heroCache[tale.id];
+  const first = (TEXTS[tale.id] || '').split('\n\n').slice(0, 2).join(' ');
+  const found = WHO_WORDS.find(([re, who]) => re.test(first) && !HUMANS.has(who) && who !== 'cloudy');
+  return (heroCache[tale.id] = found ? found[1] : null);
+}
+const hashOf = str => [...str].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
+function autoScene(tale, text, i) {
+  const has = re => re.test(text);
+  const sleepy = tale.cat === 'sleep';
+  const night = sleepy && i > 0 || has(/ღამ|ვარსკვლ|მთვარ|დაიძინ|ძილი ნებისა|სიბნელ/);
+  const dusk = !night && has(/საღამ|ჩავიდა|ჩადიოდა/);
+  const asleep = has(/სძინ|ეძინ|ჩაეძინ|დაიძინ|ჩაიძინ|დახუჭ|ხვრინ|ძილი ნებისა/);
+  // where
+  let scene = '', wantBed = false;
+  if (has(/ლოგინ|საბან|ბალიშ|ოთახ/)) { scene = BG.room() + bed(); wantBed = true; }
+  else if (has(/ზღვ|ნავ|ტალღ/)) scene = (night ? BG.night(true) : BG.day()) + sea();
+  else if (has(/თოვლ|ზამთ|ფიფქ/)) scene = BG.snow();
+  else if (has(/ტყ/)) scene = night ? BG.nightForest() : BG.day() + tree(30, 152, .9) + tree(176, 154, .85);
+  else if (has(/სასახლ|მეფე/)) scene = night ? BG.palace().replace(/#6cc4ff/g, '#2a2a6a').replace(/#d6f3ff/g, '#5a5aa0') : BG.palace();
+  else if (has(/ბუხარ|კერი|სახლში|სახლი |ფანჯარ|აივან/)) scene = BG.hut(night) + (has(/ბუხარ|კერი|ცეცხლ/) ? hearth(160, 168, .85) : '');
+  else if (has(/სოფ|ეზო|ბოსელ|ფარეხ|საქათმ/)) scene = night ? BG.night(true) + house(50, 150, .6).replace(/#ffd98a/g, '#3a3a6a') + house(160, 152, .55).replace(/#ffd98a/g, '#3a3a6a') : BG.village();
+  else if (has(/მთის|მთებ|მთაზე|საძოვ|ფერდობ/)) scene = night ? BG.night(true) + mountains('#3a4a8a', '#e6ecff') : BG.mountain();
+  else scene = night ? BG.night(true) : dusk ? BG.dusk() : BG.day();
+  if (has(/მდინარ|ტბ|წყარო|ნაკადულ/) && !has(/ზღვ/)) scene += curBg === 'room' || curBg === 'hut' ? '' : water();
+  if (night && curBg !== 'room' && curBg !== 'hut') scene += has(/მთვარ/) ? moonFace(150, 40, 18) : '';
+  // what is around
+  let extra = '';
+  if (has(/ვარსკვლ|ციმციმ/)) extra += [30, 70, 120, 170].map((x, k) => sparkle(x, 24 + (k % 2) * 22, k * .4, '#fff1b8', 5 + (k % 2) * 2)).join('');
+  if (has(/ციცინათელ|ლუცია/)) extra += [40, 80, 120, 160, 100].map((x, k) => firefly(x, 90 + (k % 3) * 18, k)).join('');
+  if (has(/ყვავილ/) && curBg !== 'room') extra += flowers();
+  if (has(/ქარ(ი|მა)|ნიავ/)) extra += windLines();
+  if (has(/წვიმ|წვეთ/)) extra += rain();
+  if (has(/ზეიმ|ქორწილ|ცეკვ|ლხინ/)) extra += confetti();
+  if (has(/მღერ|სიმღერ|ნანა|სალამურ|მუსიკ/)) extra += notes(140, 70);
+  if (has(/ჩაიხუტ|მიეხუტ|გულში|უყვარ|აკოცა/)) extra += heart(100, 60) + heart(84, 44, .6);
+  if (has(/ნისლ/)) extra += fog();
+  // who
+  const cast = [];
+  for (const [re, who] of WHO_WORDS) if (re.test(text) && !cast.includes(who)) cast.push(who);
+  // in an animal tale 'mother' is the hero's mother, not a person
+  const hero = taleHero(tale);
+  if (hero && !HUMANS.has(hero)) cast.forEach((w, k) => { if (w === 'mom') cast[k] = 'mother:' + hero; });
+  if (!cast.length && i === 0 && sleepy) cast.push('moon');
+  const anim = asleep ? 'breathe' : has(/ზეიმ|ცეკვ|ლხინ/) ? 'dance' : has(/შეშინ|ეშინ|ცახცახ/) ? 'shiver' : has(/გაიცინ|იცინ|გაეცინ/) ? 'laugh' : has(/ხტ|ჰოპ|გაგორ/) ? 'hop' : null;
+  const picks = ['bob', 'nod', 'idle', 'hop', 'nod'];
+  const people = cast.filter(w => w !== 'moon').filter((w, k, arr) => arr.indexOf(w) === k).slice(0, 3);
+  let actors = '';
+  if (wantBed && people.length) {
+    const [first0, ...rest] = people;
+    const first = first0.replace('mother:', '');
+    actors = place(first, 78, 142, { closed: asleep || sleepy, anim: 'breathe' }) + blanket() + rest.slice(0, 1).map(w => place(w.replace('mother:', ''), 160, 176, { anim: asleep ? 'breathe' : 'nod', closed: asleep }, true)).join('');
+  } else {
+    const slots = [[100], [64, 140], [40, 100, 162]][people.length - 1] || [];
+    actors = people.map((w, k) => {
+      const ground = FLYERS.has(w) && curBg !== 'room' && curBg !== 'hut' ? 96 : SWIMMERS.has(w) ? 182 : curBg === 'room' || curBg === 'hut' ? 172 : 156;
+      const a = anim || (sleepy ? (k ? 'breathe' : 'nod') : picks[(hashOf(text) + k) % picks.length]);
+      const o = { anim: a, closed: asleep, delay: k * .3 };
+      if (w === 'hedgehog' && has(/სოკო/)) o.shrooms = 1;
+      if ((w === 'hen' || w === 'duck') && has(/ოქრო/)) o.gold = 1;
+      if (w === 'duck' && has(/ნაცრისფ|მახინჯ/)) o.grey = 1;
+      if (w.startsWith('mother:')) { w = w.slice(7); o.big = 1.3; if (w === 'bear') { o.fur = '#7a5232'; o.belly = '#b8875a'; } }
+      return place(w, slots[k], ground, o, people.length === 3);
+    }).join('');
+  }
+  if (asleep && people.length) extra += zzz(150, 90);
+  if (cast.includes('moon') || (sleepy && !people.length && night)) extra += moonFace(100, 70, 30);
+  return scene + extra + actors;
+}
+// tales without hand-drawn scenes get automatic ones, one per paragraph
+let TEXTS = {};
+function buildAutoScenes() {
+  TALES.forEach(t => {
+    if (SCENES[t.id] || !TEXTS[t.id]) return;
+    SCENES[t.id] = TEXTS[t.id].split('\n\n').map((p, i) => () => autoScene(t, p, i));
+  });
+}
+
 // one scene as SVG; slabs above and below continue the sky and ground beyond the frame
 function sceneSvg(id, i) {
   const body = SCENES[id][i]();
@@ -1211,17 +1335,32 @@ const TALES = [
   { id: 'g6', title: 'მელია და მწყერი', cat: 'ge' },
   { id: 'g7', title: 'ჭინჭრაქა', cat: 'ge' },
   { id: 'g8', title: 'ოქროს ფრინველი', cat: 'ge' },
+  { id: 'g9', title: 'მამალი და მელია', cat: 'ge' },
+  { id: 'g10', title: 'ბრძენი ნინო', cat: 'ge' },
   { id: 's1', title: 'მთვარის სტუმრობა', cat: 'sleep', free: true },
   { id: 's2', title: 'პატარა ღრუბლის მოგზაურობა', cat: 'sleep' },
   { id: 's3', title: 'ძილის მატარებელი', cat: 'sleep' },
   { id: 's4', title: 'ვარსკვლავების თვლა', cat: 'sleep' },
   { id: 's5', title: 'ზღვის ნანა', cat: 'sleep' },
   { id: 's6', title: 'ტყის ღამე', cat: 'sleep' },
+  { id: 's7', title: 'ფაფუკას ძილი', cat: 'sleep' },
+  { id: 's8', title: 'პატარა ვარსკვლავი ციმციმა', cat: 'sleep' },
+  { id: 's9', title: 'კნუტი ფისო', cat: 'sleep' },
+  { id: 's10', title: 'ფუმფულა ბატკანი', cat: 'sleep' },
+  { id: 's11', title: 'ბუ და მთვარე', cat: 'sleep' },
+  { id: 's12', title: 'დათუნიას ზამთრის ძილი', cat: 'sleep' },
+  { id: 's13', title: 'ღრუბელი-ბალიში', cat: 'sleep' },
+  { id: 's14', title: 'ციცინათელა ლუცია', cat: 'sleep' },
+  { id: 's15', title: 'ბებიას ნანა', cat: 'sleep' },
+  { id: 's16', title: 'წვიმის სიმღერა', cat: 'sleep' },
   { id: 'w1', title: 'კონკია', cat: 'world' },
   { id: 'w2', title: 'წითელქუდა', cat: 'world' },
   { id: 'w3', title: 'სამი გოჭი', cat: 'world' },
   { id: 'w4', title: 'ოქროს კვერცხი', cat: 'world' },
   { id: 'w5', title: 'ჯეკი და ლობიოს ღერო', cat: 'world' },
+  { id: 'w6', title: 'ფუნთუშა', cat: 'world' },
+  { id: 'w7', title: 'ბრემენელი მუსიკოსები', cat: 'world' },
+  { id: 'w8', title: 'მახინჯი იხვის ჭუკი', cat: 'world' },
   { id: 't1', title: 'კურდღელი და კუ', cat: 'short', free: true },
   { id: 't2', title: 'მელა და წერო', cat: 'short', free: true },
   { id: 't3', title: 'დათუნიას ძილი', cat: 'short' },
@@ -1240,7 +1379,8 @@ const SHELVES = [
   { cat: 'short', title: 'პატარა ზღაპრები ცხოველებზე', note: '1–2 წუთი' },
 ];
 const ready = t => !!SCENES[t.id];
-const cover = t => ready(t) ? sceneSvg(t.id, 0) : `<svg viewBox="0 0 200 200" role="img" aria-hidden="true">${LOCKED_ART[t.id]()}</svg>`;
+const cover = t => ready(t) ? sceneSvg(t.id, 0)
+  : `<svg viewBox="0 0 200 200" role="img" aria-hidden="true">${LOCKED_ART[t.id] ? LOCKED_ART[t.id]() : coverSky(t.cat === 'sleep' ? '#1d2a6a' : '#6cc4ff', t.cat === 'sleep' ? '#4a5aa0' : '#d6f3ff') + coverHills(t.cat === 'sleep' ? '#2a4a7a' : '#9ad88a', t.cat === 'sleep' ? '#1e3e62' : '#6cc46a') + (t.cat === 'sleep' ? bigMoon(100, 70, 22) : sunFace(100, 70))}</svg>`;
 const LOCK = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd98a" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const PLAY = '<svg width="44" height="44" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
 const PAUSE = '<svg width="40" height="40" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg>';
@@ -1377,6 +1517,14 @@ const ART = {
   knight: () => `<rect x="14" y="40" width="40" height="44" rx="6" fill="#c9cfe0" ${O()}/><path d="M14 84 H54 L50 110 H18z" fill="#4a6ad0" ${O()}/><rect x="18" y="110" width="12" height="16" rx="3" fill="#9aa4c8" ${O()}/><rect x="38" y="110" width="12" height="16" rx="3" fill="#9aa4c8" ${O()}/>
     <path d="M34 0 Q60 0 58 30 Q58 42 34 42 Q10 42 10 30 Q8 0 34 0z" fill="#c9cfe0" ${O()}/><path d="M16 22 H52" ${O(3)}/><path d="M34 0 Q40 -14 52 -12" stroke="#e2445c" stroke-width="6" fill="none" stroke-linecap="round"/>
     <path d="M-6 44 Q-6 80 14 92 Q30 80 30 44z" fill="#e2445c" ${O()}/><path d="M12 52 V80 M2 64 H22" stroke="#ffd34d" stroke-width="4"/><path d="M64 40 V100" ${O(4)}/><path d="M56 48 H72" ${O(3)}/>`,
+  bus: () => `<rect x="0" y="0" width="140" height="64" rx="10" fill="#ffd34d" ${O()}/>${[10, 40, 70, 100].map(x => `<rect x="${x}" y="10" width="24" height="20" rx="3" fill="#d6ecff" ${O(1.6)}/>`).join('')}<rect x="112" y="36" width="20" height="26" rx="2" fill="#d6ecff" ${O(1.6)}/><path d="M0 44 H110" ${O(1.6)}/>${wheel(30, 66, 13)}${wheel(108, 66, 13)}`,
+  bike: () => `${wheel(20, 60, 22).replace('#3a3550', '#fff')}${wheel(100, 60, 22).replace('#3a3550', '#fff')}<path d="M20 60 L50 20 L84 20 L100 60 M50 20 L60 60 L84 20 M60 60 L20 60" ${O(3)} fill="none"/><path d="M44 12 H58 M84 20 L80 6 H92" ${O(3)} fill="none"/>`,
+  submarine: () => `<path d="M0 40 Q0 10 60 10 Q120 10 130 40 Q120 70 60 70 Q0 70 0 40z" fill="#ffd34d" ${O()}/><rect x="50" y="-10" width="30" height="22" rx="4" fill="#ffd34d" ${O()}/><path d="M66 -10 V-26 H76" ${O(2.6)} fill="none"/>${[30, 60, 90].map(x => `<circle cx="${x}" cy="40" r="9" fill="#7ab8f0" ${O(1.8)}/>`).join('')}<path d="M130 40 l12 -12 v24z" fill="#ff9f43" ${O()}/>${[0, 1, 2].map(i => `<circle cx="${-10 - i * 8}" cy="${30 - i * 10}" r="${3 + i}" fill="#d6ecff" ${O(1.2)}/>`).join('')}`,
+  crown: () => `<path d="M0 70 L-6 10 L28 40 L50 0 L72 40 L106 10 L100 70z" fill="#ffd34d" ${O()}/><rect x="-2" y="70" width="104" height="18" rx="4" fill="#ffc93c" ${O()}/>${[[50, 50, '#e2445c'], [20, 56, '#7ab8f0'], [80, 56, '#3aa860']].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="7" fill="${c}" ${O(1.6)}/>`).join('')}<circle cx="-6" cy="8" r="5" fill="#fff" ${O(1.4)}/><circle cx="50" cy="-2" r="5" fill="#fff" ${O(1.4)}/><circle cx="106" cy="8" r="5" fill="#fff" ${O(1.4)}/>`,
+  rainbow: () => ['#ff5a6e', '#ff9f43', '#ffd34d', '#8fd07a', '#7ab8f0', '#a07ae0'].map((c, i) => `<path d="M${i * 9} 80 A${70 - i * 9} ${70 - i * 9} 0 0 1 ${140 - i * 9} 80" stroke="${INK}" stroke-width="10.4" fill="none"/><path d="M${i * 9} 80 A${70 - i * 9} ${70 - i * 9} 0 0 1 ${140 - i * 9} 80" stroke="${c}" stroke-width="7" fill="none"/>`).join('') + `<path d="M-14 84 C-24 84 -24 70 -12 70 C-10 58 10 58 14 68 C24 62 34 74 26 84z M114 84 C104 84 104 70 116 70 C118 58 138 58 142 68 C152 62 162 74 154 84z" fill="#fff" ${O()}/>`,
+  cottage: () => house(60, 120, 1.4),
+  bigfish: () => `<path d="M10 40 L-20 14 L-14 40 L-20 66z" fill="#ff9f43" ${O()}/><ellipse cx="50" cy="40" rx="50" ry="30" fill="#ffd34d" ${O()}/><path d="M40 12 q10 -14 26 -8 l-6 10z M40 68 q10 14 26 8 l-6 -10z" fill="#ff9f43" ${O(1.6)}/><path d="M28 18 q-8 22 0 44 M50 12 q-8 28 0 56" ${O(1.6)} fill="none"/>${eye(78, 32, false, 6)}<path d="M86 50 q6 2 8 -2" ${O(1.6)} fill="none"/>${[0, 1].map(i => `<circle cx="${110 + i * 10}" cy="${20 - i * 12}" r="${4 + i * 2}" fill="#d6ecff" ${O(1.2)}/>`).join('')}`,
+  snowman: () => `<circle cx="40" cy="110" r="34" fill="#fff" ${O()}/><circle cx="40" cy="56" r="24" fill="#fff" ${O()}/><circle cx="40" cy="18" r="18" fill="#fff" ${O()}/><path d="M24 4 H56 L52 -18 H28z" fill="#3a3550" ${O()}/><path d="M20 4 H60" ${O(3)}/>${eye(34, 16, false, 2.8)}${eye(46, 16, false, 2.8)}<path d="M40 22 l14 4 l-14 2z" fill="#ff9f43" ${O(1.2)}/><path d="M20 38 q20 10 40 0 l4 8 q-24 12 -48 0z" fill="#e2445c" ${O(1.6)}/>${[50, 64, 98, 114].map(y => `<circle cx="40" cy="${y}" r="3" fill="#3a3550"/>`).join('')}<path d="M16 56 L-8 40 M64 56 L88 40" ${O(3)} fill="none"/>`,
   ball: () => `<circle cx="50" cy="50" r="48" fill="#fff" ${O()}/><path d="M50 30 L68 44 L62 66 H38 L32 44z" fill="#3a3550" ${O(1.8)}/><path d="M50 30 V4 M68 44 L94 36 M62 66 L78 90 M38 66 L22 90 M32 44 L6 36" ${O(1.8)}/>`,
 };
 const MORE_PAGES = [
@@ -1385,6 +1533,8 @@ const MORE_PAGES = [
   ['g9', 'princessCastle', 'სასახლე', 'girls'], ['g10', 'mermaid', 'ქალთევზა', 'girls'], ['g11', 'teddy', 'სათამაშო დათვი', 'girls'], ['g12', 'dress', 'კაბა', 'girls'], ['g13', 'icecream', 'ნაყინი', 'girls'],
   ['b1', 'car', 'მანქანა', 'boys', 1], ['b2', 'truck', 'სატვირთო', 'boys'], ['b3', 'firetruck', 'სახანძრო', 'boys'], ['b4', 'racecar', 'სარბოლო მანქანა', 'boys'],
   ['b5', 'rocket', 'რაკეტა', 'boys'], ['b6', 'plane', 'თვითმფრინავი', 'boys'], ['b7', 'tractor', 'ტრაქტორი', 'boys'], ['b8', 'dino', 'დინოზავრი', 'boys'],
+  ['g14', 'crown', 'გვირგვინი', 'girls'], ['g15', 'rainbow', 'ცისარტყელა', 'girls'], ['g16', 'cottage', 'სახლი', 'girls'], ['g17', 'snowman', 'თოვლის ბაბუა', 'girls'],
+  ['b14', 'bus', 'ავტობუსი', 'boys'], ['b15', 'bike', 'ველოსიპედი', 'boys'], ['b16', 'submarine', 'წყალქვეშა ნავი', 'boys'], ['b17', 'bigfish', 'თევზი', 'boys'],
   ['b9', 'robot', 'რობოტი', 'boys'], ['b10', 'ship', 'გემი', 'boys'], ['b11', 'helicopter', 'ვერტმფრენი', 'boys'], ['b12', 'knight', 'რაინდი', 'boys'], ['b13', 'ball', 'ბურთი', 'boys'],
 ].map(([id, art, title, cat, free]) => ({ id, art, title, cat, free: !!free }));
 
@@ -1489,6 +1639,7 @@ const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML =
 
 renderShelves();
 fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; renderShelves(); }).catch(() => {});
+fetch('tales.json').then(r => r.json()).then(list => { list.forEach(t => { TEXTS[t.id] = t.text; }); buildAutoScenes(); renderShelves(); }).catch(() => {});
 
 function sceneAt(id, time) {
   const n = SCENES[id].length;

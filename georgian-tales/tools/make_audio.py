@@ -1,15 +1,23 @@
 """Озвучка сказок из tales.json бесплатным голосом Piper (ka_GE-natia).
 Позже этот скрипт заменим на ElevenLabs — формат файлов останется тем же.
 Запуск: python3 tools/make_audio.py <путь к ka_GE-natia-medium.onnx>"""
-import json, subprocess, sys, pathlib, wave
+import hashlib, json, subprocess, sys, pathlib, wave
 from piper import PiperVoice, SynthesisConfig
 
 root = pathlib.Path(__file__).resolve().parent.parent
 voice = PiperVoice.load(sys.argv[1])
 # length_scale > 1 — читаем медленнее; сказки перед сном (pace в tales.json) ещё медленнее и с длинными паузами
 
+timings_file, hashes_file = root / "audio" / "timings.json", root / "audio" / "hashes.json"
+old_timings = json.loads(timings_file.read_text()) if timings_file.exists() else {}
+hashes = json.loads(hashes_file.read_text()) if hashes_file.exists() else {}
 timings = {}  # секунда, с которой начинается каждый абзац — по ним меняются сцены мультика
 for tale in json.loads((root / "tales.json").read_text()):
+    # сказку, текст которой не менялся, заново не озвучиваем
+    digest = hashlib.sha1((tale["text"] + str(tale.get("pace"))).encode()).hexdigest()
+    if hashes.get(tale["id"]) == digest and tale["id"] in old_timings and (root / "audio" / f"{tale['id']}.mp3").exists():
+        timings[tale["id"]] = old_timings[tale["id"]]
+        continue
     wav = root / "audio" / f"{tale['id']}.wav"
     mp3 = root / "audio" / f"{tale['id']}.mp3"
     slow = "pace" in tale
@@ -30,6 +38,8 @@ for tale in json.loads((root / "tales.json").read_text()):
                     "-ac", "1", "-b:a", "64k", str(mp3)], check=True)
     wav.unlink()
     timings[tale["id"]]["duration"] = round(float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(mp3)], capture_output=True, text=True).stdout), 1)
+    hashes[tale["id"]] = digest
     print("ok", mp3.name)
 
-(root / "audio" / "timings.json").write_text(json.dumps(timings))
+timings_file.write_text(json.dumps(timings))
+hashes_file.write_text(json.dumps(hashes))
