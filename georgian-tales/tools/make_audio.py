@@ -24,10 +24,11 @@ for tale in json.loads((root / "tales.json").read_text()):
             for chunk in voice.synthesize(paragraph, config):
                 out.writeframes(chunk.audio_int16_bytes + silence(SENTENCE_PAUSE))
             out.writeframes(silence(PARAGRAPH_PAUSE - SENTENCE_PAUSE))
-    timings[tale["id"]] = starts
+    timings[tale["id"]] = {"starts": starts, "duration": None}
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav),
                     "-ac", "1", "-b:a", "64k", str(mp3)], check=True)
     wav.unlink()
+    timings[tale["id"]]["duration"] = round(float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(mp3)], capture_output=True, text=True).stdout), 1)
     print("ok", mp3.name)
 
 (root / "audio" / "timings.json").write_text(json.dumps(timings))
