@@ -236,8 +236,84 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .a-shiver { animation: aShiver .12s linear infinite; }
 .a-sad { animation: aSad 1.2s ease-out both; }
 .a-stomp { animation: aStomp .5s ease-in-out infinite; }
+/* ---------- rigged characters: legs, arms, head, tail and mouth move on their own ----------
+   parts: .r-leg1 .r-leg2 (alternate; for four legs diagonal pairs) .r-arm1 (front arm / wing) .r-arm2 (back arm / wing)
+   .r-head (turns at the neck) .r-tail .r-body (breathes) .r-mouth > .m-open (opens with the voice) */
+@property --v { syntax: '<number>'; inherits: true; initial-value: 0; }
+.r-leg1, .r-leg2, .r-arm1, .r-arm2, .r-head, .r-tail, .r-body, .m-open, .r-ear { transform-box: fill-box; }
+.r-leg1, .r-leg2 { transform-origin: 50% 8%; }
+.r-arm1, .r-arm2 { transform-origin: 50% 10%; }
+.r-head { transform-origin: 50% 92%; animation: hLook 7s ease-in-out infinite; }
+.r-tail { animation: rTail 1.5s ease-in-out infinite alternate; }
+.r-ear { transform-origin: 50% 100%; animation: rEar 5s ease-in-out infinite; }
+.r-body { transform-origin: 50% 100%; animation: rBreath 3.2s ease-in-out infinite; }
+.m-open { transform-origin: 50% 0; transform: scaleY(0); }
+.speaking .m-open { transform: scaleY(var(--v)); }
+.speaking { animation: jaw .9s steps(1) infinite; }
+.lipsync .speaking { animation: none; }
+@keyframes jaw { 0% { --v: .2; } 12% { --v: .9; } 24% { --v: .4; } 36% { --v: 1; } 48% { --v: .1; } 60% { --v: .8; } 72% { --v: .5; } 84% { --v: .95; } }
+@keyframes hLook { 0%, 30%, 100% { transform: rotate(0); } 38%, 52% { transform: rotate(-5deg); } 60%, 74% { transform: rotate(4deg); } }
+@keyframes rTail { from { transform: rotate(-8deg); } to { transform: rotate(10deg); } }
+@keyframes rEar { 0%, 86%, 100% { transform: rotate(0); } 90% { transform: rotate(-14deg); } 95% { transform: rotate(8deg); } }
+@keyframes rBreath { 50% { transform: scale(1.015, 1.03); } }
+@keyframes lgA { 0%, 100% { transform: rotate(24deg); } 50% { transform: rotate(-24deg); } }
+@keyframes lgB { 0%, 100% { transform: rotate(-24deg); } 50% { transform: rotate(24deg); } }
+@keyframes rnA { 0%, 100% { transform: rotate(40deg); } 50% { transform: rotate(-36deg); } }
+@keyframes rnB { 0%, 100% { transform: rotate(-36deg); } 50% { transform: rotate(40deg); } }
+@keyframes amA { 0%, 100% { transform: rotate(-22deg); } 50% { transform: rotate(22deg); } }
+@keyframes amB { 0%, 100% { transform: rotate(22deg); } 50% { transform: rotate(-22deg); } }
+@keyframes amWave { from { transform: rotate(-150deg); } to { transform: rotate(-110deg); } }
+@keyframes amTalk { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-40deg); } 60% { transform: rotate(-24deg); } }
+@keyframes amUp { from { transform: rotate(-160deg); } to { transform: rotate(-120deg); } }
+@keyframes amWork { from { transform: rotate(-110deg); } to { transform: rotate(-10deg); } }
+@keyframes amHug { to { transform: rotate(-80deg); } }
+@keyframes amGive { to { transform: rotate(-75deg); } }
+@keyframes amThink { to { transform: rotate(-125deg); } }
+@keyframes amKnock { 0%, 100% { transform: rotate(-90deg); } 50% { transform: rotate(-60deg); } }
+@keyframes amFlap { from { transform: rotate(-35deg) scaleY(1); } to { transform: rotate(25deg) scaleY(.8); } }
+@keyframes amCry { 0%, 100% { transform: rotate(-140deg); } 50% { transform: rotate(-130deg); } }
+@keyframes hdNod { 0%, 100% { transform: rotate(0); } 40% { transform: rotate(5deg); } 70% { transform: rotate(-3deg); } }
+@keyframes hdSing { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+@keyframes hdDown { to { transform: rotate(14deg) translateY(2px); } }
+@keyframes hdEat { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(16deg); } }
+@keyframes hdLaugh { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(-3deg) translateY(-1px); } }
+@keyframes hdTurn { 0%, 35% { transform: rotate(0); } 45%, 80% { transform: rotate(-12deg); } 90%, 100% { transform: rotate(6deg); } }
+@keyframes hdSleep { to { transform: rotate(18deg) translateY(3px); } }
+@keyframes tlFast { from { transform: rotate(-24deg); } to { transform: rotate(24deg); } }
+@keyframes lgTuck { 0%, 100% { transform: rotate(0); } 40% { transform: rotate(-40deg); } }
+@keyframes lgSit { to { transform: rotate(-70deg); } }
+@keyframes lgDance { 0%, 100% { transform: rotate(-18deg); } 50% { transform: rotate(14deg) translateY(-2px); } }
+@keyframes lgStomp { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-28deg); } }
+.a-walk .r-leg1 { animation: lgA .62s ease-in-out infinite; } .a-walk .r-leg2 { animation: lgB .62s ease-in-out infinite; }
+.a-walk .r-arm1 { animation: amB .62s ease-in-out infinite; } .a-walk .r-arm2 { animation: amA .62s ease-in-out infinite; }
+.a-walk .r-head { animation: hdNod .62s ease-in-out infinite; }
+.a-run .r-leg1 { animation: rnA .34s ease-in-out infinite; } .a-run .r-leg2 { animation: rnB .34s ease-in-out infinite; }
+.a-run .r-arm1 { animation: rnB .34s ease-in-out infinite; } .a-run .r-arm2 { animation: rnA .34s ease-in-out infinite; }
+.a-run .r-tail, .a-joy .r-tail, .a-dance .r-tail, .a-hug .r-tail, .a-pop .r-tail { animation: tlFast .25s ease-in-out infinite alternate; }
+.a-talk .r-arm1 { animation: amTalk 1.8s ease-in-out infinite; } .a-talk .r-head { animation: hdNod 1.4s ease-in-out infinite; }
+.a-sing .r-head { animation: hdSing 1s ease-in-out infinite alternate; } .a-sing .r-arm1, .a-sing .r-arm2 { animation: amHug 1s ease-in-out infinite alternate; }
+.a-wave .r-arm1 { animation: amWave .35s ease-in-out infinite alternate; }
+.a-dance .r-arm1, .a-joy .r-arm1, .a-jump .r-arm1 { animation: amUp .3s ease-in-out infinite alternate; }
+.a-dance .r-arm2, .a-joy .r-arm2, .a-jump .r-arm2 { animation: amUp .3s ease-in-out -.15s infinite alternate; }
+.a-dance .r-leg1 { animation: lgDance .5s ease-in-out infinite; } .a-dance .r-leg2 { animation: lgDance .5s ease-in-out -.25s infinite; }
+.a-dance .r-head { animation: hdSing .5s ease-in-out infinite alternate; }
+.a-jump .r-leg1, .a-joy .r-leg1 { animation: lgTuck .62s ease-out 2; } .a-jump .r-leg2, .a-joy .r-leg2 { animation: lgTuck .62s ease-out .05s 2; }
+.a-work .r-arm1, .a-work .r-arm2 { animation: amWork .5s ease-in-out infinite alternate; } .a-work .r-head { animation: hdEat .5s ease-in-out infinite; }
+.a-hug .r-arm1, .a-hug .r-arm2 { animation: amHug .6s ease-out both; }
+.a-eat .r-head { animation: hdEat .5s ease-in-out infinite; } .a-eat .r-arm1 { animation: amGive .5s ease-in-out infinite alternate; }
+.a-think .r-arm1 { animation: amThink 1s ease-out both; } .a-think .r-head { animation: hdDown 2s ease-in-out infinite alternate; }
+.a-look .r-head { animation: hdTurn 2.6s ease-in-out infinite; }
+.a-laugh .r-head, .a-joy .r-head { animation: hdLaugh .3s ease-in-out infinite; }
+.a-sad .r-head, .a-shiver .r-head { animation: hdDown 1.2s ease-out both; } .a-sad .r-arm1, .a-sad .r-arm2 { animation: none; transform: rotate(6deg); }
+.a-sleep .r-head { animation: hdSleep 2s ease-out both; } .a-sleep .r-tail, .a-sleep .r-ear { animation: none; }
+.a-sit .r-leg1, .a-sit .r-leg2 { animation: lgSit .8s ease-out both; }
+.a-stomp .r-leg1 { animation: lgStomp .5s ease-in-out infinite; } .a-stomp .r-arm1, .a-stomp .r-arm2 { animation: amUp .5s ease-in-out infinite alternate; }
+.a-fly .r-arm1, .a-fly .r-arm2 { animation: amFlap .18s ease-in-out infinite alternate; } .a-fly .r-leg1, .a-fly .r-leg2 { transform: rotate(-30deg); }
+.a-swim .r-tail { animation: tlFast .4s ease-in-out infinite alternate; } .a-swim .r-arm1, .a-swim .r-arm2 { animation: amA .8s ease-in-out infinite; }
+.a-give .r-arm1 { animation: amGive .6s ease-out both; } .a-knock .r-arm1 { animation: amKnock .3s ease-in-out infinite; }
+.a-cry .r-arm1, .a-cry .r-arm2 { animation: amCry .5s ease-in-out infinite; } .a-cry .r-head { animation: hdDown 1s ease-out both; }
 @keyframes aBreath { 50% { transform: scale(1.006, 1.02); } }
-@keyframes aWalk { 0%, 100% { transform: rotate(-4deg); } 25%, 75% { transform: translateY(-3.5px) rotate(0); } 50% { transform: rotate(4deg); } }
+@keyframes aWalk { 0%, 50%, 100% { transform: translateY(0) rotate(-1deg); } 25%, 75% { transform: translateY(-3px) rotate(1deg); } }
 @keyframes aRun { 0%, 100% { transform: rotate(5deg) scale(1.04, .96); } 50% { transform: translateY(-7px) rotate(9deg) scale(.97, 1.04); } }
 @keyframes aFly { 50% { transform: translateY(-8px) rotate(-4deg); } }
 @keyframes aSwim { 50% { transform: translateY(-3px) rotate(-6deg); } }
@@ -1999,6 +2075,7 @@ function applyBeat(root, para, bi, instant) {
     el.querySelector('.facing').style.transform = `scaleX(${p.face})`;
     const actEl = el.querySelector('.act');
     actEl.setAttribute('class', `act a-${p.act}`);
+    el.classList.toggle('speaking', p.fx.includes('talk'));
     if ((el.dataset.mood || '') !== p.mood) { el.dataset.mood = p.mood; el.querySelector('.body').innerHTML = charSvg(a, p.mood); }
     const fxs = fxSvg(p.fx, a, p.face), fxEl = el.querySelector('.fx'); if (fxEl.dataset.v !== fxs) { fxEl.dataset.v = fxs; fxEl.innerHTML = fxs; }
     if (p.dur && p.after !== p.act) beatTimers.push(setTimeout(() => { actEl.setAttribute('class', `act a-${p.after}`); el.querySelector('.dust')?.remove(); }, p.dur * 1000));
@@ -2702,7 +2779,23 @@ $('bar').addEventListener('click', e => e.stopPropagation());
 $('restartBtn').onclick = e => { e.stopPropagation(); audio.currentTime = 0; if (current) showBeat(0); if (audio.paused) audio.play().catch(() => {}); };
 $('prevBtn').onclick = () => { if (audio.currentTime > 5) { audio.currentTime = 0; return; } const sh = shelfOf(current); openPlayer(sh[(sh.indexOf(current) - 1 + sh.length) % sh.length]); };
 $('closePlayer').onclick = () => { audio.pause(); musicPause(true); $('player').hidden = true; $('layerA').innerHTML = $('layerB').innerHTML = ''; renderShelves(); };
-audio.addEventListener('play', async () => { setPlayIcon(); musicStart(current); if (play) ambience(play[sceneIdx]?.amb || ''); $('stage').classList.remove('still'); try { wake = await navigator.wakeLock?.request('screen'); } catch {} });
+// lips follow the voice: a loudness track of each recording (audio/lips.json, 12.5 values a second) opens the speaker's mouth
+const LIP = { data: null, id: '', run: false };
+function lipInit() {
+  if (!LIP.data && !LIP.loading) { LIP.loading = fetch('audio/lips.json').then(r => r.json()).then(d => { LIP.data = d; }).catch(() => {}); }
+  if (LIP.run) return; LIP.run = true;
+  let last = -1;
+  const tick = () => {
+    requestAnimationFrame(tick);
+    const tr = LIP.data?.[current?.id];
+    if (!tr) { $('stage').classList.remove('lipsync'); return; }
+    $('stage').classList.add('lipsync');
+    const v = audio.paused ? 0 : +(tr[Math.floor(audio.currentTime * 12.5)] || 0) / 9;
+    if (v !== last) { last = v; $('stage').style.setProperty('--v', v.toFixed(2)); }
+  };
+  tick();
+}
+audio.addEventListener('play', async () => { lipInit(); setPlayIcon(); musicStart(current); if (play) ambience(play[sceneIdx]?.amb || ''); $('stage').classList.remove('still'); try { wake = await navigator.wakeLock?.request('screen'); } catch {} });
 audio.addEventListener('pause', () => { setPlayIcon(); musicPause(); $('stage').classList.add('still'); try { wake?.release(); } catch {} wake = null; });
 audio.addEventListener('timeupdate', () => {
   if (!dragging) { const f = audio.duration ? audio.currentTime / audio.duration * 100 : 0; $('barFill').style.width = $('barKnob').style.left = `${f}%`; }
