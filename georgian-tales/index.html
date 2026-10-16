@@ -50,7 +50,37 @@ button:focus-visible { outline: 3px solid var(--moon); outline-offset: 3px; }
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
-.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; text-align: left; padding: 0; }
+.avatar { flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--card); box-shadow: 0 4px 14px rgba(0,0,0,.18); overflow: hidden; display: grid; place-items: center; border: 3px solid var(--moon); }
+.avatar svg { width: 100%; height: 100%; }
+.hello { display: flex; flex-direction: column; min-width: 0; }
+.hello small { color: var(--muted); font-weight: 700; font-size: .85rem; }
+.splash { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: radial-gradient(circle at 50% 40%, #2d3a7a, #131938 70%); color: #fff; animation: splashOut .5s ease 1.5s forwards; }
+.splash-in { display: flex; flex-direction: column; align-items: center; gap: 10px; animation: enter .8s cubic-bezier(.2,.9,.3,1.3) both; }
+.splash b { font-family: var(--display); font-size: 1.8rem; }
+.splash span { opacity: .75; font-size: .9rem; }
+@keyframes splashOut { to { opacity: 0; visibility: hidden; } }
+.daily { position: relative; display: block; width: 100%; border-radius: 26px; overflow: hidden; margin-bottom: 22px; aspect-ratio: 16 / 10; max-width: 100%; box-shadow: 0 14px 34px rgba(0,0,0,.28); text-align: left; padding: 0; }
+.daily svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.daily .tag { position: absolute; top: 14px; left: 14px; background: #ffd98a; color: #131938; font-weight: 800; font-size: .78rem; padding: 6px 12px; border-radius: 99px; }
+.daily .info { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 16px 14px; background: linear-gradient(to top, rgba(10,12,30,.75), rgba(10,12,30,0)); color: #fff; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.daily .info b { font-family: var(--display); font-size: 1.3rem; line-height: 1.25; }
+.daily .go { flex: none; width: 56px; height: 56px; border-radius: 50%; background: #ffd98a; color: #131938; display: grid; place-items: center; }
+.daily .go svg { position: static; width: 26px; height: 26px; margin-left: 3px; }
+.stickers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.sticker { aspect-ratio: 1; border-radius: 50%; background: #fff; box-shadow: 0 3px 10px rgba(60,40,80,.15); display: grid; place-items: center; overflow: hidden; border: 3px solid #ffd98a; }
+.sticker.empty { background: #efe6f3; border-color: #e6dcec; color: #b8aec8; font-weight: 800; }
+.sticker svg { width: 100%; height: 100%; }
+.avatars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.avatars button { aspect-ratio: 1; border-radius: 50%; background: #fff; border: 3px solid #e6dcec; overflow: hidden; }
+.avatars button[aria-pressed="true"] { border-color: #c2577a; }
+.avatars svg { width: 100%; height: 100%; }
+.name-input { height: 54px; border-radius: 16px; border: 2px solid #e6dcec; padding: 0 16px; font: inherit; font-size: 1.1rem; color: #2a2440; background: #fff; }
+.reward { position: fixed; inset: 0; z-index: 65; display: grid; place-items: center; background: rgba(4,6,20,.6); }
+.reward-card { width: min(86vw, 340px); background: #fbf6ee; border-radius: 30px; padding: 26px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; color: #2a2440; text-align: center; animation: enter .6s cubic-bezier(.2,.9,.3,1.4) both; }
+.reward-card .sticker { width: 150px; animation: spinIn 1s ease-out both; }
+.reward-card h3 { font-family: var(--display); margin: 0; font-size: 1.4rem; }
+@keyframes spinIn { from { transform: scale(.2) rotate(-200deg); } to { transform: none; } }
 .brand h1 { font-family: var(--display); font-weight: 800; font-size: 1.45rem; line-height: 1.2; margin: 0; text-wrap: balance; }
 .brand svg { flex: none; }
 .parent-btn { flex: none; display: flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: 999px; background: var(--card); color: var(--ink); font-size: .85rem; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
@@ -82,10 +112,10 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 /* ---------- full-screen player: the picture is the whole screen ---------- */
 .player { position: fixed; inset: 0; z-index: 20; background: #131938; overflow: hidden; }
 .stage { position: absolute; inset: 0; }
-.stage .layer { position: absolute; inset: 0; transition: opacity 1s ease; }
-.stage .layer.in { animation: sceneIn 1.4s ease-out both; }
+.stage .layer { position: absolute; inset: 0; transition: opacity .6s ease; }
+.stage .layer.in { animation: sceneIn .8s ease-out both; }
 .stage .layer svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.stage .layer svg > .cam { animation: cam 18s ease-in-out infinite alternate; transform-box: view-box; transform-origin: 50% 50%; }
+.stage .layer svg > .cam { animation: cam 10s ease-in-out infinite alternate; transform-box: view-box; transform-origin: 50% 50%; }
 .player-top {
   position: absolute; z-index: 2; top: 0; left: 0; right: 0;
   display: flex; justify-content: space-between; align-items: center;
@@ -111,6 +141,9 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .times { display: flex; justify-content: space-between; font-size: .8rem; font-variant-numeric: tabular-nums; margin-top: -8px; opacity: .85; }
 .play { width: 88px !important; height: 88px; border-radius: 50%; display: grid; place-items: center; background: #ffd98a; color: #131938; box-shadow: 0 0 0 9px rgba(255, 217, 138, .22), 0 6px 30px rgba(0,0,0,.35); }
 .play:active { transform: scale(.95); }
+.transport { display: flex; align-items: center; justify-content: center; gap: 28px; }
+.skip { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.18); color: #fff; }
+.skip:active { transform: scale(.92); }
 .sleep-hint { font-size: .8rem; text-align: center; opacity: .8; }
 
 .night { position: fixed; inset: 0; z-index: 30; background: #04050d; display: grid; place-items: center; color: #3b4170; font-size: .85rem; text-align: center; padding: 24px; }
@@ -120,10 +153,10 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 /* ---------- living-picture motions ---------- */
 .eye, .ears, .tail, .sway, .twinkle, .glow, .flap, .neck, .nod, .breathe, .sad, .idle, .arm, .flicker, .roar, .dance, .sit, .wings, .laugh, .bob, .hop { transform-box: fill-box; }
 .eye { transform-origin: center; animation: blink 4.5s infinite; }
-.ears { transform-origin: 50% 100%; animation: wiggle 2.6s ease-in-out infinite; }
-.tail { transform-origin: 80% 100%; animation: wag 1s ease-in-out infinite alternate; }
-.sway { transform-origin: 50% 100%; animation: sway 3s ease-in-out infinite alternate; }
-.cloud { animation: drift 30s linear infinite; }
+.ears { transform-origin: 50% 100%; animation: wiggle 1.8s ease-in-out infinite; }
+.tail { transform-origin: 80% 100%; animation: wag .7s ease-in-out infinite alternate; }
+.sway { transform-origin: 50% 100%; animation: sway 2s ease-in-out infinite alternate; }
+.cloud { animation: drift 18s linear infinite; }
 .spin { animation: spin 24s linear infinite; }
 .twinkle { transform-origin: center; animation: twinkle 2.2s ease-in-out infinite; }
 .glow { transform-origin: center; animation: glow 2.6s ease-in-out infinite alternate; }
@@ -133,36 +166,38 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .wind { animation: windgo 4s linear infinite; }
 .flicker { transform-origin: 50% 100%; animation: flicker .45s ease-in-out infinite alternate; }
 .drip { animation: drip 1.1s ease-in infinite; }
-.fall { animation: fall 6s linear infinite; }
+.fall { animation: fall 4.2s linear infinite; }
 .flyaway { animation: flyaway 4.5s ease-in .8s both; }
-.flutter { animation: flutter 10s ease-in-out infinite; }
+.flutter { animation: flutter 6.5s ease-in-out infinite; }
 .wings { transform-origin: 50% 50%; animation: wingflap .22s ease-in-out infinite alternate; }
-.flyby { animation: flyby 14s linear infinite; }
-.firefly { animation: firefly 7s ease-in-out infinite; }
+.flyby { animation: flyby 9s linear infinite; }
+.firefly { animation: firefly 5s ease-in-out infinite; }
 .shoot { animation: shoot 9s ease-in infinite; }
 
-.idle { transform-origin: 50% 100%; animation: breath 3.2s ease-in-out infinite; }
-.bob { transform-origin: 50% 100%; animation: bob 1.1s ease-in-out infinite; }
-.hop { transform-origin: 50% 100%; animation: hop .9s ease-in-out infinite; }
+.enter { animation: enter .55s cubic-bezier(.2,.9,.3,1.3) both; }
+@keyframes enter { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.idle { transform-origin: 50% 100%; animation: breath 2.2s ease-in-out infinite; }
+.bob { transform-origin: 50% 100%; animation: bob .8s ease-in-out infinite; }
+.hop { transform-origin: 50% 100%; animation: hop .7s ease-in-out infinite; }
 .laugh { transform-origin: 50% 100%; animation: laugh .4s ease-in-out infinite; }
-.nod { transform-origin: 50% 100%; animation: nod 1.8s ease-in-out infinite; }
-.breathe { transform-origin: 50% 100%; animation: breath 3.6s ease-in-out infinite; }
-.run { animation: run 3.2s ease-in .4s both; }
-.runin { animation: runin 6s ease-out both; }
-.walk { animation: walk 14s linear both; }
+.nod { transform-origin: 50% 100%; animation: nod 1.2s ease-in-out infinite; }
+.breathe { transform-origin: 50% 100%; animation: breath 2.8s ease-in-out infinite; }
+.run { animation: run 2.2s ease-in .4s both; }
+.runin { animation: runin 3.5s ease-out both; }
+.walk { animation: walk 8s linear both; }
 .walk > * { animation: step .5s ease-in-out infinite; }
 @keyframes step { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 .sad { transform-origin: 50% 100%; animation: sad 2.4s ease-in-out infinite alternate; }
 .sad .neck, .drink .neck { animation: dip 2.2s ease-in-out infinite; }
 .lick { animation: lick .5s ease-in-out infinite alternate; }
-.rise { animation: rise 2.2s ease-out both; }
+.rise { animation: rise 1.4s ease-out both; }
 .appear { animation: appear 2s ease-out both; }
 .roar { transform-origin: 50% 100%; animation: roar 1.6s ease-in-out infinite; }
 .stomp { animation: stomp 1.3s ease-in-out infinite; }
 .shiver { animation: shiver .22s linear infinite; }
-.dance { transform-origin: 50% 100%; animation: dance .7s ease-in-out infinite alternate; }
+.dance { transform-origin: 50% 100%; animation: dance .5s ease-in-out infinite alternate; }
 .sit { transform-origin: 50% 100%; animation: sitdown 1.6s ease-out both; }
-.leave { animation: leave 14s ease-in 1s both; }
+.leave { animation: leave 8s ease-in 1s both; }
 .poke .arm { transform-origin: 30% 10%; animation: poke .9s ease-in-out infinite alternate; }
 .throw .arm { transform-origin: 30% 10%; animation: throwArm 4.5s ease-in-out .3s both; }
 .squeeze .arm { transform-origin: 30% 10%; animation: squeeze 1.1s ease-in-out infinite; }
@@ -301,12 +336,19 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 @media (prefers-reduced-motion: reduce) { .stage *, .tile * { animation: none !important; } .stage .layer { transition: none; } }
 </style>
 
+<div class="splash" id="splash" aria-hidden="true">
+  <div class="splash-in">
+    <svg width="96" height="96" viewBox="0 0 40 40"><path d="M27 6a15 15 0 1 0 8 25A13 13 0 0 1 27 6z" fill="#ffd98a"/><circle class="twinkle" cx="31" cy="9" r="1.6" fill="#fff"/><circle class="twinkle" style="animation-delay:.5s" cx="36" cy="17" r="1.2" fill="#fff"/><circle class="twinkle" style="animation-delay:1s" cx="6" cy="6" r="1" fill="#fff"/></svg>
+    <b>ქართული ზღაპრები</b><span>ზღაპრები · მულტფილმები · გაფერადება</span>
+  </div>
+</div>
+
 <div class="wrap">
   <header>
-    <div class="brand">
-      <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><path d="M27 6a15 15 0 1 0 8 25A13 13 0 0 1 27 6z" fill="#ffd98a"/><circle cx="31" cy="9" r="1.6" fill="#f4a9bb"/><circle cx="36" cy="17" r="1" fill="#f4a9bb"/></svg>
-      <h1>ქართული ზღაპრები</h1>
-    </div>
+    <button class="brand" id="profileBtn" aria-label="ჩემი გვერდი">
+      <span class="avatar" id="avatar"></span>
+      <span class="hello"><small id="helloLine">გამარჯობა!</small><h1>ქართული ზღაპრები</h1></span>
+    </button>
     <button class="parent-btn" id="parentBtn" aria-label="მშობლებისთვის">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
       მშობლები
@@ -352,7 +394,11 @@ header { display: flex; align-items: center; justify-content: space-between; gap
     <h2 id="playerTitle"></h2>
     <div class="bar"><i id="barFill"></i></div>
     <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
-    <button class="play" id="playBtn" aria-label="დაკვრა"></button>
+    <div class="transport">
+      <button class="skip" id="prevBtn" aria-label="წინა ზღაპარი"><svg width="30" height="30" viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z" fill="currentColor"/></svg></button>
+      <button class="play" id="playBtn" aria-label="დაკვრა"></button>
+      <button class="skip" id="nextBtn" aria-label="შემდეგი ზღაპარი"><svg width="30" height="30" viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z" fill="currentColor"/></svg></button>
+    </div>
     <span class="sleep-hint" id="hint"></span>
   </div>
 </div>
@@ -494,8 +540,9 @@ const C = {
     <ellipse cx="38" cy="15" rx="7" ry="8" fill="#3a3550" ${O(1.6)}/><ellipse cx="32" cy="10" rx="4.5" ry="2.2" fill="#3a3550" transform="rotate(-20 32 10)"/>
     <circle cx="40" cy="13" r="2" fill="#fff"/><circle cx="40.6" cy="13.4" r="1" fill="#2a1f3a"/><circle cx="36" cy="7" r="3" fill="#fff" ${O(1.2)}/>`,
 };
+let enterIdx = 0;
 const A = (who, x, y, s = 1, o = {}) =>
-  `<g transform="translate(${x} ${y}) scale(${o.flip ? -s : s} ${s})"><g class="${o.anim || 'idle'}" style="${o.delay ? `animation-delay:${o.delay}s` : ''}">${C[who](o)}</g></g>`;
+  `<g class="enter" style="animation-delay:${(enterIdx++ % 4) * .12}s"><g transform="translate(${x} ${y}) scale(${o.flip ? -s : s} ${s})"><g class="${o.anim || 'idle'}" style="${o.delay ? `animation-delay:${o.delay}s` : ''}">${C[who](o)}</g></g></g>`;
 
 // =====================================================================
 // Props
@@ -1198,6 +1245,8 @@ Object.assign(C, {
     <path d="M52 22 Q56 8 62 4" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><path d="M52 22 Q56 8 62 4" stroke="${o.dark ? '#6a6a80' : '#fff'}" stroke-width="6" stroke-linecap="round"/>
     <path d="M58 -4 q-6 -10 -2 -14 M66 -4 q2 -10 8 -12" ${O(2.4)} fill="none"/><ellipse cx="66" cy="6" rx="9" ry="8" fill="${o.dark ? '#6a6a80' : '#fff'}" ${O()}/><ellipse cx="56" cy="4" rx="5" ry="2.4" fill="${o.dark ? '#6a6a80' : '#fff'}" ${O(1.2)} transform="rotate(-20 56 4)"/>
     <path d="M70 14 q2 8 -2 10 q-2 -4 0 -10z" fill="#d8d4e0" ${O(1)}/>${eye(66, 4, o.closed, 2.8)}<circle cx="73" cy="8" r="1.2" fill="${INK}"/>`,
+  bee: o => `<g class="wings"><ellipse cx="8" cy="0" rx="6" ry="4" fill="#e6f4ff" opacity=".9" ${O(1)}/><ellipse cx="18" cy="0" rx="6" ry="4" fill="#e6f4ff" opacity=".9" ${O(1)}/></g><ellipse cx="13" cy="10" rx="11" ry="8" fill="#ffd34d" ${O(1.6)}/><path d="M9 3 v14 M15 3 v14" stroke="${INK}" stroke-width="2.4"/><circle cx="24" cy="9" r="5" fill="#3a3550" ${O(1.2)}/>${eye(25, 8, o.closed, 1.8)}`,
+  snowman: o => ART.snowman(),
   grandpa: o => C.king({ ...o, crown: false, robe: o.robe || '#6a7ab0', beard: '#f0f0f6' }),
 });
 const firefly = (x, y, d = 0) => `<g class="firefly" style="animation-delay:-${d}s"><circle cx="${x}" cy="${y}" r="3" fill="#fff59a"/><circle cx="${x}" cy="${y}" r="8" fill="#fff59a" opacity=".3"/></g>`;
@@ -1210,7 +1259,7 @@ const WHO_WORDS = [
   [/ჩიტ|ბარტყ/, 'bird'], [/თევზ/, 'fish'], [/ცხვ|ბატკ/, 'sheep'], [/ზღარბ/, 'hedgehog'], [/(^|[\s,.!?])ბუ([\s,.!?]|მ |ს |ს,)/, 'owl'], [/ციყვ/, 'squirrel'],
   [/ირემ|ირმ/, 'deer'], [/დელფ/, 'dolphin'], [/თოლი/, 'gull'], [/კატა|კატამ|კატას|კნუტ|ფისო/, 'cat'], [/თაგვ/, 'mouse'], [/ძაღლ|მურია/, 'dog'], [/ცხენ/, 'horse'],
   [/ძროხ/, 'cow'], [/ქათამ|ქათმ/, 'hen'], [/მამალ/, 'rooster'], [/(^|\s)ლომ/, 'lion'], [/მგელ|მგლ/, 'wolf'], [/გოჭ|ღორ/, 'pig'], [/ყვავ(?!ილ)/, 'crow'],
-  [/ჭიანჭველ/, 'ant'], [/(^|\s)თხა|თხამ|თხას|ციკან/, 'goat'], [/ჭრიჭინამ|ჭრიჭინა /, 'hopper'], [/არწივ/, 'eagle'], [/დევი|დევმა|დევს|დევის|დევებ/, 'devi'], [/მეფე|მეფემ|მეფის|მეფეს/, 'king'],
+  [/ჭიანჭველ/, 'ant'], [/ფუტკ/, 'bee'], [/თოვლის ბაბუა|ფიფქუნა/, 'snowman'], [/(^|\s)თხა|თხამ|თხას|ციკან/, 'goat'], [/ჭრიჭინამ|ჭრიჭინა /, 'hopper'], [/არწივ/, 'eagle'], [/დევი|დევმა|დევს|დევის|დევებ/, 'devi'], [/მეფე|მეფემ|მეფის|მეფეს/, 'king'],
   [/უფლისწ|პრინც/, 'prince'], [/დედოფ|მზეთუნ|ქალიშვ/, 'princess'], [/(^|\s)ვირ/, 'donkey'], [/იხვ/, 'duck'], [/(^|\s)გედ/, 'swan'], [/ფუნთუშ/, 'bun'],
   [/ბაყაყ/, 'frog'], [/ლოკოკინ/, 'snail'], [/ფერია/, 'fairy'], [/ღრუბ/, 'cloudy'],
   [/ბიჭ|ნიკა|გიორგი|დათო|ლუკა|საბა/, 'boy'], [/გოგო|მარიამ|ნინო|თამარ|ქეთო|(^|\s)ანა(\s|ს |მ |,)/, 'girl'], [/ბებია|ბებიკო/, 'granny'], [/ბაბუა/, 'grandpa'], [/დედა(?!ბერ| (დათვ|კურდღ|ზღარბ|იხვ|ირემ))|დედიკო/, 'mom'],
@@ -1225,7 +1274,7 @@ function bbox(who, o) {
   return (sizeCache[key] = { x: b.x, y: b.y, w: b.width, h: b.height });
 }
 const HUMANS = new Set(['king', 'mom', 'princess', 'granny', 'grandpa', 'girl', 'boy', 'prince', 'fairy']);
-const TARGET = { fish: 30, dolphin: 40, gull: 34, bird: 34, ant: 30, hopper: 34, mouse: 32, snail: 32, hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
+const TARGET = { bee: 30, snowman: 90, fish: 30, dolphin: 40, gull: 34, bird: 34, ant: 30, hopper: 34, mouse: 32, snail: 32, hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
 function place(who, cx, ground, o, small) {
   const opts = who === 'princess' ? { ...o, princess: 1, dress: '#ffb347' } : o;
   const b = bbox(who, opts);
@@ -1280,6 +1329,12 @@ function autoScene(tale, text, i) {
   if (has(/მღერ|სიმღერ|ნანა|სალამურ|მუსიკ/)) extra += notes(140, 70);
   if (has(/ჩაიხუტ|მიეხუტ|გულში|უყვარ|აკოცა/)) extra += heart(100, 60) + heart(84, 44, .6);
   if (has(/ნისლ/)) extra += fog();
+  if (has(/რაკეტ/)) extra += `<g class="flutter" style="animation-duration:9s"><g transform="translate(150 40) scale(.5) rotate(20)">${ART.rocket()}</g></g>`;
+  if (has(/პლანეტ|დედამიწ/)) extra += `<circle cx="40" cy="44" r="14" fill="#ff7f5a" ${O(1.6)}/><ellipse cx="160" cy="70" rx="26" ry="6" fill="none" stroke="#ffd98a" stroke-width="3" transform="rotate(-14 160 70)"/><circle cx="160" cy="70" r="13" fill="#e8c06a" ${O(1.6)}/>`;
+  if (has(/ჩიჩილაკ/)) extra += `<g transform="translate(160 150)"><path d="M0 0 V-70" stroke="#a8743f" stroke-width="5"/>${Array.from({ length: 7 }, (_, k) => `<path d="M0 ${-66 + k * 9} q${-8 - k * 2.4} 4 ${-12 - k * 3} 10 M0 ${-66 + k * 9} q${8 + k * 2.4} 4 ${12 + k * 3} 10" stroke="#fff6dc" stroke-width="3" fill="none" stroke-linecap="round"/>`).join('')}${[[-10, -40, '#e2445c'], [12, -30, '#ffd34d'], [-14, -18, '#7ab8f0'], [8, -54, '#8fd07a']].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="3" fill="${c}"/>`).join('')}</g>`;
+  if (has(/მზესუმზირ/)) extra += `<g transform="translate(150 156)"><path d="M0 0 V-60" stroke="#3aa860" stroke-width="5"/><g class="sway">${Array.from({ length: 12 }, (_, k) => `<ellipse cx="${Math.cos(k * Math.PI / 6) * 14}" cy="${-66 + Math.sin(k * Math.PI / 6) * 14}" rx="7" ry="4" fill="#ffd34d" transform="rotate(${k * 30} ${Math.cos(k * Math.PI / 6) * 14} ${-66 + Math.sin(k * Math.PI / 6) * 14})" ${O(1)}/>`).join('')}<circle cx="0" cy="-66" r="10" fill="#8a5a34" ${O(1.6)}/></g></g>`;
+  if (has(/ალილო|ქრისტეშობ/)) extra += sparkle(100, 30, 0, '#ffd34d', 14);
+  if (has(/ფეიერვერკ/)) extra += [[40, 40, '#ff7f9a'], [100, 26, '#ffd34d'], [160, 46, '#7ab8f0']].map(([x, y, c], k) => `<g class="twinkle" style="animation-delay:${k * .4}s">${Array.from({ length: 8 }, (_, j) => `<path d="M${x} ${y} l${Math.cos(j * Math.PI / 4) * 14} ${Math.sin(j * Math.PI / 4) * 14}" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/>`).join('')}</g>`).join('');
   // who
   const cast = [];
   for (const [re, who] of WHO_WORDS) if (re.test(text) && !cast.includes(who)) cast.push(who);
@@ -1324,6 +1379,7 @@ function buildAutoScenes() {
 
 // one scene as SVG; slabs above and below continue the sky and ground beyond the frame
 function sceneSvg(id, i) {
+  enterIdx = 0;
   const body = SCENES[id][i]();
   const [top, ground] = EDGE[curBg];
   return `<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
@@ -1353,6 +1409,8 @@ const TALES = [
   { id: 'g10', title: 'ბრძენი ნინო', cat: 'ge' },
   { id: 'g11', title: 'ვირი და მგელი', cat: 'ge' },
   { id: 'g12', title: 'თხა და შვიდი ციკანი', cat: 'ge' },
+  { id: 'g13', title: 'ალილო', cat: 'ge' },
+  { id: 'g14', title: 'ჩიჩილაკი და ახალი წელი', cat: 'ge' },
   { id: 's1', title: 'მთვარის სტუმრობა', cat: 'sleep', free: true },
   { id: 's2', title: 'პატარა ღრუბლის მოგზაურობა', cat: 'sleep' },
   { id: 's3', title: 'ძილის მატარებელი', cat: 'sleep' },
@@ -1377,6 +1435,12 @@ const TALES = [
   { id: 's22', title: 'ნელა კუს მოგზაურობა', cat: 'sleep' },
   { id: 's23', title: 'მთვარის ნავი', cat: 'sleep' },
   { id: 's24', title: 'ჩიტუნიების ბუდე', cat: 'sleep' },
+  { id: 's25', title: 'ფერადი სიზმრები', cat: 'sleep' },
+  { id: 's26', title: 'ზღვის ფსკერის ღამე', cat: 'sleep' },
+  { id: 's27', title: 'პატარა კოსმონავტი', cat: 'sleep' },
+  { id: 's28', title: 'ბაღის ღამე', cat: 'sleep' },
+  { id: 's29', title: 'თოვლის ბაბუა ფიფქუნა', cat: 'sleep' },
+  { id: 's30', title: 'სიზმრების საცხობი', cat: 'sleep' },
   { id: 'w1', title: 'კონკია', cat: 'world' },
   { id: 'w2', title: 'წითელქუდა', cat: 'world' },
   { id: 'w3', title: 'სამი გოჭი', cat: 'world' },
@@ -1388,6 +1452,7 @@ const TALES = [
   { id: 'w9', title: 'სამი დათვი', cat: 'world' },
   { id: 'w10', title: 'ზღარბი და კურდღელი', cat: 'world' },
   { id: 'w11', title: 'ოქროს თევზი', cat: 'world' },
+  { id: 'w12', title: 'ჰანსელი და გრეტელი', cat: 'world' },
   { id: 't1', title: 'კურდღელი და კუ', cat: 'short', free: true },
   { id: 't2', title: 'მელა და წერო', cat: 'short', free: true },
   { id: 't3', title: 'დათუნიას ძილი', cat: 'short' },
@@ -1399,6 +1464,9 @@ const TALES = [
   { id: 'a9', title: 'ზღარბი და სოკოები', cat: 'short' },
   { id: 'a10', title: 'თაგვები და კატა', cat: 'short' },
   { id: 'a11', title: 'ორი თხა ხიდზე', cat: 'short' },
+  { id: 'a12', title: 'ბიჭი და მგელი', cat: 'short' },
+  { id: 'a13', title: 'მზესუმზირა და ფუტკარი', cat: 'short' },
+  { id: 'a14', title: 'პატარა ღრუბელი ფიფქი', cat: 'short' },
 ];
 const SHELVES = [
   { cat: 'ge', title: 'ქართული ხალხური ზღაპრები', note: '3–6 წუთი' },
@@ -1427,6 +1495,61 @@ const positions = store.get('pos', {});
 const favs = store.get('favs', {});
 let paintCat = store.get('paintCat', 'all');
 let sleepMin = store.get('sleepMin', 0), sleepAt = 0;
+
+// ---------- little sounds and taps (on by default, off in parent settings) ----------
+let sounds = store.get('sounds', true), actx = null;
+function tone(freqs, len = .09, gap = .07) {
+  if (!sounds) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    freqs.forEach((f, k) => {
+      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + k * gap;
+      o.type = 'sine'; o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(.12, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + len);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + len + .02);
+    });
+  } catch {}
+}
+const pop = () => { tone([660, 990], .07, .05); try { navigator.vibrate?.(8); } catch {} };
+const chime = () => tone([784, 988, 1175, 1568], .22, .11);
+document.addEventListener('click', e => { if (e.target.closest('.tile, .mini, .chip, .tabs button, .modes button, .daily, .skip, .play, .avatars button')) pop(); });
+
+// ---------- the child: name, avatar, stickers ----------
+const AVATARS = ['hare', 'bear', 'fox', 'cat', 'owl', 'bun', 'hedgehog', 'duck'];
+const profile = store.get('profile', { name: '', avatar: 'hare' });
+const stickers = store.get('stickers', {});
+const faceOf = (who, o = {}) => { const d = document.createElement('div'); d.innerHTML = `<svg viewBox="0 0 200 200"><g data-who>${C[who]({ ...o, anim: 'none' })}</g></svg>`; fitArt(d.firstElementChild); return d.innerHTML; };
+function paintProfile() {
+  $('avatar').innerHTML = faceOf(profile.avatar);
+  $('helloLine').textContent = profile.name ? `გამარჯობა, ${profile.name}!` : 'გამარჯობა!';
+}
+function openProfile() {
+  const got = TALES.filter(t => stickers[t.id]);
+  openSheet(`
+    <h3>${profile.name ? profile.name + 'ს' : 'ჩემი'} გვერდი</h3>
+    <input class="name-input" id="nameIn" maxlength="16" placeholder="სახელი" value="${profile.name.replace(/"/g, '')}" aria-label="სახელი">
+    <p>აირჩიე შენი გმირი</p>
+    <div class="avatars">${AVATARS.map(a => `<button data-av="${a}" aria-pressed="${a === profile.avatar}" aria-label="${a}">${faceOf(a)}</button>`).join('')}</div>
+    <p><b>ჩემი სტიკერები:</b> ${got.length} / ${TALES.filter(ready).length}. ყოველი მოსმენილი ზღაპრისთვის — ახალი სტიკერი.</p>
+    <div class="stickers">${got.map(t => `<div class="sticker" title="${t.title}">${faceOf(stickers[t.id])}</div>`).join('')}${Array.from({ length: Math.max(0, 8 - got.length) }, () => '<div class="sticker empty">?</div>').join('')}</div>
+    <button class="cta" data-close>მზადაა</button>`);
+  $('nameIn').oninput = e => { profile.name = e.target.value.trim(); store.set('profile', profile); paintProfile(); };
+  $('sheet').onclick = e => {
+    const av = e.target.closest('[data-av]');
+    if (av) { profile.avatar = av.dataset.av; store.set('profile', profile); paintProfile(); $('sheet').querySelectorAll('[data-av]').forEach(b => b.setAttribute('aria-pressed', b === av)); }
+    if (e.target.closest('[data-close]')) closeSheet();
+  };
+}
+$('profileBtn').onclick = openProfile;
+function giveSticker(t) {
+  if (stickers[t.id]) return;
+  const who = taleHeroAny(t) || 'bun';
+  stickers[t.id] = who; store.set('stickers', stickers);
+  const el = document.createElement('div'); el.className = 'reward';
+  el.innerHTML = `<div class="reward-card"><div class="sticker">${faceOf(who)}</div><h3>ახალი სტიკერი!</h3><p>${profile.name ? profile.name + ', ' : ''}შენ მოისმინე „${t.title}“</p><button class="cta" style="width:100%">ვაშა!</button></div>`;
+  document.body.appendChild(el); chime();
+  el.onclick = () => el.remove();
+}
 
 // ---------- mode: cartoon by day, bedtime at night ----------
 const hour = new Date().getHours();
@@ -1470,7 +1593,10 @@ function renderShelves() {
   const strip = (title, items) => items.length ? `<div class="strip"><h3>${title}</h3><div class="strip-row">${items.map(t => `<button class="mini" data-id="${t.id}" aria-label="${t.title}"><div class="art">${cover(t)}</div><span>${t.title}</span></button>`).join('')}</div></div>` : '';
   const going = TALES.filter(t => open_(t) && positions[t.id] > 8);
   const loved = TALES.filter(t => open_(t) && favs[t.id]);
-  $('shelves').innerHTML = strip('გააგრძელე მოსმენა', going) + strip('რჩეული', loved) + `<div class="shelf-head"><h2>${sh.title}</h2><small>${list.filter(ready).length} ზღაპარი · ${sh.note}</small></div>
+  const pool = list.filter(open_);
+  const today = pool.length ? pool[Math.floor(Date.now() / 864e5) % pool.length] : null;
+  const daily = today ? `<button class="daily" data-id="${today.id}" aria-label="დღის ზღაპარი: ${today.title}">${cover(today)}<span class="tag">დღის ზღაპარი</span><span class="info"><b>${today.title}</b><span class="go">${PLAY}</span></span></button>` : '';
+  $('shelves').innerHTML = daily + strip('გააგრძელე მოსმენა', going) + strip('რჩეული', loved) + `<div class="shelf-head"><h2>${sh.title}</h2><small>${list.filter(ready).length} ზღაპარი · ${sh.note}</small></div>
       <div class="grid">${list.map(t => `
         <button class="tile ${open_(t) ? '' : 'locked'}" data-id="${t.id}" aria-label="${t.title}">
           <div class="art">${cover(t)}</div>
@@ -1481,7 +1607,7 @@ function renderShelves() {
 }
 $('shelves').addEventListener('click', e => {
   const chip = e.target.closest('[data-pcat]'); if (chip) { paintCat = chip.dataset.pcat; store.set('paintCat', paintCat); return renderShelves(); }
-  const tile = e.target.closest('.tile, .mini'); if (!tile) return;
+  const tile = e.target.closest('.tile, .mini, .daily'); if (!tile) return;
   if (tile.dataset.page) { const pg = PAGES.find(x => x.id === tile.dataset.page); return pg.free || testMode ? openPage(pg) : gate(paywall); }
   const t = TALES.find(x => x.id === tile.dataset.id);
   if (!ready(t)) return toast('ეს ზღაპარი მალე დაემატება');
@@ -1666,6 +1792,7 @@ $('closePaint').onclick = () => { $('paint').hidden = true; renderShelves(); };
 const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML = pageSvg(pg); fitArt(d.firstElementChild); toLineArt(d.firstElementChild); return d.innerHTML + (saved[pg.id] ? `<img src="${saved[pg.id]}" alt="">` : ''); };
 
 renderShelves();
+paintProfile();
 fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; renderShelves(); }).catch(() => {});
 fetch('tales.json').then(r => r.json()).then(list => { list.forEach(t => { TEXTS[t.id] = t.text; }); buildAutoScenes(); renderShelves(); }).catch(() => {});
 
@@ -1713,6 +1840,10 @@ function paintFav() { $('favBtn').innerHTML = HEART(!!favs[current.id]); }
 $('favBtn').onclick = () => { if (favs[current.id]) delete favs[current.id]; else favs[current.id] = 1; store.set('favs', favs); paintFav(); };
 function setPlayIcon() { $('playBtn').innerHTML = audio.paused ? PLAY : PAUSE; $('playBtn').setAttribute('aria-label', audio.paused ? 'დაკვრა' : 'პაუზა'); }
 $('playBtn').onclick = () => audio.paused ? audio.play() : audio.pause();
+$('stage').onclick = () => { audio.paused ? audio.play() : audio.pause(); };
+const shelfOf = t => TALES.filter(x => x.cat === t.cat && open_(x));
+$('nextBtn').onclick = () => { const sh = shelfOf(current); openPlayer(sh[(sh.indexOf(current) + 1) % sh.length]); };
+$('prevBtn').onclick = () => { if (audio.currentTime > 5) { audio.currentTime = 0; return; } const sh = shelfOf(current); openPlayer(sh[(sh.indexOf(current) - 1 + sh.length) % sh.length]); };
 $('closePlayer').onclick = () => { audio.pause(); $('player').hidden = true; $('layerA').innerHTML = $('layerB').innerHTML = ''; renderShelves(); };
 audio.addEventListener('play', async () => { setPlayIcon(); $('stage').classList.remove('still'); try { wake = await navigator.wakeLock?.request('screen'); } catch {} });
 audio.addEventListener('pause', () => { setPlayIcon(); $('stage').classList.add('still'); try { wake?.release(); } catch {} wake = null; });
@@ -1731,6 +1862,7 @@ audio.addEventListener('timeupdate', () => {
 });
 audio.addEventListener('ended', () => {
   listened[current.id] = 1; store.set('listened', listened);
+  giveSticker(current);
   delete positions[current.id]; store.set('pos', positions);
   // next open tale on the same shelf; bedtime stories run on into each other
   const shelf = TALES.filter(t => t.cat === current.cat && open_(t));
@@ -1803,6 +1935,8 @@ $('parentBtn').onclick = () => gate(() => {
       <button class="switch" id="chainSw" role="switch" aria-checked="${chain}" aria-label="ზღაპრები ზედიზედ"></button></div>
     <div class="row"><span>ძილის ტაიმერი<br><small style="color:#7a7290">ხმა ნელა ჩაქრება და ზღაპარი გაჩერდება</small></span></div>
     <div class="answers" id="timer">${[0, 15, 30, 45].map(m => `<button data-min="${m}" style="font-size:1rem;height:52px;${m === sleepMin ? 'background:#c2577a;color:#fff' : ''}">${m ? m + ' წთ' : 'გამორთ.'}</button>`).join('')}</div>
+    <div class="row"><span>ხმოვანი ეფექტები<br><small style="color:#7a7290">რბილი ხმა შეხებისას</small></span>
+      <button class="switch" id="soundSw" role="switch" aria-checked="${sounds}" aria-label="ხმოვანი ეფექტები"></button></div>
     <div class="row"><span>სატესტო რეჟიმი<br><small style="color:#7a7290">ყველა ზღაპარი ღიაა გადახდის გარეშე</small></span>
       <button class="switch" id="testSw" role="switch" aria-checked="${testMode}" aria-label="სატესტო რეჟიმი"></button></div>
     <button class="cta" data-sub>გამოწერა — 3 დღე უფასოდ</button>
@@ -1810,6 +1944,7 @@ $('parentBtn').onclick = () => gate(() => {
   $('sheet').onclick = e => {
     if (e.target.closest('[data-close]')) return closeSheet();
     if (e.target.closest('#chainSw')) { chain = !chain; store.set('chain', chain); $('chainSw').setAttribute('aria-checked', chain); }
+    if (e.target.closest('#soundSw')) { sounds = !sounds; store.set('sounds', sounds); $('soundSw').setAttribute('aria-checked', sounds); }
     if (e.target.closest('#testSw')) { testMode = !testMode; store.set('test', testMode); $('testSw').setAttribute('aria-checked', testMode); renderShelves(); }
     const m = e.target.closest('[data-min]');
     if (m) { sleepMin = +m.dataset.min; store.set('sleepMin', sleepMin); sleepAt = 0; $('timer').querySelectorAll('button').forEach(b => { const on = +b.dataset.min === sleepMin; b.style.background = on ? '#c2577a' : ''; b.style.color = on ? '#fff' : ''; }); }
