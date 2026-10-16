@@ -53,7 +53,8 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .brand h1 { font-family: var(--display); font-weight: 800; font-size: 1.45rem; line-height: 1.2; margin: 0; text-wrap: balance; }
 .brand svg { flex: none; }
-.parent-btn { flex: none; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
+.parent-btn { flex: none; display: flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: 999px; background: var(--card); color: var(--ink); font-size: .85rem; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.test-banner { margin: -4px 0 16px; padding: 10px 14px; border-radius: 14px; background: #e3f7e8; color: #1f6b3a; font-size: .85rem; font-weight: 600; line-height: 1.4; }
 
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 22px; background: var(--card); margin-bottom: 22px; box-shadow: 0 6px 18px rgba(0,0,0,.12); }
 .modes button { display: flex; align-items: center; justify-content: center; gap: 8px; height: 54px; border-radius: 16px; font-weight: 700; font-size: .95rem; color: var(--muted); }
@@ -73,7 +74,6 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .badge { position: absolute; top: 10px; right: 10px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: rgba(19, 25, 56, .7); }
 .badge.soon { width: auto; padding: 0 10px; border-radius: 999px; height: 28px; font-size: .72rem; font-weight: 700; color: #fff; background: rgba(19, 25, 56, .75); }
 .tile .done { font-weight: 700; color: #3aa860; }
-.test-pill { flex: none; font-size: .7rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; background: #3aa860; color: #fff; }
 .answers#timer { grid-template-columns: repeat(4, 1fr); }
 .badge.free { width: auto; padding: 0 10px; border-radius: 999px; height: 28px; font-size: .72rem; font-weight: 700; color: #131938; background: #ffd98a; }
 .weekly { margin-top: 4px; padding: 14px 16px; border-radius: 18px; border: 1px dashed var(--line); color: var(--muted); font-size: .9rem; line-height: 1.5; }
@@ -214,6 +214,21 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 @keyframes cam { from { transform: scale(1); } to { transform: scale(1.08) translate(-1.5%, -1%); } }
 @keyframes sceneIn { from { transform: scale(1.08); } to { transform: scale(1); } }
 
+/* ---------- colouring room ---------- */
+.paintroom { position: fixed; inset: 0; z-index: 25; background: #fffaf2; display: flex; flex-direction: column; color: #2a2440;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.paint-top { display: flex; justify-content: space-between; align-items: center; }
+.paint-tools { display: flex; gap: 10px; }
+.round.dark { background: #efe6f3; color: #2a2440; backdrop-filter: none; }
+.canvas { flex: 1; min-height: 0; display: grid; place-items: center; padding-block: 10px; }
+.canvas svg { width: min(100%, 62vh); height: auto; aspect-ratio: 1; max-width: 100%; background: #fff; border-radius: 24px; box-shadow: 0 8px 26px rgba(60, 40, 80, .12); touch-action: manipulation; }
+.canvas .paint { cursor: pointer; transition: fill .15s; }
+.palette { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; max-width: 460px; width: 100%; margin: 0 auto; }
+.palette button { aspect-ratio: 1; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #d8cfe0; }
+.palette button[aria-pressed="true"] { box-shadow: 0 0 0 4px #2a2440; transform: scale(1.08); }
+.tile.page .art { background: #fff; }
+
 /* ---------- parent gate + paywall ---------- */
 .sheet-bg { position: fixed; inset: 0; z-index: 40; background: rgba(4, 6, 20, .7); display: flex; align-items: flex-end; justify-content: center; }
 .sheet {
@@ -259,13 +274,13 @@ header { display: flex; align-items: center; justify-content: space-between; gap
     <div class="brand">
       <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><path d="M27 6a15 15 0 1 0 8 25A13 13 0 0 1 27 6z" fill="#ffd98a"/><circle cx="31" cy="9" r="1.6" fill="#f4a9bb"/><circle cx="36" cy="17" r="1" fill="#f4a9bb"/></svg>
       <h1>ქართული ზღაპრები</h1>
-      <span class="test-pill" id="testPill" hidden>ტესტი</span>
     </div>
     <button class="parent-btn" id="parentBtn" aria-label="მშობლებისთვის">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-      მშობლებს
+      მშობლები
     </button>
   </header>
+  <p class="test-banner" id="testPill" hidden>სატესტო რეჟიმი: ყველა ზღაპარი და სურათი ღიაა</p>
 
   <div class="modes" role="group" aria-label="რეჟიმი">
     <button id="modeDay" aria-pressed="false">
@@ -279,7 +294,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
   </div>
 
   <div id="shelves"></div>
-  <p class="weekly">ყოველ კვირას — ორი ახალი ზღაპარი. შემდეგი: <b>ხუთკუნჭულა</b> და <b>კონკია</b></p>
+  <p class="weekly">ყოველ კვირას — ახალი ზღაპარი და ახალი სურათი გასაფერადებლად.</p>
 </div>
 
 <div class="player" id="player" hidden>
@@ -299,6 +314,18 @@ header { display: flex; align-items: center; justify-content: space-between; gap
     <button class="play" id="playBtn" aria-label="დაკვრა"></button>
     <span class="sleep-hint" id="hint"></span>
   </div>
+</div>
+
+<div class="paintroom" id="paint" hidden>
+  <div class="paint-top">
+    <button class="round dark" id="closePaint" aria-label="უკან"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="paint-tools">
+      <button class="round dark" id="undoPaint" aria-label="უკან დაბრუნება"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7H4V2"/><path d="M4 7a8 8 0 1 1-1 6"/></svg></button>
+      <button class="round dark" id="clearPaint" aria-label="გასუფთავება"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+    </div>
+  </div>
+  <div class="canvas" id="canvas"></div>
+  <div class="palette" id="palette"></div>
 </div>
 
 <div class="night" id="night" hidden>
@@ -492,7 +519,7 @@ const EDGE = { day: ['#6cc4ff', '#6cc46a'], village: ['#6cc4ff', '#6cc46a'], mou
 const grad = (id, stops) => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">${stops.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join('')}</linearGradient></defs><rect x="-400" width="1000" height="200" fill="url(#${id})"/>`;
 const dayHills = () => `<path d="M-300 150 L0 150 Q60 128 120 146 T200 140 L500 140 V200 H-300z" fill="#6cc46a" ${O()}/><path d="M6 150 Q60 130 118 146" stroke="#a6e39a" stroke-width="3" fill="none" stroke-linecap="round"/>` + tufts() + flowers();
 const BG = {
-  day: () => { curBg = 'day'; return grad('d' + ++gid, [[0, '#6cc4ff'], [1, '#d6f3ff']]) + sunFace(36, 36) + cloud(26, 10) + cloud(56, 30, .7) +
+  day: (noSun) => { curBg = 'day'; return grad('d' + ++gid, [[0, '#6cc4ff'], [1, '#d6f3ff']]) + (noSun ? '' : sunFace(36, 36)) + cloud(26, 10) + cloud(56, 30, .7) +
     `<path d="M-300 132 L0 132 Q40 104 90 124 T200 112 L500 112 V200 H-300z" fill="#9ad88a" ${O(1.8)}/>` + dayHills() + dayLife(); },
   village: () => { curBg = 'village'; return grad('v' + ++gid, [[0, '#6cc4ff'], [1, '#d6f3ff']]) + sunFace(170, 34) + cloud(30, 18) + mountains('#a8b8e8') +
     `<path d="M-300 136 L0 136 Q40 112 90 128 T200 118 L500 118 V200 H-300z" fill="#9ad88a" ${O(1.8)}/>` + house(150, 128, .6) + house(36, 132, .5) + dayHills() + dayLife(); },
@@ -802,6 +829,151 @@ Object.assign(SCENES, {
   ],
 });
 
+// ---------- batch 2 characters ----------
+const _bird = C.bird;
+Object.assign(C, {
+  quail: o => _bird(o).replace(/#7ab8f0/g, '#c9a26a').replace(/#5a98d8/g, '#a8743f'),
+  dove: o => _bird(o).replace(/#7ab8f0/g, '#f6f6fc').replace(/#5a98d8/g, '#d6d8e8'),
+  eagle: o => `<g class="wings"><path d="M40 26 C24 6 6 4 -6 10 C6 14 14 22 20 30z" fill="#8a5a34" ${O()}/><path d="M44 26 C60 6 78 4 90 10 C78 14 70 22 64 30z" fill="#8a5a34" ${O()}/><path d="M2 12 l6 6 M10 8 l6 8 M82 12 l-6 6 M74 8 l-6 8" ${O(1.4)}/></g>
+    <path d="M34 50 L42 62 L50 50z" fill="#6a4030" ${O(1.6)}/><ellipse cx="42" cy="36" rx="14" ry="17" fill="#a8743f" ${O()}/><circle cx="42" cy="18" r="10" fill="#fff" ${O()}/><path d="M48 18 q8 2 6 8 q-4 -2 -7 -2z" fill="#ffc93c" ${O(1.4)}/>${eye(43, 16, o.closed, 3.2)}`,
+  dog: o => shadow(28, 41, 24) + `<path class="tail" d="M8 20 q-8 -10 -4 -16" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/><path class="tail" d="M8 20 q-8 -10 -4 -16" stroke="#c9a26a" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <rect x="10" y="28" width="7" height="12" rx="3" fill="#b08a52" ${O(1.6)}/><rect x="34" y="28" width="7" height="12" rx="3" fill="#b08a52" ${O(1.6)}/><ellipse cx="26" cy="24" rx="20" ry="11" fill="#c9a26a" ${O()}/>
+    <circle cx="46" cy="14" r="11" fill="#c9a26a" ${O()}/><ellipse cx="54" cy="18" rx="6" ry="5" fill="#e8d0a0" ${O(1.4)}/><circle cx="58" cy="16" r="2.4" fill="${INK}"/><path d="M38 6 q-8 4 -6 14 q6 -2 8 -10z" fill="#8a5a34" ${O(1.6)}/>${eye(47, 11, o.closed, 3.2)}
+    ${o.bark ? `<path d="M52 22 q3 4 7 1" ${O(1.4)} fill="#ff7f9a"/>` : ''}`,
+  girl: o => C.mom({ ...o, princess: 1 }).replace(/<path d="M14 8 L16 -2[^>]*>/, '').replace(/#e8b04a/g, o.hood ? '#e2445c' : (o.hair || '#7a4a2a')),
+  granny: o => C.mom({ ...o, dress: o.dress || '#8a7ab0' }).replace(/#f4ecdc/g, '#d8d8e4') + `<g fill="none" ${O(1.4)}><circle cx="19" cy="23" r="5"/><circle cx="31" cy="23" r="5"/><path d="M24 23 h2"/></g>`,
+  prince: o => C.boy({ ...o, shirt: '#4a7ab0', hat: '#ffd34d' }) + `<path d="M11 6 L13 -4 L19 3 L25 -6 L31 3 L37 -4 L39 6z" fill="#ffd34d" ${O(1.6)}/>`,
+  fairy: o => `<g class="wings"><ellipse cx="8" cy="40" rx="12" ry="18" fill="#d6ecff" opacity=".85" ${O(1.4)}/><ellipse cx="42" cy="40" rx="12" ry="18" fill="#d6ecff" opacity=".85" ${O(1.4)}/></g>` + C.mom({ dress: '#c59cff' }) + `<path d="M43 60 L58 40" stroke="#ffd34d" stroke-width="2.6" stroke-linecap="round"/>${sparkle(60, 38, 0, '#ffd34d', 6)}`,
+  windy: o => C.cloudy({ ...o, closed: false }).replace(/<path d="M33 26 q4 3.4 8 0"[^>]*>/, `<ellipse cx="37" cy="27" rx="3.6" ry="3" fill="#7a3a4a" ${O(1.3)}/>`).replace(/#fff"/, '#dfe6f4"'),
+});
+// ---------- batch 2 props ----------
+const coach = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})">${shadow(0, 0, 40)}<circle cx="-22" cy="-10" r="10" fill="#ffd34d" ${O()}/><circle cx="22" cy="-10" r="10" fill="#ffd34d" ${O()}/><circle cx="-22" cy="-10" r="3" fill="${INK}"/><circle cx="22" cy="-10" r="3" fill="${INK}"/>
+  <path d="M-34 -14 Q-38 -60 0 -62 Q38 -60 34 -14z" fill="#ff9f43" ${O()}/><path d="M-12 -60 Q-16 -36 -14 -14 M12 -60 Q16 -36 14 -14" stroke="#e07a2a" stroke-width="2.4" fill="none"/><rect x="-9" y="-48" width="18" height="18" rx="9" fill="#d6ecff" ${O(1.6)}/><path d="M0 -62 q2 -8 8 -8" stroke="#5cb85c" stroke-width="3" fill="none"/>${sparkle(-30, -60, 0, '#fff6c0', 5)}${sparkle(32, -50, .7, '#fff6c0', 5)}</g>`;
+const slipper = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-12 0 q2 -10 12 -8 l10 -6 l2 4 l-6 10z" fill="#d6ecff" opacity=".9" ${O(1.6)}/>${sparkle(10, -14, 0, '#fff', 4)}</g>`;
+const clock = (x, y) => `<g transform="translate(${x} ${y})"><circle r="16" fill="#fff9ee" ${O()}/><path d="M0 0 V-11 M0 0 L1 -12" ${O(2.2)}/><circle r="2" fill="${INK}"/></g>`;
+const basket = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-12 -12 q12 -14 24 0" fill="none" ${O(2)}/><path d="M-14 -12 h28 l-4 12 h-20z" fill="#c9a26a" ${O(1.6)}/><path d="M-10 -12 q4 -6 8 0 q4 -6 8 0" fill="#e0a45a" ${O(1.2)}/></g>`;
+const train = (x, y, s = 1, riders = '') => `<g transform="translate(${x} ${y}) scale(${s})">${shadow(30, 2, 80)}
+  ${[0, 1].map(i => `<g transform="translate(${-70 + i * -64} 0)"><rect x="0" y="-38" width="56" height="34" rx="6" fill="${i ? '#7ab8f0' : '#8a64b8'}" ${O()}/><rect x="8" y="-32" width="16" height="14" rx="3" fill="#ffe9a8" ${O(1.4)}/><rect x="32" y="-32" width="16" height="14" rx="3" fill="#ffe9a8" ${O(1.4)}/><circle cx="12" cy="-2" r="6" fill="#3a3550" ${O(1.6)}/><circle cx="44" cy="-2" r="6" fill="#3a3550" ${O(1.6)}/></g>`).join('')}
+  <rect x="-2" y="-40" width="62" height="36" rx="6" fill="#4a7ab0" ${O()}/><rect x="36" y="-58" width="22" height="20" rx="3" fill="#4a7ab0" ${O()}/><rect x="40" y="-54" width="14" height="10" rx="2" fill="#ffe9a8" ${O(1.4)}/><rect x="8" y="-56" width="10" height="16" fill="#3a3550" ${O(1.6)}/>
+  <circle cx="12" cy="-2" r="7" fill="#3a3550" ${O(1.6)}/><circle cx="46" cy="-2" r="7" fill="#3a3550" ${O(1.6)}/><path d="M60 -8 l8 6" ${O(2)}/>
+  ${[0, 1, 2].map(i => `<circle class="zf" style="animation-delay:${i}s;animation-duration:4s" cx="${13 + i * 4}" cy="${-62 - i * 6}" r="${4 + i * 2}" fill="#fff" opacity=".8"/>`).join('')}${riders}</g>`;
+const rails = () => `<path d="M-300 168 H500" stroke="#8a6a4a" stroke-width="3"/>${Array.from({ length: 14 }, (_, i) => `<rect x="${-10 + i * 16}" y="164" width="4" height="9" fill="#6a4a3a"/>`).join('')}`;
+const starRails = () => Array.from({ length: 10 }, (_, i) => sparkle(10 + i * 20, 168 - i * 4, i * .2, '#fff1b8', 3)).join('');
+const window_ = (x, y) => `<rect x="${x}" y="${y}" width="40" height="34" rx="4" fill="#3a2f6a" ${O(1.8)}/>`;
+const balcony = () => `<rect x="-400" y="150" width="1000" height="50" fill="#8a5a34"/><path d="M-400 150 H600" stroke="${INK}" stroke-width="2.2"/>${Array.from({ length: 12 }, (_, i) => `<rect x="${-6 + i * 18}" y="126" width="5" height="26" fill="#a8743f" ${O(1.2)}/>`).join('')}<rect x="-400" y="122" width="1000" height="6" fill="#a8743f"/>`;
+const cliff = (x, y) => `<g transform="translate(${x} ${y})"><path d="M-50 60 L-36 -20 L-20 -30 L20 -34 L38 -18 L50 60z" fill="#6a6a80" ${O()}/><rect x="-26" y="-74" width="52" height="44" fill="#3a3550" ${O()}/><path d="M-30 -74 l8 -12 l8 12 l8 -12 l8 12 l8 -12 l8 12 l8 -12 l4 12" fill="#3a3550" ${O(1.6)}/><rect x="-8" y="-62" width="16" height="16" rx="8" fill="#ffd98a" ${O(1.4)}/></g>`;
+
+// ---------- batch 2 scenes ----------
+const SHEP = { shirt: '#5a9a5a' };
+Object.assign(SCENES, {
+  g5: [ // მზეთუნახავი
+    () => BG.palace() + A('mom', 80, 82, .95, { princess: 1, dress: '#ffb347', anim: 'nod' }) + sparkle(60, 70) + sparkle(130, 64, .6),
+    () => BG.dusk() + flowers() + A('devi', 70, 6, .7, { angry: 1, anim: 'stomp' }) + A('mom', 30, 100, .6, { princess: 1, dress: '#ffb347', anim: 'shiver' }),
+    () => BG.palace() + A('king', 90, 80, .95, { anim: 'sad' }),
+    () => BG.mountain() + cliff(140, 110) + A('boy', 20, 100, .6, { shirt: '#4a7ab0', hat: '#6a4030', sad: 1 }) + A('boy', 60, 104, .56, { shirt: '#c2577a', hat: '#3a3550', sad: 1 }),
+    () => BG.day() + tree(160, 152, 1) + A('boy', 40, 88, .9, { ...SHEP, anim: 'nod' }) + A('eagle', 100, 110, .7, { closed: 1 }) + heart(96, 80),
+    () => BG.day() + A('boy', 30, 90, .8, SHEP) + A('eagle', 90, 80, .9, { anim: 'bob' }),
+    () => BG.mountain() + cloud(90, 0) + `<g class="flutter" style="animation-duration:12s">${A('eagle', 30, 50, .9)}${A('boy', 52, 34, .4, { ...SHEP, anim: 'bob' })}</g>` + windLines(),
+    () => BG.night() + cliff(100, 130) + A('mom', 86, 58, .32, { princess: 1, dress: '#ffb347', sad: 1 }) + A('eagle', 20, 60, .7),
+    () => BG.night() + cliff(150, 130) + A('devi', 110, 22, .55, { closed: 1, anim: 'breathe' }) + zzz(150, 30) + A('eagle', 30, 70, .7) + A('boy', 50, 58, .35, SHEP) + A('mom', 82, 60, .35, { princess: 1, dress: '#ffb347' }),
+    () => BG.night() + cliff(170, 130) + A('devi', 140, 26, .45, { angry: 1, anim: 'roar' }) + `<g class="flyaway" style="animation-duration:6s">${A('eagle', 20, 80, .8)}${A('boy', 40, 66, .36, SHEP)}${A('mom', 64, 66, .36, { princess: 1, dress: '#ffb347' })}</g>`,
+    () => BG.palace() + confetti() + A('king', 20, 80, .85, { anim: 'laugh' }) + A('mom', 70, 84, .85, { princess: 1, dress: '#ffb347', anim: 'dance' }) + A('eagle', 120, 70, .7, { anim: 'bob' }),
+    () => BG.palace() + confetti() + A('boy', 40, 84, .9, { ...SHEP, hat: '#ffd34d', anim: 'dance' }) + A('mom', 88, 82, .92, { princess: 1, dress: '#ffb347', anim: 'dance', delay: .3 }) + A('eagle', 140, 40, .55, { anim: 'bob' }) + heart(80, 50),
+  ],
+  g6: [ // მელია და მწყერი
+    () => BG.day() + nest(130, 150) + A('quail', 110, 126, 1.1, { anim: 'nod' }) + A('quail', 122, 140, .45, { anim: 'hop' }) + A('quail', 136, 142, .45, { anim: 'hop', delay: .3 }) + A('fox', 10, 92, .8),
+    () => BG.day() + A('fox', 20, 88, .9, { anim: 'roar' }) + A('quail', 130, 130, 1, { anim: 'shiver' }),
+    () => BG.village() + A('mom', 30, 84, .85, { anim: 'run' }) + basket(120, 160) + A('quail', 80, 150, .8, { anim: 'hop' }) + A('fox', 140, 104, .6, { anim: 'lick' }),
+    () => BG.day() + A('boy', 20, 88, .85, { shirt: '#4a7ab0', anim: 'run' }) + jug(110, 112) + A('fox', 140, 104, .55, { anim: 'lick' }),
+    () => BG.village() + A('granny', 30, 84, .85, { anim: 'shiver' }) + A('king', 80, 82, .82, { crown: false, robe: '#6a7ab0', beard: '#f0f0f6', anim: 'shiver' }) + `<g class="drip" style="animation-duration:2s">${A('quail', 46, 60, .7)}</g>` + A('fox', 140, 104, .6, { anim: 'laugh' }),
+    () => BG.day() + A('fox', 30, 88, .9, { anim: 'nod' }) + A('quail', 130, 130, 1, { anim: 'bob' }),
+    () => BG.day() + A('fox', 20, 92, .8, { closed: 1, anim: 'walk' }) + A('quail', 120, 120, .8, { anim: 'hop' }) + A('dog', 150, 140, .6, { closed: 1 }),
+    () => BG.day() + A('dog', 90, 116, .9, { bark: 1, anim: 'hop' }) + A('dog', 140, 120, .8, { bark: 1, anim: 'hop', delay: .2 }) + A('fox', 10, 92, .8, { anim: 'shiver' }),
+    () => BG.mountain() + A('fox', 20, 100, .75, { anim: 'run' }) + A('dog', 0, 122, .6, { bark: 1, anim: 'run' }) + windLines(),
+    () => BG.day() + nest(110, 150) + A('quail', 86, 124, 1.2, { anim: 'bob' }) + A('quail', 96, 140, .45, { anim: 'hop' }) + A('quail', 120, 140, .45, { anim: 'hop', delay: .2 }) + A('quail', 140, 140, .45, { anim: 'hop', delay: .4 }) + heart(110, 100),
+    () => BG.dusk() + nest(100, 150) + A('quail', 80, 124, 1.2, { closed: 1, anim: 'breathe' }) + A('quail', 110, 140, .45, { closed: 1 }) + zzz(130, 110),
+  ],
+  s3: [ // ძილის მატარებელი
+    () => BG.dusk() + rails() + train(140, 168, .8),
+    () => BG.night() + rails() + train(140, 168, .8) + A('bear', 136, 92, .45, { fur: '#7a5232', belly: '#b8875a', anim: 'nod' }),
+    () => BG.night() + rails() + train(150, 168, .75) + A('hare', 20, 120, .6, { anim: 'nod' }),
+    () => BG.nightForest() + rails() + train(130, 168, .75) + A('bird', 30, 116, .9, { closed: 1, anim: 'breathe' }) + A('bird', 52, 118, .9, { closed: 1, anim: 'breathe', delay: .6 }),
+    () => BG.night() + river().replace(/#4a90d8/g, '#2a4a8a') + `<path d="M-300 146 H500" stroke="#8a6a4a" stroke-width="4"/>` + train(150, 146, .7) + A('tortoise', 20, 150, .6, { anim: 'walk' }),
+    () => BG.night() + rails() + train(160, 168, .7) + [0, 1, 2, 3, 4].map(i => A('sheep', 10 + i * 16, 136 + (i % 2) * 6, .6, { anim: 'hop', delay: i * .2 })).join(''),
+    () => BG.night() + mountains('#3a4a8a', '#e6ecff') + train(140, 150, .7) + A('bear', 20, 108, .55, { anim: 'hop' }),
+    () => BG.night(true) + moonFace(160, 40, 18) + starRails() + `<g class="flutter" style="animation-duration:20s">${train(120, 120, .55)}</g>` + starsField(10),
+    () => BG.night(true) + moonFace(100, 60, 30) + starsField(12) + train(150, 180, .5),
+    () => BG.room() + `<rect x="-400" y="0" width="1000" height="200" fill="#2e2556"/>` + window_(20, 40) + window_(120, 40) + moonFace(140, 56, 10) + A('hare', 20, 100, .5, { closed: 1, anim: 'breathe' }) + A('sheep', 100, 120, .7, { closed: 1, anim: 'breathe' }) + zzz(80, 100),
+    () => BG.room() + bed() + A('boy', 60, 86, .8, { closed: 1, anim: 'breathe' }) + blanket() + moonFace(148, 52, 12),
+    () => BG.night(true) + moonFace(100, 70, 34) + starsField(14),
+    () => BG.night(true) + starsField(12) + cloud(120, 6, 1.4) + starRails() + `<g class="flutter" style="animation-duration:24s">${train(110, 120, .5)}</g>`,
+    () => BG.night(true) + moonFace(150, 40, 16) + starsField(16) + `<g transform="translate(0 20)">${A('hare', 10, 110, .4, { closed: 1 })}${A('bird', 70, 130, .7, { closed: 1 })}${A('tortoise', 110, 130, .45, { closed: 1 })}${A('bear', 160, 110, .4, { closed: 1 })}</g>` + zzz(100, 100),
+    () => BG.room() + bed() + A('boy', 60, 86, .8, { closed: 1, anim: 'breathe' }) + blanket() + zzz(120, 100),
+    () => BG.night(true) + moonFace(100, 60, 26) + starsField(16) + zzz(100, 130),
+  ],
+  s4: [ // ვარსკვლავების თვლა
+    () => BG.night(true) + balcony() + A('mom', 40, 70, 1, { dress: '#7a5a9a', anim: 'nod' }) + A('girl', 100, 92, .7, { dress: '#7ab8f0' }) + starsField(16),
+    () => BG.night(true) + mountains('#3a4a8a', '#e6ecff') + sparkle(50, 40, 0, '#fff1b8', 10) + A('sheep', 120, 150, .5, { closed: 1 }),
+    () => BG.night(true) + sea() + sparkle(100, 40, 0, '#fff1b8', 10),
+    () => BG.nightForest() + sparkle(100, 30, 0, '#fff1b8', 10),
+    () => BG.night(true) + house(60, 150, .6).replace(/#ffd98a/g, '#3a3a6a') + house(150, 152, .6).replace(/#ffd98a/g, '#3a3a6a') + sparkle(100, 40, 0, '#fff1b8', 10),
+    () => BG.night(true) + starsField(16) + sparkle(100, 70, 0, '#fff1b8', 5) + `<circle class="glow" cx="100" cy="70" r="12" fill="#fff1b8" opacity=".25"/>`,
+    () => BG.night(true) + moonFace(80, 60, 24) + sparkle(130, 50, 0, '#fff1b8', 9),
+    () => BG.night(true) + starsField(16) + sparkle(100, 70, 0, '#fff1b8', 12) + A('girl', 70, 100, .8, { dress: '#7ab8f0', closed: 1, anim: 'nod' }),
+    () => BG.night(true) + windLines() + starsField(16) + flowers(),
+    () => BG.room() + bed() + A('girl', 50, 82, .85, { dress: '#7ab8f0', closed: 1, anim: 'breathe' }) + blanket() + A('mom', 140, 80, .8, { dress: '#7a5a9a', anim: 'nod' }),
+    () => BG.room() + bed() + A('girl', 50, 82, .85, { dress: '#7ab8f0', closed: 1, anim: 'breathe' }) + blanket() + heart(130, 90),
+    () => BG.night(true) + starsField(16) + [1, 2, 3, 4, 5].map(i => sparkle(i * 32, 60 + (i % 2) * 20, i * .4, '#fff1b8', 6)).join(''),
+    () => BG.night(true) + moonFace(100, 60, 26) + starsField(16) + windLines(),
+    () => BG.room() + bed() + A('girl', 50, 82, .85, { dress: '#7ab8f0', closed: 1, anim: 'breathe' }) + blanket() + zzz(120, 100),
+  ],
+  w1: [ // კონკია
+    () => BG.hut() + hearth(150, 168, .9) + A('girl', 40, 86, .9, { dress: '#9a9aa6', hair: '#e8b04a', sad: 1, anim: 'sad' }),
+    () => BG.village() + A('mom', 20, 82, .85, { ...STEP }) + A('girl', 70, 88, .75, { dress: '#ff7f9a' }) + A('girl', 110, 88, .75, { dress: '#c59cff' }) + A('girl', 160, 100, .55, { dress: '#9a9aa6', hair: '#e8b04a', sad: 1 }),
+    () => BG.night(true) + tree(160, 156, 1) + A('girl', 40, 90, .85, { dress: '#9a9aa6', hair: '#e8b04a', sad: 1, anim: 'shiver' }) + A('fairy', 110, 60, .85, { anim: 'bob' }),
+    () => BG.night(true) + coach(130, 160, .9) + A('girl', 30, 86, .85, { princess: 1, dress: '#7ab8f0', anim: 'dance' }) + sparkle(70, 60) + sparkle(100, 40, .5) + sparkle(160, 60, 1),
+    () => BG.night(true) + clock(150, 50) + A('fairy', 30, 70, .85, { anim: 'nod' }) + A('girl', 90, 90, .8, { princess: 1, dress: '#7ab8f0' }),
+    () => BG.palace().replace(/#6cc4ff/g, '#3a3a8a').replace(/#d6f3ff/g, '#6a6ab0') + A('prince', 50, 86, .9, { anim: 'dance' }) + A('girl', 96, 84, .9, { princess: 1, dress: '#7ab8f0', anim: 'dance', delay: .3 }) + heart(96, 50) + confetti(),
+    () => BG.night(true) + clock(160, 40) + A('girl', 30, 90, .8, { dress: '#9a9aa6', hair: '#e8b04a', anim: 'run' }) + slipper(120, 170),
+    () => BG.palace() + A('prince', 60, 86, .95, { anim: 'nod' }) + slipper(130, 140),
+    () => BG.village() + A('prince', 130, 86, .85) + A('girl', 30, 88, .8, { dress: '#ff7f9a', anim: 'shiver' }) + slipper(90, 168),
+    () => BG.hut() + A('prince', 120, 86, .85, { anim: 'nod' }) + A('girl', 40, 88, .85, { dress: '#9a9aa6', hair: '#e8b04a' }) + slipper(92, 170) + sparkle(92, 156, 0, '#fff', 6),
+    () => BG.hut() + A('prince', 110, 86, .85, { anim: 'laugh' }) + A('girl', 50, 86, .88, { princess: 1, dress: '#7ab8f0', anim: 'bob' }) + heart(96, 60) + heart(80, 44, .6),
+    () => BG.palace() + confetti() + A('prince', 40, 86, .9, { anim: 'dance' }) + A('girl', 86, 84, .9, { princess: 1, dress: '#7ab8f0', anim: 'dance', delay: .3 }) + A('fairy', 140, 50, .6, { anim: 'bob' }),
+  ],
+  w2: [ // წითელქუდა
+    () => BG.village() + A('granny', 120, 84, .85, { anim: 'nod' }) + A('girl', 50, 92, .75, { hood: 1, dress: '#e2445c', anim: 'hop' }),
+    () => BG.hut() + A('mom', 30, 82, .95, { anim: 'nod' }) + A('girl', 110, 94, .75, { hood: 1, dress: '#e2445c' }) + basket(160, 168),
+    () => BG.day() + tree(40, 156, 1.1) + tree(170, 156, .9) + A('girl', 70, 94, .7, { hood: 1, dress: '#e2445c', anim: 'walk' }) + A('wolf', 140, 98, .75, { anim: 'nod' }),
+    () => BG.day() + flowers() + A('girl', 30, 96, .7, { hood: 1, dress: '#e2445c', anim: 'bob' }) + A('wolf', 120, 98, .75, { anim: 'run' }),
+    () => BG.hut() + `<rect x="130" y="80" width="50" height="90" rx="4" fill="#8a5a34" ${O()}/>` + A('granny', 136, 92, .6, { anim: 'shiver' }) + A('wolf', 10, 98, .8, { anim: 'nod' }),
+    () => BG.hut() + bed() + `<g transform="translate(46 96)">${C.wolf({}).replace('class="tail"', 'class="tail" opacity="0"')}</g>` + `<path d="M100 118 q14 -22 30 -4z" fill="#fff" ${O(1.6)}/>` + blanket() + A('girl', 150, 92, .7, { hood: 1, dress: '#e2445c', anim: 'nod' }),
+    () => BG.hut() + bed() + A('wolf', 40, 80, .9, { anim: 'roar' }) + A('girl', 150, 92, .7, { hood: 1, dress: '#e2445c', anim: 'shiver' }) + A('king', 170, 76, .7, { crown: false, robe: '#5a8a4a', beard: '#7a4a2a', anim: 'run' }),
+    () => BG.day() + tree(170, 156, 1) + A('wolf', 40, 98, .75, { anim: 'run' }) + windLines(),
+    () => BG.hut() + A('granny', 40, 84, .9, { anim: 'bob' }) + A('girl', 110, 92, .75, { hood: 1, dress: '#e2445c', anim: 'hop' }) + heart(90, 60),
+    () => BG.hut() + table(100, 160) + bread(90, 154) + A('granny', 20, 84, .85) + A('girl', 140, 92, .7, { hood: 1, dress: '#e2445c' }) + A('king', 70, 76, .7, { crown: false, robe: '#5a8a4a', beard: '#7a4a2a', anim: 'laugh' }),
+    () => BG.village() + A('mom', 50, 82, .95, { anim: 'nod' }) + A('girl', 110, 92, .75, { hood: 1, dress: '#e2445c', anim: 'bob' }) + heart(96, 60),
+  ],
+  a7: [ // მზე და ქარი
+    () => BG.day(true) + sunFace(150, 46) + A('windy', 10, 30, 1.1, { anim: 'bob' }),
+    () => BG.day() + A('king', 80, 82, .9, { crown: false, robe: '#8a5a34', beard: '#5a4030', anim: 'walk' }),
+    () => BG.day() + A('windy', 0, 30, 1, { anim: 'shiver' }) + blow(50, 70) + windLines() + A('king', 120, 82, .9, { crown: false, robe: '#8a5a34', beard: '#5a4030', anim: 'shiver' }),
+    () => BG.day(true) + sunFace(100, 46) + A('windy', 10, 40, .8, { closed: 1 }) + A('king', 120, 82, .9, { crown: false, robe: '#8a5a34', beard: '#5a4030' }),
+    () => BG.day(true) + sunFace(150, 40) + tree(60, 156, 1.1) + A('king', 80, 86, .85, { crown: false, robe: '#c2483a', beard: '#5a4030', anim: 'breathe' }),
+    () => BG.day(true) + sunFace(130, 46) + A('windy', 10, 50, .9, { anim: 'nod' }) + heart(100, 80),
+    () => BG.dusk() + A('windy', 60, 40, .9, { anim: 'bob' }) + windLines(),
+  ],
+  a8: [ // ჭიანჭველა და მტრედი
+    () => BG.day() + river() + A('ant', 60, 140, 1.4, { anim: 'shiver' }),
+    () => BG.day() + river() + tree(150, 150, 1.2) + A('dove', 126, 70, 1.2, { anim: 'nod' }) + `<g class="drip" style="animation-duration:2s"><path d="M120 110 q8 -8 14 0 q-8 6 -14 0z" fill="#7fd07a" ${O(1)}/></g>`,
+    () => BG.day() + river() + `<g class="flutter" style="animation-duration:6s"><path d="M70 160 q14 -12 28 0 q-14 8 -28 0z" fill="#7fd07a" ${O(1.4)}/>${A('ant', 74, 148, .8)}</g>` + A('dove', 130, 70, 1.1),
+    () => BG.day() + tree(150, 152, 1.2) + A('dove', 126, 70, 1.1, { closed: 1 }) + A('king', 20, 80, .9, { crown: false, robe: '#5a8a4a', beard: '#7a4a2a', anim: 'nod' }),
+    () => BG.day() + tree(150, 152, 1.2) + A('dove', 126, 70, 1.1) + A('king', 20, 80, .9, { crown: false, robe: '#5a8a4a', beard: '#7a4a2a', anim: 'shiver' }) + A('ant', 40, 156, .8, { anim: 'hop' }),
+    () => BG.day() + `<g class="flyaway">${A('dove', 120, 80, 1.1)}</g>` + tree(150, 152, 1.2),
+    () => BG.dusk() + river() + A('ant', 50, 136, 1.4, { anim: 'bob' }) + A('dove', 110, 116, 1.2, { anim: 'nod' }) + heart(96, 90),
+  ],
+});
+
 // one scene as SVG; slabs above and below continue the sky and ground beyond the frame
 function sceneSvg(id, i) {
   const body = SCENES[id][i]();
@@ -826,12 +998,15 @@ const TALES = [
   { id: 'g2', title: 'წიქარა', cat: 'ge' },
   { id: 'g3', title: 'კომბლე', cat: 'ge' },
   { id: 'g4', title: 'ხუთკუნჭულა', cat: 'ge' },
-  { id: 'l4', title: 'მზეთუნახავი', cat: 'ge' },
+  { id: 'g5', title: 'მზეთუნახავი', cat: 'ge' },
+  { id: 'g6', title: 'მელია და მწყერი', cat: 'ge' },
   { id: 's1', title: 'მთვარის სტუმრობა', cat: 'sleep', free: true },
   { id: 's2', title: 'პატარა ღრუბლის მოგზაურობა', cat: 'sleep' },
-  { id: 'w3', title: 'სამი გოჭი', cat: 'world' },
+  { id: 's3', title: 'ძილის მატარებელი', cat: 'sleep' },
+  { id: 's4', title: 'ვარსკვლავების თვლა', cat: 'sleep' },
   { id: 'w1', title: 'კონკია', cat: 'world' },
   { id: 'w2', title: 'წითელქუდა', cat: 'world' },
+  { id: 'w3', title: 'სამი გოჭი', cat: 'world' },
   { id: 'w4', title: 'ოქროს ქათამი', cat: 'world' },
   { id: 't1', title: 'კურდღელი და კუ', cat: 'short', free: true },
   { id: 't2', title: 'მელა და წერო', cat: 'short', free: true },
@@ -839,6 +1014,8 @@ const TALES = [
   { id: 'a4', title: 'ლომი და თაგვი', cat: 'short' },
   { id: 'a5', title: 'ჭრიჭინა და ჭიანჭველა', cat: 'short' },
   { id: 'a6', title: 'ყვავი და მელია', cat: 'short' },
+  { id: 'a7', title: 'მზე და ქარი', cat: 'short' },
+  { id: 'a8', title: 'ჭიანჭველა და მტრედი', cat: 'short' },
 ];
 const SHELVES = [
   { cat: 'ge', title: 'ქართული ხალხური ზღაპრები', note: '3–6 წუთი' },
@@ -894,16 +1071,86 @@ function renderShelves() {
           <span class="name">${t.title}</span>
           <span class="len">${ready(t) ? minutes(t.id) : 'მზადდება'}${listened[t.id] ? ' · <b class="done">მოსმენილია</b>' : ''}</span>
         </button>`).join('')}</div>
-    </section>`).join('');
+    </section>`).join('') + `
+    <section class="shelf"><h2>გაფერადება<small>${PAGES.length} სურათი</small></h2>
+      <div class="grid">${PAGES.map(pg => `
+        <button class="tile page ${pg.free || testMode ? '' : 'locked'}" data-page="${pg.id}" aria-label="${pg.title}">
+          <div class="art">${pageThumb(pg)}</div>
+          ${pg.free ? '<span class="badge free">უფასო</span>' : testMode ? '' : `<span class="badge">${LOCK}</span>`}
+          <span class="name">${pg.title}</span>
+        </button>`).join('')}</div>
+    </section>`;
 }
-renderShelves();
-fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; renderShelves(); }).catch(() => {});
 $('shelves').addEventListener('click', e => {
   const tile = e.target.closest('.tile'); if (!tile) return;
+  if (tile.dataset.page) { const pg = PAGES.find(x => x.id === tile.dataset.page); return pg.free || testMode ? openPage(pg) : gate(paywall); }
   const t = TALES.find(x => x.id === tile.dataset.id);
   if (!ready(t)) return toast('ეს ზღაპარი მალე დაემატება');
   open_(t) ? openPlayer(t) : gate(paywall);
 });
+
+// ---------- colouring pages: the tale characters as line art ----------
+const PAGES = [
+  { id: 'c1', who: 'hare', title: 'კურდღელი', x: 48, y: 84, s: 1.35, free: true },
+  { id: 'c2', who: 'boy', title: 'ნაცარქექია', x: 58, y: 34, s: 1.65, o: { patch: 1 }, free: true },
+  { id: 'c3', who: 'devi', title: 'დევი', x: 30, y: 10, s: 1.24 },
+  { id: 'c4', who: 'bull', title: 'წიქარა', x: 22, y: 86, s: 1.48 },
+  { id: 'c5', who: 'fox', title: 'მელია', x: 30, y: 82, s: 1.4 },
+  { id: 'c6', who: 'bear', title: 'დათუნია', x: 60, y: 46, s: 1.62 },
+  { id: 'c7', who: 'tortoise', title: 'კუ', x: 40, y: 96, s: 1.4 },
+  { id: 'c8', who: 'pig', title: 'გოჭი', x: 34, y: 92, s: 2.4 },
+  { id: 'c9', who: 'lion', title: 'ლომი', x: 36, y: 80, s: 1.38 },
+  { id: 'c10', who: 'crane', title: 'წერო', x: 50, y: 40, s: 1.32 },
+  { id: 'c11', who: 'sheep', title: 'ცხვარი', x: 40, y: 92, s: 2.6 },
+  { id: 'c12', who: 'cloudy', title: 'ღრუბელი', x: 26, y: 56, s: 1.9 },
+  { id: 'c13', who: 'mom', title: 'მზეთუნახავი', x: 60, y: 36, s: 1.6, o: { princess: 1, dress: '#ffb347' } },
+  { id: 'c14', who: 'fairy', title: 'ფერია', x: 64, y: 40, s: 1.5 },
+  { id: 'c15', who: 'crow', title: 'ყვავი', x: 50, y: 74, s: 2.2 },
+  { id: 'c16', who: 'dog', title: 'ძაღლი', x: 34, y: 92, s: 2.2 },
+];
+const pageSvg = pg => `<svg viewBox="0 0 200 200" role="img" aria-label="${pg.title}">
+  <circle cx="168" cy="32" r="16" fill="#ffd34d" ${O()}/><path d="M-10 172 Q60 150 120 166 T210 160 V210 H-10z" fill="#8fd07a" ${O()}/>
+  ${[[22, 182], [178, 184]].map(([x, y]) => `<g transform="translate(${x} ${y})">${[0, 72, 144, 216, 288].map(a => `<circle cx="${Math.cos(a * Math.PI / 180) * 4}" cy="${Math.sin(a * Math.PI / 180) * 4}" r="3.2" fill="#ff7f9a" ${O(1.2)}/>`).join('')}<circle r="2.4" fill="#ffd34d" ${O(1)}/></g>`).join('')}
+  ${A(pg.who, pg.x, pg.y, pg.s, { ...(pg.o || {}), anim: 'none' })}</svg>`;
+// turn a coloured drawing into an outline page: every filled shape becomes white and tappable
+function toLineArt(root) {
+  root.querySelectorAll('[class]').forEach(el => el.removeAttribute('class'));
+  root.querySelectorAll('[fill]').forEach(el => {
+    const f = (el.getAttribute('fill') || '').toLowerCase();
+    if (f === 'none' || f === INK || f === '#2a1f3a' || f === '#1a1028') return;
+    const op = el.getAttribute('opacity');
+    if ((op !== null && +op < 1) || f === '#1a1030') { el.remove(); return; }
+    el.setAttribute('fill', '#ffffff'); el.classList.add('paint');
+    if (!el.getAttribute('stroke')) { el.setAttribute('stroke', '#cfc6dc'); el.setAttribute('stroke-width', '1'); }
+  });
+  root.querySelectorAll('[stroke]').forEach(el => { const st = el.getAttribute('stroke').toLowerCase(); if (st !== INK && st !== '#cfc6dc' && el.getAttribute('fill') === 'none') el.setAttribute('stroke', '#cfc6dc'); });
+}
+const COLORS = ['#ff5a6e', '#ff9f43', '#ffd34d', '#8fd07a', '#3aa860', '#7ab8f0', '#4a6ad0', '#a07ae0', '#ff9fd0', '#f2c9a0', '#a8743f', '#9a9aa6', '#3a3550', '#ffffff'];
+let brush = COLORS[0], undoStack = [];
+const saved = store.get('paint', {});
+function openPage(pg) {
+  $('canvas').innerHTML = pageSvg(pg);
+  const svgEl = $('canvas').firstElementChild; toLineArt(svgEl);
+  const shapes = [...svgEl.querySelectorAll('.paint')];
+  (saved[pg.id] || []).forEach((c, i) => { if (c && shapes[i]) shapes[i].setAttribute('fill', c); });
+  undoStack = [];
+  svgEl.onclick = e => {
+    const el = e.target.closest('.paint'); if (!el) return;
+    undoStack.push([el, el.getAttribute('fill')]);
+    el.setAttribute('fill', brush);
+    saved[pg.id] = shapes.map(x => x.getAttribute('fill') === '#ffffff' ? 0 : x.getAttribute('fill')); store.set('paint', saved);
+  };
+  $('undoPaint').onclick = () => { const u = undoStack.pop(); if (u) { u[0].setAttribute('fill', u[1]); saved[pg.id] = shapes.map(x => x.getAttribute('fill') === '#ffffff' ? 0 : x.getAttribute('fill')); store.set('paint', saved); } };
+  $('clearPaint').onclick = () => { shapes.forEach(x => x.setAttribute('fill', '#ffffff')); undoStack = []; delete saved[pg.id]; store.set('paint', saved); };
+  $('paint').hidden = false;
+}
+$('palette').innerHTML = COLORS.map((c, i) => `<button style="background:${c}" data-c="${c}" aria-label="ფერი ${i + 1}" aria-pressed="${i === 0}"></button>`).join('');
+$('palette').onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; brush = b.dataset.c; $('palette').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+$('closePaint').onclick = () => { $('paint').hidden = true; renderShelves(); };
+const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML = pageSvg(pg); toLineArt(d.firstElementChild); const sh = [...d.querySelectorAll('.paint')]; (saved[pg.id] || []).forEach((c, i) => { if (c && sh[i]) sh[i].setAttribute('fill', c); }); return d.innerHTML; };
+
+renderShelves();
+fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; renderShelves(); }).catch(() => {});
 
 function sceneAt(id, time) {
   const n = SCENES[id].length;
@@ -1005,7 +1252,8 @@ function paywall() {
     <ul class="perks">
       <li>ქართული ხალხური და მსოფლიოს საუკეთესო ზღაპრები, ნაზი ხმით</li>
       <li>ცოცხალი სურათები — პატარა მულტფილმი ყველა ზღაპარში</li>
-      <li>ყოველ კვირას — ორი ახალი ზღაპარი</li>
+      <li>გასაფერადებელი სურათები ზღაპრების გმირებით</li>
+      <li>ყოველ კვირას — ახალი ზღაპარი</li>
       <li>ძილის წინ: ეკრანი ქრება, ზღაპრები ზედიზედ გრძელდება</li>
       <li>რეკლამის გარეშე</li>
     </ul>
