@@ -113,7 +113,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .player { position: fixed; inset: 0; z-index: 20; background: #131938; overflow: hidden; }
 .stage { position: absolute; inset: 0; }
 .stage .layer { position: absolute; inset: 0; transition: opacity .6s ease; }
-.stage .layer.in { animation: sceneIn .8s ease-out both; }
+.stage .layer.in { }
 .stage .layer svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .stage .layer svg > .cam { animation: cam 10s ease-in-out infinite alternate; transform-box: view-box; transform-origin: 50% 50%; }
 .player-top {
@@ -205,10 +205,13 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 
 
 /* ---------- the director's actors: they travel, react and feel ---------- */
-.stage .layer svg > .cam.dir { animation: none; transform-origin: 0 0; transition: transform 2.2s cubic-bezier(.45,.05,.35,1); }
-.actor .facing { transition: transform .35s ease; }
+.stage .layer svg > .cam.dir { animation: none; }
+/* the camera moves the whole picture on the graphics card; the background is painted once */
+.stage .camwrap { position: absolute; inset: 0; transform-origin: 0 0; transition: transform 3.2s cubic-bezier(.45,.05,.35,1); will-change: transform; }
+.stage .camwrap svg { position: absolute; inset: 0; }
+.actor .facing { transition: none; }
 .act { transform-origin: 0 0; }
-.a-idle { animation: aBreath 2.6s ease-in-out infinite; }
+.a-idle { animation: aBreath 3.4s ease-in-out infinite; }
 .a-walk { animation: aWalk .62s linear infinite; }
 .a-run { animation: aRun .34s linear infinite; }
 .a-fly { animation: aFly .9s ease-in-out infinite; }
@@ -221,7 +224,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .a-eat { animation: aEat .34s ease-in-out infinite alternate; }
 .a-dance { animation: aDance .5s ease-in-out infinite alternate; }
 .a-sing { animation: aSing 1s ease-in-out infinite alternate; }
-.a-talk { animation: aTalk .3s ease-in-out infinite alternate; }
+.a-talk { animation: aTalk .9s ease-in-out infinite alternate; }
 .a-look { animation: aLook 2.6s ease-in-out infinite; }
 .a-think { animation: aThink 3s ease-in-out infinite alternate; }
 .a-work { animation: aWork .5s ease-in-out infinite alternate; }
@@ -230,7 +233,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .a-shiver { animation: aShiver .12s linear infinite; }
 .a-sad { animation: aSad 1.2s ease-out both; }
 .a-stomp { animation: aStomp .5s ease-in-out infinite; }
-@keyframes aBreath { 50% { transform: scale(1.012, 1.035); } }
+@keyframes aBreath { 50% { transform: scale(1.006, 1.02); } }
 @keyframes aWalk { 0%, 100% { transform: rotate(-4deg); } 25%, 75% { transform: translateY(-3.5px) rotate(0); } 50% { transform: rotate(4deg); } }
 @keyframes aRun { 0%, 100% { transform: rotate(5deg) scale(1.04, .96); } 50% { transform: translateY(-7px) rotate(9deg) scale(.97, 1.04); } }
 @keyframes aFly { 50% { transform: translateY(-8px) rotate(-4deg); } }
@@ -242,7 +245,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 @keyframes aEat { to { transform: rotate(5deg) scale(1.02, .97); } }
 @keyframes aDance { from { transform: rotate(-8deg); } to { transform: translateY(-6px) rotate(8deg); } }
 @keyframes aSing { from { transform: rotate(-3deg); } to { transform: rotate(4deg) scale(1, 1.03); } }
-@keyframes aTalk { to { transform: scale(1.015, 1.04) rotate(-1.5deg); } }
+@keyframes aTalk { to { transform: scale(1.005, 1.025) rotate(-1deg); } }
 @keyframes aLook { 0%, 40% { transform: none; } 50%, 90% { transform: scaleX(-1); } }
 @keyframes aThink { from { transform: rotate(-2deg); } to { transform: rotate(-6deg); } }
 @keyframes aWork { from { transform: rotate(3deg); } to { transform: rotate(10deg) scale(1, .96); } }
@@ -1758,9 +1761,9 @@ function directParagraph(tale, text, i) {
   const sleepyEnd = tale.cat === 'sleep' && set.asleep;
   // the tale opens with its heroes walking into the picture
   const opening = k => i === 0 && !cast[k].bed && firstAt[k] === 0;
-  let st = cast.map((a, k) => ({ x: firstAt[k] === 0 && !opening(k) ? a.home : offstage(a.home), y: 0, on: firstAt[k] === 0 && !opening(k), face: a.home > 100 ? -1 : 1, act: 'idle', after: 'idle', mood: '', fx: [], dur: 0, sleep: !!(a.bed && sleepyEnd) }));
+  let st = cast.map((a, k) => ({ x: firstAt[k] === 0 && !opening(k) ? a.home : offstage(a.home), y: 0, on: firstAt[k] === 0 && !opening(k), face: firstAt[k] === 0 && !opening(k) ? (a.home > 100 ? -1 : 1) : (offstage(a.home) > a.home ? -1 : 1), act: 'idle', after: 'idle', mood: '', fx: [], dur: 0, sleep: !!(a.bed && sleepyEnd) }));
   const start = st.map(p => ({ ...p, fx: [] }));
-  let last = cast.length ? 0 : -1;
+  let last = cast.length ? 0 : -1, prevCam = null, prevLead;
   const beats = sents.map((s, b) => {
     // speech after a colon is what someone says, not what happens
     const narr = s.includes(':') ? s.slice(0, s.indexOf(':')) : s;
@@ -1837,9 +1840,11 @@ function directParagraph(tale, text, i) {
     let cam = { x: 100, y: 110, z: 1 };
     if (lead !== undefined && nx[lead].on && !nx[lead].gone) {
       const a = cast[lead], p = nx[lead];
-      const z = b === 0 ? 1.04 : act === 'talk' || mood ? 1.16 : MOVES.has(act) ? 1.06 : 1.1;
-      cam = { x: clamp(p.x, 50, 150), y: clamp(a.ground + p.y - a.h * .55, 70, 150), z };
+      cam = { x: clamp(p.x, 60, 140), y: clamp(a.ground + p.y - a.h * .5, 90, 140), z: b === 0 ? 1.03 : 1.08 };
     }
+    // hold the shot while the same character keeps acting: no restless zooming
+    if (prevCam && lead === prevLead) cam = prevCam;
+    prevCam = cam; prevLead = lead;
     st = nx;
     return { s, cam, actors: nx.map(p => ({ ...p })) };
   });
@@ -1888,6 +1893,18 @@ function fxSvg(list, a, face) {
 function actorSvg(a, k, p) {
   return `<g class="actor" data-k="${k}" style="transform:translate(${p.x}px,${a.ground + p.y}px)"><g class="facing" style="transform:scaleX(${p.face})"><g class="act a-${p.act}" style="animation-delay:-${k * .7}s"><g transform="translate(${-(a.b.x + a.b.w / 2) * a.s} ${-(a.b.y + a.b.h) * a.s}) scale(${a.s})"><g class="body">${charSvg(a, p.mood)}</g></g></g></g><g class="fx">${fxSvg(p.fx, a, p.face)}</g></g>`;
 }
+// in the player: the background is a still picture (painted once), the characters and weather live in their own layer
+const STILL = /\sclass="(sway|twinkle|glow|wind|flutter|flyby|cloud|spin|flicker|drip|shoot|flap|wings|rise|appear|zf|breathe|ears|tail|eye|idle|bob|nod|dance|sad|roar|laugh|hop|neck|arm)"/g;
+const MOVING = /<g class="(fall|firefly)"[^>]*>(?:(?!<\/g>)[\s\S])*<\/g>/g;
+function paragraphHtml(para) {
+  const [top, ground] = para.edge;
+  const moving = (para.bg.match(MOVING) || []).join('');
+  const still = para.bg.replace(MOVING, '').replace(STILL, '');
+  const actors = para.cast.map((a, k) => actorSvg(a, k, para.start[k]) + (a.bed ? blanket() : '')).join('');
+  return `<div class="camwrap"><svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <rect x="-400" y="-800" width="1000" height="801" fill="${top}"/><rect x="-400" y="199" width="1000" height="800" fill="${ground}"/>${still}</svg>
+    <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true"><g class="cam dir">${moving}${actors}${para.front || ''}</g></svg></div>`;
+}
 function paragraphSvg(para, st = para.start) {
   const [top, ground] = para.edge;
   const actors = para.cast.map((a, k) => actorSvg(a, k, st[k]) + (a.bed ? blanket() : '')).join('');
@@ -1907,7 +1924,7 @@ function applyBeat(root, para, bi, instant) {
     const actEl = el.querySelector('.act');
     actEl.setAttribute('class', `act a-${p.act}`);
     if ((el.dataset.mood || '') !== p.mood) { el.dataset.mood = p.mood; el.querySelector('.body').innerHTML = charSvg(a, p.mood); }
-    el.querySelector('.fx').innerHTML = fxSvg(p.fx, a, p.face);
+    const fxs = fxSvg(p.fx, a, p.face), fxEl = el.querySelector('.fx'); if (fxEl.dataset.v !== fxs) { fxEl.dataset.v = fxs; fxEl.innerHTML = fxs; }
     if (p.dur && p.after !== p.act) beatTimers.push(setTimeout(() => { actEl.setAttribute('class', `act a-${p.after}`); el.querySelector('.dust')?.remove(); }, p.dur * 1000));
   });
   // whatever is being built grows sentence by sentence
@@ -1916,10 +1933,16 @@ function applyBeat(root, para, bi, instant) {
     if (el.classList.contains('grow')) el.style.transform = `scale(${(.15 + .85 * done).toFixed(2)})`;
     else el.querySelectorAll('.bpart').forEach(pt => pt.classList.toggle('on', +pt.dataset.step <= Math.ceil(done * 4)));
   });
-  const cam = root.querySelector('.cam'), c = beat.cam;
-  const cx = c.x + (100 - c.x) * .4, cy = c.y + (110 - c.y) * .4;
-  if (instant) cam.style.transition = 'none'; else cam.style.removeProperty('transition');
-  cam.style.transform = `translate(${cx}px,${cy}px) scale(${c.z}) translate(${-c.x}px,${-c.y}px)`;
+  const wrap = root.querySelector('.camwrap'), c = beat.cam;
+  if (wrap) {
+    const W = root.clientWidth || 390, H = root.clientHeight || 844, k = Math.min(W, H) / 200, ox = (W - 200 * k) / 2, oy = (H - 200 * k) / 2;
+    const fx = ox + c.x * k, fy = oy + c.y * k, tx = W / 2 + (fx - W / 2) * .55, ty = H / 2 + (fy - H / 2) * .55;
+    if (instant) wrap.style.transition = 'none'; else wrap.style.removeProperty('transition');
+    wrap.style.transform = `translate(${(tx - c.z * fx).toFixed(1)}px,${(ty - c.z * fy).toFixed(1)}px) scale(${c.z})`;
+  } else {
+    const cam = root.querySelector('.cam'), cx = c.x + (100 - c.x) * .4, cy = c.y + (110 - c.y) * .4;
+    cam.style.transform = `translate(${cx}px,${cy}px) scale(${c.z}) translate(${-c.x}px,${-c.y}px)`;
+  }
 }
 // when, inside a paragraph, each sentence starts: paragraph times come from the audio, sentences share them by length
 function beatAt(id, para, pi, time) {
@@ -2271,7 +2294,8 @@ function fitArt(svgEl) {
   const parent = svgEl.parentNode, next = svgEl.nextSibling;
   measure.appendChild(svgEl);
   const bb = svgEl.querySelector('[data-who]').getBBox();
-  const size = Math.max(bb.width, bb.height) * 1.1, cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
+  // measured without animations (toLineArt removed them), with room for the outline
+  const size = Math.max(bb.width, bb.height) * 1.14 + 6, cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
   svgEl.setAttribute('viewBox', `${cx - size / 2} ${cy - size / 2} ${size} ${size}`);
   if (parent) parent.insertBefore(svgEl, next); else measure.removeChild(svgEl);
 }
@@ -2310,7 +2334,7 @@ function restore(url) { if (!url) return; const img = new Image(); img.onload = 
 function savePage() { try { saved[page.id] = cnv.toDataURL('image/png'); store.set('paint2', saved); } catch {} }
 function openPage(pg) {
   page = pg; paintHistory = [];
-  $('pageArt').innerHTML = pageSvg(pg); fitArt($('pageArt').firstElementChild); toLineArt($('pageArt').firstElementChild);
+  $('pageArt').innerHTML = pageSvg(pg); toLineArt($('pageArt').firstElementChild); fitArt($('pageArt').firstElementChild);
   $('paint').hidden = false;
   fitPage(); restore(saved[pg.id]);
 }
@@ -2340,7 +2364,7 @@ $('brushes').onclick = e => {
   $('brushes').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
 };
 $('closePaint').onclick = () => { $('paint').hidden = true; renderShelves(); };
-const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML = pageSvg(pg); fitArt(d.firstElementChild); toLineArt(d.firstElementChild); return d.innerHTML + (saved[pg.id] ? `<img src="${saved[pg.id]}" alt="">` : ''); };
+const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML = pageSvg(pg); toLineArt(d.firstElementChild); fitArt(d.firstElementChild); return d.innerHTML + (saved[pg.id] ? `<img src="${saved[pg.id]}" alt="">` : ''); };
 
 renderShelves();
 paintProfile();
@@ -2365,7 +2389,7 @@ function showScene(i) {
   sceneIdx = i;
   const back = front === 'layerA' ? 'layerB' : 'layerA';
   beatIdx = -1;
-  $(back).innerHTML = play ? paragraphSvg(play[i]) : sceneSvg(current.id, i);   // fresh DOM restarts the scene's motions
+  $(back).innerHTML = play ? paragraphHtml(play[i]) : sceneSvg(current.id, i);   // fresh DOM restarts the scene's motions
   $(back).classList.remove('in'); void $(back).offsetWidth; $(back).classList.add('in');
   $(back).style.opacity = 1;
   $(front).style.opacity = 0;
