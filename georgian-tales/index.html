@@ -2844,7 +2844,8 @@ function musicStart(tale) {
   const el = musicEl();
   if (MUSIC.tale !== tale.id) {
     const base = PLAYLISTS[tale.cat] || PLAYLISTS.world;
-    const k = hashOf(tale.id) % base.length;
+    // neighbours on a shelf never start on the same piece: tale n starts on piece n
+    const k = Math.max(0, TALES.filter(t => t.cat === tale.cat).indexOf(tale)) % base.length;
     MUSIC.list = base.slice(k).concat(base.slice(0, k)); MUSIC.at = 0; MUSIC.tale = tale.id;
     el.src = `music/${MUSIC.list[0]}.mp3`;
   }
