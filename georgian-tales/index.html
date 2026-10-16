@@ -260,25 +260,76 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 // =====================================================================
 // Characters — drawn facing right, feet on y≈70 (crane ≈100, bear ≈74)
 // =====================================================================
-const eye = (x, y, closed) => closed
-  ? `<path d="M${x - 2.6} ${y} q2.6 2.2 5.2 0" stroke="#2a2440" stroke-width="1.7" fill="none" stroke-linecap="round"/>`
-  : `<circle class="eye" cx="${x}" cy="${y}" r="2.3" fill="#2a2440"/>`;
+// Cartoon style: dark plum outline, flat colour + one shade + one highlight, big shiny eyes
+const INK = '#3b2a4a';
+const O = (w = 2.2) => `stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
+const eye = (x, y, closed, r = 4.4) => closed
+  ? `<path d="M${x - r} ${y} q${r} ${r * .9} ${r * 2} 0" ${O(1.9)} fill="none"/><path d="M${x - r + .5} ${y + .8} l-2 1.6 M${x + r - .5} ${y + .8} l2 1.6" ${O(1.4)}/>`
+  : `<g class="eye"><ellipse cx="${x}" cy="${y}" rx="${r * .86}" ry="${r}" fill="#fff" ${O(1.6)}/><circle cx="${x + .7}" cy="${y + .7}" r="${r * .58}" fill="#2a1f3a"/><circle cx="${x + 1.7}" cy="${y - .9}" r="${r * .26}" fill="#fff"/><circle cx="${x - .4}" cy="${y + 1.9}" r="${r * .12}" fill="#fff"/></g>`;
+const blush = (x, y, r = 3.4) => `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * .62}" fill="#ff8fa8" opacity=".55"/>`;
+const shadow = (x, y, rx) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${rx * .18}" fill="#1a1030" opacity=".18"/>`;
 
 const C = {
-  hare: o => `<circle cx="8" cy="48" r="5.5" fill="#fff"/><ellipse cx="30" cy="52" rx="22" ry="15" fill="#e9e1d6"/><ellipse cx="44" cy="65" rx="10" ry="4.5" fill="#d8cfc2"/><ellipse cx="18" cy="66" rx="8" ry="4" fill="#d8cfc2"/>
-    <g class="ears"><ellipse cx="47" cy="16" rx="4.6" ry="14" fill="#e9e1d6" transform="rotate(-12 47 16)"/><ellipse cx="57" cy="17" rx="4.6" ry="14" fill="#e9e1d6" transform="rotate(14 57 17)"/><ellipse cx="47.5" cy="17" rx="2.1" ry="9.5" fill="#f4a9bb" transform="rotate(-12 47.5 17)"/></g>
-    <circle cx="52" cy="37" r="12.5" fill="#e9e1d6"/>${eye(57, 34, o.closed)}<circle cx="64" cy="39" r="1.8" fill="#f4a9bb"/><circle cx="55" cy="41" r="2.4" fill="#f4a9bb" opacity=".45"/>`,
-  tortoise: o => `<rect x="12" y="50" width="9" height="12" rx="4" fill="#8fae5c"/><rect x="42" y="50" width="9" height="12" rx="4" fill="#8fae5c"/><ellipse cx="32" cy="50" rx="30" ry="12" fill="#8a6a3b"/><path d="M6 50 Q32 10 58 50z" fill="#b58b4c"/><path d="M20 38 L32 26 L44 38 M32 26 V48 M14 46 L22 38 M50 46 L42 38" stroke="#8a6a3b" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-    <path d="M56 46 Q62 40 64 36" stroke="#9fb86a" stroke-width="8" stroke-linecap="round"/><circle cx="66" cy="34" r="8.5" fill="#9fb86a"/>${eye(69, 32, o.closed)}<path d="M68 38 q3 2 5 0" stroke="#5a7a3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>`,
-  fox: o => `<path class="tail" d="M16 54 Q-6 34 16 20" stroke="#e07a3a" stroke-width="13" fill="none" stroke-linecap="round"/><circle cx="16" cy="19" r="5.5" fill="#fff"/><ellipse cx="38" cy="54" rx="22" ry="14" fill="#e07a3a"/><rect x="26" y="60" width="7" height="11" rx="3" fill="#c0602a"/><rect x="45" y="60" width="7" height="11" rx="3" fill="#c0602a"/>
-    <path d="M48 40 L63 18 L78 41 Z" fill="#e88a4a"/><path d="M56 28 L58 10 L65 24 Z M67 24 L75 10 L76 30 Z" fill="#c8602a"/><path d="M63 34 L84 43 L65 46 Z" fill="#fff"/><circle cx="83.5" cy="42.5" r="2.2" fill="#2a2440"/>${eye(66, 31, o.closed)}`,
-  crane: o => `<path d="M30 72 V100 M42 72 V100" stroke="#3a3550" stroke-width="2.6"/><ellipse cx="36" cy="64" rx="23" ry="13" fill="#eef0f6"/><path d="M15 62 Q2 58 5 47 Q20 53 24 60" fill="#3a3550"/>
-    <g class="neck"><path d="M52 60 Q62 32 47 9" stroke="#eef0f6" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="47" cy="8" r="7.5" fill="#eef0f6"/><circle cx="45" cy="2.5" r="3.2" fill="#d9475a"/><path d="M53 7 L82 13 L53 11 Z" fill="#3a3550"/>${eye(49, 7, o.closed)}</g>`,
-  bear: o => `<ellipse cx="24" cy="58" rx="19" ry="16" fill="${o.fur || '#9a6a42'}"/><ellipse cx="24" cy="62" rx="10" ry="9" fill="${o.belly || '#c99a6e'}"/><ellipse cx="13" cy="72" rx="7" ry="4" fill="${o.fur || '#9a6a42'}"/><ellipse cx="35" cy="72" rx="7" ry="4" fill="${o.fur || '#9a6a42'}"/>
-    <circle cx="9" cy="16" r="7.5" fill="${o.fur || '#9a6a42'}"/><circle cx="39" cy="16" r="7.5" fill="${o.fur || '#9a6a42'}"/><circle cx="9" cy="16" r="3.6" fill="${o.belly || '#c99a6e'}"/><circle cx="39" cy="16" r="3.6" fill="${o.belly || '#c99a6e'}"/>
-    <circle cx="24" cy="30" r="17" fill="${o.fur || '#9a6a42'}"/><ellipse cx="24" cy="37" rx="8.5" ry="6.5" fill="${o.belly || '#c99a6e'}"/><circle cx="24" cy="34" r="2.6" fill="#2a2440"/>${eye(17, 27, o.closed)}${eye(31, 27, o.closed)}<circle cx="13" cy="34" r="2.6" fill="#f4a9bb" opacity=".5"/><circle cx="35" cy="34" r="2.6" fill="#f4a9bb" opacity=".5"/>`,
-  bird: o => `<ellipse cx="12" cy="10" rx="10" ry="7" fill="#7ab0e8"/><circle cx="20" cy="5" r="5" fill="#7ab0e8"/><path d="M24 5 L30 6 L24 8z" fill="#ffb347"/>${eye(21, 4, o.closed)}`,
-  fish: o => `<ellipse cx="12" cy="6" rx="11" ry="6" fill="#ffb347"/><path d="M1 6 L-7 0 L-7 12z" fill="#ff9f43"/>${eye(18, 5, o.closed)}`,
+  hare: o => shadow(34, 71, 30) + `
+    <circle cx="9" cy="47" r="7" fill="#fff" ${O()}/>
+    <ellipse cx="18" cy="66" rx="9" ry="5" fill="#ece3d8" ${O()}/>
+    <ellipse cx="31" cy="51" rx="23" ry="16" fill="#f5eee6" ${O()}/>
+    <path d="M14 58 q16 10 34 0" fill="none" stroke="#ddd2c6" stroke-width="4" stroke-linecap="round"/>
+    <ellipse cx="45" cy="66" rx="10" ry="5" fill="#ece3d8" ${O()}/>
+    <g class="ears">
+      <path d="M44 24 C38 2 42 -8 47 -6 C53 -4 52 10 50 24z" fill="#f5eee6" ${O()}/><path d="M46 20 C43 6 45 -2 47 -1 C50 0 49 10 48.5 20z" fill="#ffb3c3"/>
+      <path d="M55 24 C60 2 66 -6 70 -3 C74 1 66 14 60 25z" fill="#f5eee6" ${O()}/><path d="M57 21 C61 8 65 1 67 2 C69 5 63 14 59 22z" fill="#ffb3c3"/>
+    </g>
+    <circle cx="53" cy="36" r="15" fill="#f5eee6" ${O()}/>
+    <ellipse cx="60" cy="44" rx="7" ry="5" fill="#fff"/>
+    ${eye(57, 32, o.closed)}${blush(51, 42)}
+    <path d="M64.5 39.5 l3 0 l-1.5 2.2z" fill="#ff7f9a" ${O(1.2)}/><path d="M66 42 q-1.5 3 -4 2 M66 42 q1.5 3 4 2" ${O(1.3)} fill="none"/>
+    <path d="M70 41 l8 -1.5 M70 44 l8 1.5" stroke="${INK}" stroke-width=".9" opacity=".6"/>`,
+  tortoise: o => shadow(34, 63, 30) + `
+    <rect x="11" y="48" width="11" height="14" rx="5" fill="#c4dc84" ${O()}/><rect x="42" y="48" width="11" height="14" rx="5" fill="#c4dc84" ${O()}/>
+    <path d="M56 46 Q62 40 63 34" stroke="${INK}" stroke-width="12.5" stroke-linecap="round"/><path d="M56 46 Q62 40 63 34" stroke="#c4dc84" stroke-width="8.5" stroke-linecap="round"/>
+    <ellipse cx="32" cy="50" rx="31" ry="9" fill="#5e8a4a" ${O()}/>
+    <path d="M4 50 Q32 4 60 50z" fill="#7fb069" ${O()}/>
+    <g fill="#a7cf8a" ${O(1.6)}><path d="M24 34 l8 -7 l8 7 l-3 9 h-10z"/><path d="M12 44 l6 -8 l6 2 l-1 8 h-10z"/><path d="M52 44 l-6 -8 l-6 2 l1 8 h10z"/></g>
+    <path d="M14 22 q8 -6 16 -6" stroke="#fff" stroke-width="3" opacity=".5" fill="none" stroke-linecap="round"/>
+    <circle cx="67" cy="30" r="11" fill="#c4dc84" ${O()}/>
+    ${eye(70, 27, o.closed, 4)}${blush(64, 35, 3)}
+    <path d="M70 35 q3 2.6 6 0" ${O(1.4)} fill="none"/>`,
+  fox: o => shadow(42, 72, 32) + `
+    <g class="tail"><path d="M18 56 C-2 52 -6 28 10 16 C16 26 24 38 30 50z" fill="#f08a3c" ${O()}/><path d="M10 16 C4 22 4 30 7 34 C12 30 14 24 13 19z" fill="#fff7ee" ${O(1.6)}/></g>
+    <ellipse cx="40" cy="55" rx="23" ry="15" fill="#f08a3c" ${O()}/>
+    <path d="M50 44 q8 10 4 22 q-10 2 -14 -6z" fill="#fff7ee"/>
+    <rect x="26" y="60" width="9" height="12" rx="4" fill="#5a3a3a" ${O()}/><rect x="46" y="60" width="9" height="12" rx="4" fill="#5a3a3a" ${O()}/>
+    <path d="M57 26 L54 6 L68 18z" fill="#f08a3c" ${O()}/><path d="M57.5 22 L56 11 L63 17z" fill="#5a3a3a"/>
+    <path d="M70 18 L80 4 L82 24z" fill="#f08a3c" ${O()}/><path d="M73 18 L79 9 L80 21z" fill="#5a3a3a"/>
+    <path d="M48 36 C48 20 82 16 84 34 L94 42 C90 47 84 48 78 48 C66 50 50 48 48 36z" fill="#f08a3c" ${O()}/>
+    <path d="M70 40 C78 38 86 40 94 42 C90 47 84 48 78 48 C72 48 68 45 70 40z" fill="#fff7ee"/>
+    <circle cx="94" cy="42" r="3.2" fill="#2a1f3a"/><circle cx="94.8" cy="41" r=".9" fill="#fff"/>
+    ${eye(69, 31, o.closed)}${blush(62, 40)}`,
+  crane: o => shadow(36, 101, 26) + `
+    <path d="M30 74 V100 M42 74 V100" stroke="${INK}" stroke-width="3.2"/><path d="M30 100 h-6 M42 100 h6" ${O(2.4)}/>
+    <path d="M14 62 C2 60 -2 48 4 42 C14 46 22 52 26 60z" fill="#2f2a44" ${O()}/>
+    <ellipse cx="37" cy="64" rx="24" ry="14" fill="#fbfbff" ${O()}/>
+    <path d="M22 68 q14 8 30 0" stroke="#dfe3f0" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M24 60 q10 -8 22 -4" stroke="#dfe3f0" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <g class="neck">
+      <path d="M53 60 Q63 32 48 10" stroke="${INK}" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M53 60 Q63 32 48 10" stroke="#fbfbff" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <circle cx="48" cy="9" r="9" fill="#fbfbff" ${O()}/><path d="M42 3 q5 -6 11 -1 q-5 2 -11 1z" fill="#e2445c" ${O(1.4)}/>
+      <path d="M56 7 L86 12 L56 13z" fill="#8a8aa0" ${O(1.6)}/>
+      ${eye(50, 8, o.closed, 3.6)}${blush(46, 13, 2.4)}
+    </g>`,
+  bear: o => { const f = o.fur || '#a8743f', b = o.belly || '#e2b989'; return shadow(24, 75, 22) + `
+    <ellipse cx="12" cy="72" rx="8" ry="5" fill="${f}" ${O()}/><ellipse cx="36" cy="72" rx="8" ry="5" fill="${f}" ${O()}/>
+    <ellipse cx="24" cy="57" rx="19" ry="17" fill="${f}" ${O()}/><ellipse cx="24" cy="61" rx="11" ry="10" fill="${b}"/>
+    <ellipse cx="7" cy="54" rx="5.5" ry="8" fill="${f}" ${O()} transform="rotate(20 7 54)"/><ellipse cx="41" cy="54" rx="5.5" ry="8" fill="${f}" ${O()} transform="rotate(-20 41 54)"/>
+    <circle cx="9" cy="14" r="8" fill="${f}" ${O()}/><circle cx="39" cy="14" r="8" fill="${f}" ${O()}/><circle cx="9" cy="14" r="4" fill="${b}"/><circle cx="39" cy="14" r="4" fill="${b}"/>
+    <circle cx="24" cy="30" r="18" fill="${f}" ${O()}/>
+    <path d="M12 20 q6 -6 12 -5" stroke="#fff" stroke-width="2.5" opacity=".35" fill="none" stroke-linecap="round"/>
+    <ellipse cx="24" cy="38" rx="9.5" ry="7" fill="${b}" ${O(1.6)}/><ellipse cx="24" cy="34.5" rx="3.6" ry="2.6" fill="#2a1f3a"/><circle cx="25" cy="33.8" r=".9" fill="#fff"/>
+    <path d="M24 37 v2.5 M24 39.5 q-3 2.5 -5 0 M24 39.5 q3 2.5 5 0" ${O(1.3)} fill="none"/>
+    ${eye(16, 27, o.closed, 4)}${eye(32, 27, o.closed, 4)}${blush(12, 35, 3)}${blush(36, 35, 3)}`; },
+  bird: o => `<ellipse cx="12" cy="10" rx="11" ry="8" fill="#7ab8f0" ${O(1.6)}/><path d="M6 9 q6 -4 10 2 q-6 3 -10 -2z" fill="#5a98d8"/><circle cx="21" cy="5" r="6" fill="#7ab8f0" ${O(1.6)}/><path d="M26 4 L32 6 L26 8z" fill="#ffb347" ${O(1.2)}/>${eye(22, 4, o.closed, 2.6)}`,
+  fish: o => `<path d="M2 6 L-8 -1 L-6 6 L-8 13z" fill="#ff9f43" ${O(1.4)}/><ellipse cx="12" cy="6" rx="12" ry="7" fill="#ffb347" ${O(1.6)}/><path d="M8 0 v12 M13 -1 v14" stroke="#ff9f43" stroke-width="2"/>${eye(18, 4.5, o.closed, 2.4)}`,
 };
 const A = (who, x, y, s = 1, o = {}) =>
   `<g transform="translate(${x} ${y}) scale(${o.flip ? -s : s} ${s})"><g class="${o.anim || ''}" style="${o.delay ? `animation-delay:${o.delay}s` : ''}">${C[who](o)}</g></g>`;
@@ -286,35 +337,46 @@ const A = (who, x, y, s = 1, o = {}) =>
 // =====================================================================
 // Props and backgrounds (viewBox 200×200, ground ≈ y 150)
 // =====================================================================
-const tree = (x, y, s = 1, c = ['#3f8a52', '#4a9a5e', '#357a48']) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-4" y="-42" width="8" height="42" rx="2" fill="#6a4a2a"/><g class="sway"><circle cx="0" cy="-56" r="23" fill="${c[0]}"/><circle cx="-15" cy="-42" r="14" fill="${c[1]}"/><circle cx="15" cy="-44" r="14" fill="${c[2]}"/></g></g>`;
-const cloud = (y, delay, s = 1) => `<g class="cloud" style="animation-delay:-${delay}s"><g transform="translate(0 ${y}) scale(${s})"><ellipse cx="20" cy="10" rx="20" ry="9" fill="#fff"/><ellipse cx="34" cy="4" rx="13" ry="10" fill="#fff"/><ellipse cx="8" cy="6" rx="9" ry="7" fill="#fff"/></g></g>`;
-const zzz = (x, y) => [0, 1, 2].map(i => `<text class="zf" x="${x + i * 6}" y="${y - i * 6}" font-family="serif" font-size="${12 + i * 3}" fill="#f7efe0" style="animation-delay:${i}s">z</text>`).join('');
-const sparkle = (x, y, d = 0) => `<path class="twinkle" style="animation-delay:${d}s" d="M${x} ${y - 6} L${x + 1.6} ${y - 1.6} L${x + 6} ${y} L${x + 1.6} ${y + 1.6} L${x} ${y + 6} L${x - 1.6} ${y + 1.6} L${x - 6} ${y} L${x - 1.6} ${y - 1.6}Z" fill="#ffd98a"/>`;
-const starsField = n => Array.from({ length: n }, (_, i) => { const x = (i * 53 + 17) % 196 + 2, y = (i * 37 + 9) % 88 + 4; return `<circle class="twinkle" style="animation-delay:${(i % 7) * .35}s" cx="${x}" cy="${y}" r="${i % 3 ? 1.1 : 1.7}" fill="#fff6dc"/>`; }).join('');
-const flag = (x, y) => `<g transform="translate(${x} ${y})"><rect x="0" y="-60" width="3" height="60" fill="#5a4a3a"/><g class="flap"><path d="M3 -60 h26 l-6 9 l6 9 h-26z" fill="#e2445c"/></g></g>`;
-const plate = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="22" ry="5" fill="#f2efe8"/><ellipse cx="${x}" cy="${y - 1}" rx="15" ry="2.6" fill="#f0c27a"/>`;
-const jug = (x, y) => `<g transform="translate(${x} ${y})"><path d="M10 0 h12 v16 q15 6 15 24 v14 h-42 v-14 q0 -18 15 -24z" fill="#c9824e"/><rect x="8" y="-5" width="16" height="7" rx="2" fill="#a96a3e"/><path d="M-2 40 h36" stroke="#e7a978" stroke-width="3"/></g>`;
-const bulb = (x, y) => `<g transform="translate(${x} ${y})"><circle cx="-26" cy="34" r="3" fill="#fff" opacity=".8"/><circle cx="-16" cy="24" r="5" fill="#fff" opacity=".8"/><circle cx="0" cy="0" r="20" fill="#fff" opacity=".9"/><g class="glow"><circle cx="0" cy="-3" r="9" fill="#ffd98a"/><rect x="-4" y="5" width="8" height="6" rx="1.5" fill="#c9a24a"/></g></g>`;
-const heart = (x, y, d = 0) => `<path class="twinkle" style="animation-delay:${d}s" d="M${x} ${y + 6} C${x - 10} ${y - 2} ${x - 4} ${y - 9} ${x} ${y - 3} C${x + 4} ${y - 9} ${x + 10} ${y - 2} ${x} ${y + 6}Z" fill="#f4a9bb"/>`;
-const moonFace = (x, y, r = 26) => `<g class="glow"><circle cx="${x}" cy="${y}" r="${r}" fill="#ffe7a8"/><path d="M${x - 11} ${y - 4} q4 3 8 0 M${x + 3} ${y - 4} q4 3 8 0" stroke="#b08a3a" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M${x - 7} ${y + 7} q7 6 14 0" stroke="#b08a3a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="${x - 13}" cy="${y + 4}" r="3" fill="#f4a9bb" opacity=".6"/><circle cx="${x + 13}" cy="${y + 4}" r="3" fill="#f4a9bb" opacity=".6"/></g>`;
-const nest = (x, y) => `<path d="M${x - 16} ${y} q16 14 32 0z" fill="#8a5a3a"/>`;
-const burrow = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="24" ry="14" fill="#2a2030"/>`;
-const water = () => `<path d="M0 168 Q50 160 100 168 T200 166 V200 H0z" fill="#2f5d8a"/><path class="wind" d="M20 178 q10 -4 20 0" stroke="#7ab0e8" stroke-width="2" fill="none"/>`;
-const windLines = () => [40, 70, 100].map((y, i) => `<path class="wind" style="animation-delay:${i * 1.6}s" d="M0 ${y} q20 -8 40 0 t40 0" stroke="#c9cef0" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>`).join('');
-const bed = () => `<rect x="22" y="132" width="156" height="46" rx="14" fill="#6b4a8a"/><rect x="22" y="162" width="156" height="20" rx="8" fill="#523873"/><rect x="34" y="116" width="54" height="26" rx="13" fill="#f7efe0"/>`;
-const blanket = () => `<path d="M22 142 Q100 120 178 142 V174 H22z" fill="#f4a9bb"/><g fill="#fbd3dc"><circle cx="60" cy="154" r="4"/><circle cx="100" cy="148" r="4"/><circle cx="140" cy="154" r="4"/></g>`;
-const mountains = c => `<path d="M-10 150 L50 70 L95 130 L140 60 L215 150z" fill="${c}"/><path d="M50 70 L62 86 L40 86z M140 60 L154 78 L128 78z" fill="#f7f7ff" opacity=".85"/>`;
+const tree = (x, y, s = 1, c = ['#5cb85c', '#4aa34e', '#7fd07a']) => `<g transform="translate(${x} ${y}) scale(${s})">${shadow(0, 0, 22)}<path d="M-5 0 L-4 -44 L4 -44 L5 0z" fill="#8a5a34" ${O()}/><path d="M-1 -30 l-9 -8 M1 -20 l8 -7" ${O(1.8)}/>
+  <g class="sway"><path d="M-26 -50 C-36 -64 -22 -86 -6 -82 C0 -96 24 -92 24 -76 C38 -72 36 -50 22 -44 C14 -36 -18 -36 -26 -50z" fill="${c[0]}" ${O()}/><path d="M-18 -48 C-6 -40 12 -40 22 -46" stroke="${c[1]}" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="-10" cy="-72" r="6" fill="${c[2]}"/><circle cx="8" cy="-80" r="4" fill="${c[2]}"/>
+  <circle cx="14" cy="-58" r="3.5" fill="#ff6b6b" ${O(1.2)}/><circle cx="-14" cy="-56" r="3.5" fill="#ff6b6b" ${O(1.2)}/></g></g>`;
+const cloud = (y, delay, s = 1) => `<g class="cloud" style="animation-delay:-${delay}s"><g transform="translate(0 ${y}) scale(${s})"><path d="M2 16 C-6 16 -6 4 4 4 C4 -6 20 -8 24 0 C30 -8 46 -4 44 6 C54 6 54 16 44 16z" fill="#fff" ${O(1.6)}/><path d="M6 13 h34" stroke="#dbe9ff" stroke-width="3" stroke-linecap="round"/></g></g>`;
+const zzz = (x, y) => [0, 1, 2].map(i => `<text class="zf" x="${x + i * 6}" y="${y - i * 6}" font-family="Georgia, serif" font-weight="700" font-size="${12 + i * 3}" fill="#fff6dc" stroke="${INK}" stroke-width=".8" style="animation-delay:${i}s">z</text>`).join('');
+const sparkle = (x, y, d = 0, c = '#ffd34d', s = 7) => `<path class="twinkle" style="animation-delay:${d}s" d="M${x} ${y - s} Q${x + s * .2} ${y - s * .2} ${x + s} ${y} Q${x + s * .2} ${y + s * .2} ${x} ${y + s} Q${x - s * .2} ${y + s * .2} ${x - s} ${y} Q${x - s * .2} ${y - s * .2} ${x} ${y - s}Z" fill="${c}"/>`;
+const starsField = n => Array.from({ length: n }, (_, i) => { const x = (i * 53 + 17) % 196 + 2, y = (i * 37 + 9) % 88 + 4; return i % 3 ? `<circle class="twinkle" style="animation-delay:${(i % 7) * .35}s" cx="${x}" cy="${y}" r="1.2" fill="#fff6dc"/>` : sparkle(x, y, (i % 7) * .35, '#fff1b8', 4); }).join('');
+const flag = (x, y) => `<g transform="translate(${x} ${y})"><rect x="-1" y="-62" width="4" height="62" rx="2" fill="#8a5a34" ${O(1.6)}/><circle cx="1" cy="-63" r="3" fill="#ffd34d" ${O(1.4)}/><g class="flap"><path d="M3 -60 h28 l-7 9 l7 9 h-28z" fill="#ff5a6e" ${O(1.6)}/><path d="M8 -55 h14" stroke="#fff" stroke-width="2" opacity=".6"/></g></g>`;
+const plate = (x, y) => `${shadow(x, y + 3, 24)}<ellipse cx="${x}" cy="${y}" rx="24" ry="6" fill="#fff" ${O(1.8)}/><ellipse cx="${x}" cy="${y - 1}" rx="16" ry="3" fill="#f4c56a"/><path d="M${x - 6} ${y - 1.5} h8" stroke="#fff" stroke-width="1.5" opacity=".7"/>`;
+const jug = (x, y) => `<g transform="translate(${x} ${y})">${shadow(16, 56, 22)}<path d="M9 0 h14 v16 q15 6 15 24 v16 h-44 v-16 q0 -18 15 -24z" fill="#d98b52" ${O()}/><rect x="7" y="-6" width="18" height="8" rx="3" fill="#b06a3a" ${O(1.8)}/><path d="M-4 34 h40" stroke="#f3c08a" stroke-width="4"/><g fill="#fff3d6"><circle cx="4" cy="44" r="2"/><circle cx="16" cy="44" r="2"/><circle cx="28" cy="44" r="2"/></g><path d="M0 24 q2 -6 6 -8" stroke="#fff" stroke-width="2.5" opacity=".45" fill="none" stroke-linecap="round"/></g>`;
+const bulb = (x, y) => `<g transform="translate(${x} ${y})"><circle cx="-28" cy="36" r="3.5" fill="#fff" ${O(1.4)}/><circle cx="-17" cy="25" r="5.5" fill="#fff" ${O(1.4)}/><circle cx="0" cy="0" r="22" fill="#fff" ${O(1.8)}/><g class="glow"><circle cx="0" cy="-3" r="10" fill="#ffd34d" ${O(1.6)}/><rect x="-5" y="6" width="10" height="7" rx="2" fill="#b0a0c0" ${O(1.4)}/><path d="M-3 -6 q2 -3 5 -2" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></g></g>`;
+const heart = (x, y, d = 0) => `<path class="twinkle" style="animation-delay:${d}s" d="M${x} ${y + 7} C${x - 12} ${y - 2} ${x - 5} ${y - 11} ${x} ${y - 4} C${x + 5} ${y - 11} ${x + 12} ${y - 2} ${x} ${y + 7}Z" fill="#ff7f9a" ${O(1.4)}/>`;
+const moonFace = (x, y, r = 26) => `<g class="glow"><circle cx="${x}" cy="${y}" r="${r}" fill="#ffe9a8" ${O(2)}/><circle cx="${x + r * .45}" cy="${y - r * .4}" r="${r * .14}" fill="#f3d27a"/><circle cx="${x - r * .5}" cy="${y + r * .45}" r="${r * .1}" fill="#f3d27a"/>
+  <path d="M${x - 12} ${y - 3} q4 4 8 0 M${x + 4} ${y - 3} q4 4 8 0" ${O(2)} fill="none"/><path d="M${x - 6} ${y + 8} q6 6 12 0" ${O(2)} fill="none"/>${blush(x - 14, y + 4, 4)}${blush(x + 14, y + 4, 4)}</g>`;
+const nest = (x, y) => `<path d="M${x - 18} ${y - 2} q18 18 36 0z" fill="#a8743f" ${O(1.6)}/><path d="M${x - 14} ${y + 2} q14 6 28 0" stroke="#7a5232" stroke-width="1.5" fill="none"/>`;
+const burrow = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="26" ry="15" fill="#5a4030" ${O(1.8)}/><ellipse cx="${x}" cy="${y + 2}" rx="20" ry="11" fill="#2a1f2a"/>`;
+const water = () => `<path d="M0 168 Q50 160 100 168 T200 166 V200 H0z" fill="#3a7ac0" ${O(1.8)}/><path class="wind" d="M20 180 q10 -4 20 0" stroke="#9fd0ff" stroke-width="2.2" fill="none" stroke-linecap="round"/><path class="wind" style="animation-delay:2s" d="M90 188 q10 -4 20 0" stroke="#9fd0ff" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
+const windLines = () => [40, 70, 100].map((y, i) => `<path class="wind" style="animation-delay:${i * 1.6}s" d="M0 ${y} q20 -10 40 0 t40 0 q10 -10 4 -16" stroke="#dfe4ff" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".8"/>`).join('');
+const bed = () => `<rect x="18" y="104" width="22" height="78" rx="8" fill="#a8743f" ${O()}/><rect x="22" y="132" width="158" height="46" rx="14" fill="#8a64b8" ${O()}/><rect x="22" y="162" width="158" height="20" rx="8" fill="#6b4a96" ${O()}/><rect x="36" y="116" width="54" height="26" rx="13" fill="#fff9ee" ${O()}/>`;
+const blanket = () => `<path d="M22 142 Q100 118 180 142 V174 H22z" fill="#ff9fb4" ${O()}/><g fill="#ffd6e0"><circle cx="60" cy="154" r="4.5"/><circle cx="100" cy="146" r="4.5"/><circle cx="140" cy="154" r="4.5"/><circle cx="80" cy="166" r="3"/><circle cx="122" cy="166" r="3"/></g><path d="M22 142 Q100 118 180 142" stroke="#fff" stroke-width="3" opacity=".4" fill="none"/>`;
+const mountains = (c, snow = '#ffffff') => `<path d="M-10 150 L50 70 L95 128 L140 60 L215 150z" fill="${c}" ${O()}/><path d="M50 70 L64 88 L56 84 L48 90 L40 84 L36 88z M140 60 L156 80 L148 76 L140 82 L132 76 L124 80z" fill="${snow}" ${O(1.4)}/>`;
+const flowers = () => [[24, 172, '#ff7f9a'], [60, 184, '#ffd34d'], [100, 176, '#fff'], [146, 182, '#ff9f43'], [178, 168, '#c59cff']].map(([x, y, c]) => `<g transform="translate(${x} ${y})">${[0, 72, 144, 216, 288].map(a => `<circle cx="${Math.cos(a * Math.PI / 180) * 3.4}" cy="${Math.sin(a * Math.PI / 180) * 3.4}" r="2.6" fill="${c}" ${O(.9)}/>`).join('')}<circle r="2" fill="#ffb347"/></g>`).join('');
+const tufts = (c = '#3f9a48') => [[12, 158], [86, 164], [132, 156], [190, 160]].map(([x, y]) => `<path d="M${x - 5} ${y} l2 -7 l3 7 l2 -9 l3 9 l2 -6 l2 6" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>`).join('');
+const sunFace = (x, y) => `<g class="spin" style="transform-origin:${x}px ${y}px;transform-box:view-box">${Array.from({ length: 10 }, (_, i) => { const a = i * Math.PI / 5; return `<path d="M${x + Math.cos(a) * 20} ${y + Math.sin(a) * 20} L${x + Math.cos(a + .14) * 28} ${y + Math.sin(a + .14) * 28} L${x + Math.cos(a - .14) * 28} ${y + Math.sin(a - .14) * 28}z" fill="#ffc93c"/>`; }).join('')}</g>
+  <circle cx="${x}" cy="${y}" r="17" fill="#ffd94d" ${O(2)}/><path d="M${x - 8} ${y - 2} q2.5 -3 5 0 M${x + 3} ${y - 2} q2.5 -3 5 0" ${O(1.6)} fill="none"/><path d="M${x - 5} ${y + 5} q5 5 10 0" ${O(1.6)} fill="none"/>${blush(x - 10, y + 3, 3)}${blush(x + 10, y + 3, 3)}`;
+const bigMoon = (x, y) => `<circle class="glow" cx="${x}" cy="${y}" r="17" fill="#ffe9a8" ${O(2)}/><circle cx="${x + 6}" cy="${y - 5}" r="3" fill="#f3d27a"/><circle cx="${x - 6}" cy="${y + 6}" r="2.2" fill="#f3d27a"/>`;
 
 let gid = 0;
+const grad = (id, stops) => `<defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">${stops.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join('')}</linearGradient></defs><rect width="200" height="200" fill="url(#${id})"/>`;
 const BG = {
-  day: () => { const g = ++gid; return `<defs><linearGradient id="d${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc6ff"/><stop offset="1" stop-color="#d8f1ff"/></linearGradient></defs><rect width="200" height="200" fill="url(#d${g})"/>
-    <circle class="glow" cx="36" cy="36" r="15" fill="#ffd34d"/>${cloud(28, 10)}${cloud(54, 30, .7)}
-    <path d="M0 140 Q50 112 100 132 T200 124 V200 H0z" fill="#7cc77a"/><path d="M0 158 Q60 140 120 154 T200 148 V200 H0z" fill="#5fb562"/><g fill="#ffe36e"><circle cx="30" cy="170" r="2.5"/><circle cx="150" cy="176" r="2.5"/><circle cx="96" cy="184" r="2.5"/></g><g fill="#ff9fb4"><circle cx="60" cy="182" r="2.5"/><circle cx="176" cy="166" r="2.5"/></g>`; },
-  dusk: () => { const g = ++gid; return `<defs><linearGradient id="k${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a4a9a"/><stop offset=".6" stop-color="#f08a7a"/><stop offset="1" stop-color="#ffc48a"/></linearGradient></defs><rect width="200" height="200" fill="url(#k${g})"/>
-    <g class="rise" style="animation-direction:reverse"><circle cx="100" cy="132" r="22" fill="#ffb05a"/></g>${mountains('#6a4a7a')}<path d="M0 150 Q60 136 120 148 T200 144 V200 H0z" fill="#4a3a6a"/>`; },
-  night: () => { const g = ++gid; return `<defs><linearGradient id="n${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141a46"/><stop offset="1" stop-color="#2e3a78"/></linearGradient></defs><rect width="200" height="200" fill="url(#n${g})"/>${starsField(16)}
-    <circle class="glow" cx="160" cy="40" r="17" fill="#ffd98a"/><path d="M0 146 Q50 120 100 140 T200 132 V200 H0z" fill="#25456a"/><path d="M0 166 Q60 150 120 164 T200 158 V200 H0z" fill="#1d3a5a"/>`; },
-  room: () => `<rect width="200" height="200" fill="#2e2556"/><rect x="118" y="22" width="60" height="62" rx="8" fill="#141a46"/>${starsField(5).replace(/cx="(\d+)"/g, (m, v) => `cx="${120 + (+v % 56)}"`).replace(/cy="(\d+)"/g, (m, v) => `cy="${26 + (+v % 54)}"`)}<circle class="glow" cx="160" cy="44" r="10" fill="#ffd98a"/><path d="M148 22 V84 M118 52 H178" stroke="#5a4a8a" stroke-width="4"/><rect x="0" y="176" width="200" height="24" fill="#3e3270"/>`,
+  day: () => grad('d' + ++gid, [[0, '#6cc4ff'], [1, '#d6f3ff']]) + sunFace(36, 36) + cloud(26, 10) + cloud(56, 30, .7) +
+    `<path d="M0 132 Q40 104 90 124 T200 112 V200 H0z" fill="#9ad88a" ${O(1.8)}/><path d="M0 150 Q60 128 120 146 T200 140 V200 H0z" fill="#6cc46a" ${O()}/><path d="M6 150 Q60 130 118 146" stroke="#a6e39a" stroke-width="3" fill="none" stroke-linecap="round"/>` + tufts() + flowers(),
+  dusk: () => grad('k' + ++gid, [[0, '#5a4aa0'], [.6, '#f58a8a'], [1, '#ffc78a']]) +
+    `<g class="rise" style="animation-direction:reverse"><circle cx="100" cy="128" r="22" fill="#ffb05a" ${O(2)}/></g>` + mountains('#7a5a9a', '#ffe0ec') + `<path d="M0 150 Q60 134 120 148 T200 142 V200 H0z" fill="#4e3a78" ${O()}/>` + tufts('#3a2a60'),
+  night: (noMoon) => grad('n' + ++gid, [[0, '#121848'], [1, '#2f3c86']]) + starsField(16) + (noMoon ? '' : bigMoon(160, 40)) +
+    `<path d="M0 144 Q50 118 100 138 T200 130 V200 H0z" fill="#27507a" ${O(1.8)}/><path d="M0 164 Q60 148 120 162 T200 156 V200 H0z" fill="#1e3e62" ${O()}/><path d="M6 162 Q60 148 118 160" stroke="#3a6a96" stroke-width="3" fill="none" stroke-linecap="round"/>` + tufts('#2f5a80'),
+  room: () => `<rect width="200" height="200" fill="#3a2f6a"/><g fill="#4a3d7e">${Array.from({ length: 20 }, (_, i) => `<circle cx="${(i % 5) * 44 + 12}" cy="${Math.floor(i / 5) * 44 + 14}" r="3"/>`).join('')}</g>
+    <rect x="116" y="20" width="64" height="66" rx="10" fill="#141a52" ${O()}/><circle class="twinkle" cx="130" cy="34" r="1.4" fill="#fff6dc"/><circle class="twinkle" style="animation-delay:.8s" cx="170" cy="70" r="1.4" fill="#fff6dc"/><circle class="twinkle" style="animation-delay:1.5s" cx="138" cy="72" r="1.2" fill="#fff6dc"/>${bigMoon(160, 42).replace('r="17"', 'r="10"')}
+    <path d="M148 20 V86 M116 53 H180" stroke="${INK}" stroke-width="3"/><path d="M110 16 q8 40 0 76 h-6 V16z M186 16 q-8 40 0 76 h6 V16z" fill="#ff9fb4" ${O(1.8)}/>
+    <rect x="0" y="176" width="200" height="24" fill="#4e4290"/><path d="M0 176 H200" stroke="${INK}" stroke-width="2.2"/>`,
 };
 
 // =====================================================================
@@ -347,7 +409,7 @@ const SCENES = {
     () => BG.dusk() + A('bear', 30, 48, 1.4, { fur: '#7a5232', belly: '#b8875a', anim: 'nod' }) + A('bear', 118, 94, .75, { anim: 'bob' }),
     () => BG.night() + A('bear', 70, 82, 1, { anim: 'laugh' }) + sparkle(46, 70) + sparkle(150, 84, .9),
     () => BG.night() + water() + tree(48, 150, .95, ['#2f5a5a', '#386a66', '#284e50']) + nest(48, 104) + A('bird', 36, 90, .9, { closed: 1, anim: 'breathe' }) + burrow(140, 150) + A('hare', 124, 132, .32, { closed: 1 }) + A('fish', 120, 178, .9, { closed: 1, anim: 'bob' }) + A('bear', 164, 104, .55, { anim: 'nod' }),
-    () => BG.night().replace(/<circle class="glow" cx="160"[^>]*>/, '') + moonFace(130, 58, 30) + A('bear', 30, 92, .8, { anim: 'nod' }) + sparkle(70, 40) + sparkle(180, 100, 1.1),
+    () => BG.night(true) + moonFace(130, 58, 30) + A('bear', 30, 92, .8, { anim: 'nod' }) + sparkle(70, 40) + sparkle(180, 100, 1.1),
     () => BG.room() + bed() + A('bear', 40, 86, .95, { fur: '#7a5232', belly: '#b8875a', closed: 1 }) + A('bear', 92, 96, .7, { closed: 1, anim: 'breathe' }) + blanket(),
     () => BG.night() + windLines() + starsField(10),
     () => BG.room() + bed() + A('bear', 50, 92, .8, { closed: 1, anim: 'breathe' }) + blanket() + zzz(120, 100),
