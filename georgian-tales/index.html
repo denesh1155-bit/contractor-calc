@@ -1,34 +1,48 @@
-<title>ზღაპრები ძილის წინ</title>
+<title>ქართული ზღაპრები</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;600;700&family=Noto+Serif+Georgian:wght@600;800&display=swap">
 <style>
-/* Layout: phone-first night storybook — one column, big picture tiles (2 per row), full-screen player on top */
+/* Layout: phone-first storybook — mode switch (cartoon by day / bedtime at night), big picture tiles 2 per row, full-screen player with "living pictures" synced to the narration */
 :root {
-  --sky: #131938;
-  --sky-2: #222b5c;
+  /* bedtime (night) palette — default tokens */
+  --page: #131938;
+  --page-glow: #2d3a7a;
   --card: #1c2450;
-  --ink: #f7efe0;      /* moonlight cream */
+  --ink: #f7efe0;
   --muted: #a9aed6;
   --moon: #ffd98a;
-  --rose: #f4a9bb;     /* soft accent for the parent-facing buttons */
-  --rose-ink: #3a1626;
+  --on-moon: #131938;
   --line: rgba(247, 239, 224, .14);
   --display: "Noto Serif Georgian", "Sylfaen", Georgia, serif;
   --body: "Noto Sans Georgian", "Sylfaen", system-ui, sans-serif;
   color-scheme: dark;
 }
+/* cartoon (day) palette — the app's own mode, chosen by the parent or by the clock */
+:root.day {
+  --page: #dff1ff;
+  --page-glow: #fff3d6;
+  --card: #ffffff;
+  --ink: #23305a;
+  --muted: #5f6b94;
+  --moon: #ff9f43;
+  --on-moon: #ffffff;
+  --line: rgba(35, 48, 90, .14);
+  color-scheme: light;
+}
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { height: 100%; }
 body {
   margin: 0;
-  background: radial-gradient(120% 70% at 80% -10%, #2d3a7a 0%, var(--sky) 55%) fixed, var(--sky);
+  background: radial-gradient(120% 70% at 80% -10%, var(--page-glow) 0%, var(--page) 55%) fixed, var(--page);
   color: var(--ink);
   font-family: var(--body);
   font-size: 16px;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color .4s;
 }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--sky); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--page); }
 button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
 button:focus-visible { outline: 3px solid var(--moon); outline-offset: 3px; }
 
@@ -38,7 +52,7 @@ button:focus-visible { outline: 3px solid var(--moon); outline-offset: 3px; }
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .brand h1 { font-family: var(--display); font-weight: 800; font-size: 1.45rem; line-height: 1.2; margin: 0; text-wrap: balance; }
 .brand svg { flex: none; }
@@ -48,62 +62,103 @@ header { display: flex; align-items: center; justify-content: space-between; gap
   color: var(--muted); font-size: .8rem;
 }
 
+/* mode switch: big, two halves, readable by pictures alone */
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px; border-radius: 22px; background: var(--card); margin-bottom: 18px; box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.modes button { display: flex; align-items: center; justify-content: center; gap: 8px; height: 54px; border-radius: 16px; font-weight: 700; font-size: .95rem; color: var(--muted); }
+.modes button[aria-pressed="true"] { background: var(--moon); color: var(--on-moon); }
+
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.tile {
-  position: relative; display: flex; flex-direction: column; gap: 8px;
-  padding: 0; text-align: left;
-  transition: transform .15s ease;
-}
+.tile { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 0; text-align: left; transition: transform .15s ease; }
 .tile:active { transform: scale(.96); }
-.tile .art { aspect-ratio: 1 / 1; max-width: 100%; border-radius: 22px; overflow: hidden; box-shadow: 0 10px 24px rgba(0,0,0,.35); }
+.tile .art { aspect-ratio: 1 / 1; max-width: 100%; border-radius: 22px; overflow: hidden; box-shadow: 0 10px 24px rgba(0,0,0,.25); }
 .tile .art svg { display: block; width: 100%; height: 100%; }
 .tile .name { font-family: var(--display); font-weight: 600; font-size: 1rem; line-height: 1.3; padding-inline: 4px; }
-.tile.locked .art { filter: saturate(.55) brightness(.75); }
-.badge {
-  position: absolute; top: 10px; right: 10px;
-  width: 38px; height: 38px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: rgba(19, 25, 56, .75); backdrop-filter: blur(4px);
-}
-.badge.free { width: auto; padding: 0 10px; border-radius: 999px; height: 28px; font-size: .72rem; font-weight: 700; color: var(--sky); background: var(--moon); }
+.tile.locked .art { filter: saturate(.55) brightness(.8); }
+.badge { position: absolute; top: 10px; right: 10px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: rgba(19, 25, 56, .7); }
+.badge.free { width: auto; padding: 0 10px; border-radius: 999px; height: 28px; font-size: .72rem; font-weight: 700; color: #131938; background: #ffd98a; }
 .weekly { margin-top: 22px; padding: 14px 16px; border-radius: 18px; border: 1px dashed var(--line); color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.still * { animation: none !important; }
 
 /* ---------- player ---------- */
 .player {
   position: fixed; inset: 0; z-index: 20;
   display: flex; flex-direction: column; align-items: center;
-  background: var(--sky);
+  background: var(--page);
   padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
 .player-top { width: 100%; max-width: 560px; display: flex; justify-content: space-between; align-items: center; }
-.round { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--card); }
-.player-body { flex: 1; width: 100%; max-width: 440px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 22px; min-height: 0; }
-.player-art { width: min(100%, 52vh); aspect-ratio: 1 / 1; border-radius: 30px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,.45); }
-.player-art svg { display: block; width: 100%; height: 100%; }
+.round { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--card); color: var(--ink); }
+.player-body { flex: 1; width: 100%; max-width: 460px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 20px; min-height: 0; }
+.stage { position: relative; width: min(100%, 54vh); aspect-ratio: 1 / 1; max-width: 100%; border-radius: 30px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,.35); background: #131938; }
+.stage .layer { position: absolute; inset: 0; transition: opacity .9s ease; }
+.stage .layer svg { display: block; width: 100%; height: 100%; }
+.stage .layer.cam svg { animation: cam 16s ease-in-out infinite alternate; }
 .player h2 { font-family: var(--display); font-weight: 800; font-size: 1.6rem; margin: 0; text-align: center; text-wrap: balance; }
 .bar { width: 100%; height: 8px; border-radius: 99px; background: var(--card); overflow: hidden; }
 .bar i { display: block; height: 100%; width: 0; background: var(--moon); border-radius: inherit; }
-.times { width: 100%; display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; margin-top: -14px; }
-.play {
-  width: 112px; height: 112px; border-radius: 50%;
-  display: grid; place-items: center;
-  background: var(--moon); color: var(--sky);
-  box-shadow: 0 0 0 10px rgba(255, 217, 138, .14), 0 0 60px rgba(255, 217, 138, .35);
-}
+.times { width: 100%; display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; margin-top: -12px; }
+.play { width: 108px; height: 108px; border-radius: 50%; display: grid; place-items: center; background: var(--moon); color: var(--on-moon); box-shadow: 0 0 0 10px color-mix(in srgb, var(--moon) 18%, transparent), 0 0 50px color-mix(in srgb, var(--moon) 40%, transparent); }
 .play:active { transform: scale(.95); }
-.sleep-hint { color: var(--muted); font-size: .8rem; }
+.sleep-hint { color: var(--muted); font-size: .8rem; text-align: center; }
 
-.night {
-  position: fixed; inset: 0; z-index: 30;
-  background: #04050d; display: grid; place-items: center;
-  color: #3b4170; font-size: .85rem; text-align: center;
-  padding: 24px;
-}
+.night { position: fixed; inset: 0; z-index: 30; background: #04050d; display: grid; place-items: center; color: #3b4170; font-size: .85rem; text-align: center; padding: 24px; }
 .night .z { font-family: var(--display); font-size: 2rem; opacity: .6; animation: breathe 4s ease-in-out infinite; }
 @keyframes breathe { 50% { opacity: .2; } }
+
+/* ---------- living-picture motions (SVG parts) ---------- */
+.eye, .ears, .tail, .sway, .spin, .twinkle, .glow, .flap, .neck, .nod, .breathe, .sad { transform-box: fill-box; }
+.eye { transform-origin: center; animation: blink 4.5s infinite; }
+.ears { transform-origin: 50% 100%; animation: wiggle 2.6s ease-in-out infinite; }
+.tail { transform-origin: 80% 100%; animation: wag 1.4s ease-in-out infinite alternate; }
+.sway { transform-origin: 50% 100%; animation: sway 4s ease-in-out infinite alternate; }
+.cloud { animation: drift 46s linear infinite; }
+.spin { transform-origin: center; animation: spin 30s linear infinite; }
+.twinkle { transform-origin: center; animation: twinkle 2.4s ease-in-out infinite; }
+.glow { transform-origin: center; animation: glow 3s ease-in-out infinite alternate; }
+.flap { transform-origin: 0 50%; animation: flap 1s ease-in-out infinite alternate; }
+.zf { animation: zf 3s ease-out infinite; }
+.neck { transform-origin: 50% 100%; }
+.wind { animation: windgo 5s linear infinite; }
+
+.bob { animation: bob 1.4s ease-in-out infinite; }
+.laugh { animation: bob .35s ease-in-out infinite; }
+.nod { transform-origin: 50% 100%; animation: nod 2.2s ease-in-out infinite; }
+.breathe { transform-origin: 50% 100%; animation: breath 3.6s ease-in-out infinite; }
+.run { animation: run 3.2s ease-in .4s both; }
+.runin { animation: runin 6s ease-out both; }
+.walk { animation: walk 14s linear both, bob 1.6s ease-in-out infinite; }
+.sad { transform-origin: 50% 100%; animation: sad 3s ease-in-out infinite alternate; }
+.sad .neck, .drink .neck { animation: dip 2.4s ease-in-out infinite; }
+.lick { animation: lick .6s ease-in-out infinite alternate; }
+.rise { animation: rise 8s ease-out both; }
+.appear { animation: appear 2s ease-out both; }
+
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes wiggle { 0%, 70%, 100% { transform: rotate(0); } 80% { transform: rotate(-8deg); } 90% { transform: rotate(5deg); } }
+@keyframes wag { from { transform: rotate(-8deg); } to { transform: rotate(10deg); } }
+@keyframes sway { from { transform: rotate(-2.5deg); } to { transform: rotate(2.5deg); } }
+@keyframes drift { from { transform: translateX(-80px); } to { transform: translateX(260px); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .25; transform: scale(.6); } }
+@keyframes glow { from { filter: drop-shadow(0 0 2px #ffd98a); } to { filter: drop-shadow(0 0 10px #ffd98a); } }
+@keyframes flap { from { transform: skewY(0); } to { transform: skewY(-8deg) scaleX(.9); } }
+@keyframes zf { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: .9; } 100% { transform: translate(12px, -26px); opacity: 0; } }
+@keyframes windgo { from { transform: translateX(-120px); opacity: 0; } 30% { opacity: .7; } to { transform: translateX(220px); opacity: 0; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes nod { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(3deg); } }
+@keyframes breath { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.02, 1.05); } }
+@keyframes run { 0% { transform: translateX(0); } 15% { transform: translateX(-8px); } 100% { transform: translateX(300px); } }
+@keyframes runin { 0% { transform: translateX(-120px); } 100% { transform: translateX(40px); } }
+@keyframes walk { from { transform: translateX(0); } to { transform: translateX(60px); } }
+@keyframes sad { from { transform: rotate(0); } to { transform: rotate(-3deg) translateY(2px); } }
+@keyframes dip { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(18deg); } }
+@keyframes lick { from { transform: translateY(0); } to { transform: translateY(3px) rotate(4deg); } }
+@keyframes rise { from { transform: translateY(26px); opacity: .4; } to { transform: translateY(0); opacity: 1; } }
+@keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cam { from { transform: scale(1); } to { transform: scale(1.07) translate(-1.5%, -1%); } }
 
 /* ---------- parent gate + paywall ---------- */
 .sheet-bg { position: fixed; inset: 0; z-index: 40; background: rgba(4, 6, 20, .7); display: flex; align-items: flex-end; justify-content: center; }
@@ -124,7 +179,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .q { font-size: 2rem; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; color: #2a2440; }
 .perks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .perks li { display: flex; gap: 10px; align-items: flex-start; line-height: 1.45; }
-.perks li::before { content: ""; flex: none; width: 10px; height: 10px; margin-top: .45em; border-radius: 50%; background: var(--rose); }
+.perks li::before { content: ""; flex: none; width: 10px; height: 10px; margin-top: .45em; border-radius: 50%; background: #f4a9bb; }
 .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .plan { position: relative; text-align: left; padding: 14px; border-radius: 18px; border: 2px solid #e6dcec; background: #fff; color: #2a2440; display: flex; flex-direction: column; gap: 4px; }
 .plan[aria-pressed="true"] { border-color: #c2577a; background: #fff3f6; }
@@ -142,14 +197,14 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .switch[aria-checked="true"]::after { transform: translateX(22px); }
 .toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); transform: translateX(-50%); z-index: 60; background: #2a2440; color: #fbf6ee; padding: 12px 18px; border-radius: 14px; font-size: .9rem; max-width: calc(100% - 32px); text-align: center; }
 
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { .stage *, .tile * { animation: none !important; } .stage .layer { transition: none; } }
 </style>
 
 <div class="wrap">
   <header>
     <div class="brand">
-      <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><path d="M27 6a15 15 0 1 0 8 25A13 13 0 0 1 27 6z" fill="#ffd98a"/><circle cx="31" cy="9" r="1.6" fill="#f7efe0"/><circle cx="36" cy="17" r="1" fill="#f7efe0"/></svg>
-      <h1>ზღაპრები ძილის წინ</h1>
+      <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><path d="M27 6a15 15 0 1 0 8 25A13 13 0 0 1 27 6z" fill="#ffd98a"/><circle cx="31" cy="9" r="1.6" fill="#f4a9bb"/><circle cx="36" cy="17" r="1" fill="#f4a9bb"/></svg>
+      <h1>ქართული ზღაპრები</h1>
     </div>
     <button class="parent-btn" id="parentBtn" aria-label="მშობლებისთვის">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -157,8 +212,19 @@ header { display: flex; align-items: center; justify-content: space-between; gap
     </button>
   </header>
 
+  <div class="modes" role="group" aria-label="რეჟიმი">
+    <button id="modeDay" aria-pressed="false">
+      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></g></svg>
+      მულტფილმი
+    </button>
+    <button id="modeNight" aria-pressed="false">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 14A8 8 0 0 1 15 3z" fill="currentColor"/></svg>
+      ძილის წინ
+    </button>
+  </div>
+
   <div class="grid" id="grid"></div>
-  <p class="weekly">ყოველ კვირას — ახალი ზღაპარი. შემდეგი: <b>ხუთკუნჭულა</b></p>
+  <p class="weekly">ყოველ კვირას — ორი ახალი ზღაპარი. შემდეგი: <b>ხუთკუნჭულა</b> და <b>კონკია</b></p>
 </div>
 
 <div class="player" id="player" hidden>
@@ -166,17 +232,17 @@ header { display: flex; align-items: center; justify-content: space-between; gap
     <button class="round" id="closePlayer" aria-label="უკან">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
     </button>
-    <button class="round" id="sleepBtn" aria-label="ძილის რეჟიმი">
+    <button class="round" id="sleepBtn" aria-label="ეკრანის ჩაქრობა">
       <svg width="24" height="24" viewBox="0 0 24 24"><path d="M15 3a9 9 0 1 0 6 14A8 8 0 0 1 15 3z" fill="#ffd98a"/></svg>
     </button>
   </div>
   <div class="player-body">
-    <div class="player-art" id="playerArt"></div>
+    <div class="stage" id="stage"><div class="layer cam" id="layerA"></div><div class="layer cam" id="layerB" style="opacity:0"></div></div>
     <h2 id="playerTitle"></h2>
     <div class="bar"><i id="barFill"></i></div>
     <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
     <button class="play" id="playBtn" aria-label="დაკვრა"></button>
-    <span class="sleep-hint">მთვარეზე დააჭირე — ეკრანი ჩაქრება, ზღაპარი გაგრძელდება</span>
+    <span class="sleep-hint" id="hint"></span>
   </div>
 </div>
 
@@ -191,43 +257,115 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 <audio id="audio" preload="none"></audio>
 
 <script>
-// ---------- illustrations (simple flat SVG scenes) ----------
-const SKY = (a, b, id) => `<defs><linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="200" height="200" fill="url(#g${id})"/>`;
-const STARS = '<g fill="#fff6dc">' + [[20,24,1.6],[48,14,1.1],[160,20,1.4],[182,46,1],[120,12,1],[90,34,1.2],[30,60,1]].map(([x,y,r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('') + '</g>';
-const MOON = (x = 150, y = 46) => `<circle cx="${x}" cy="${y}" r="20" fill="#ffd98a"/>`;
-const HILLS = (c1, c2) => `<path d="M0 150 Q50 118 100 140 T200 132 V200 H0z" fill="${c1}"/><path d="M0 170 Q60 150 120 166 T200 160 V200 H0z" fill="${c2}"/>`;
+// =====================================================================
+// Characters — drawn facing right, feet on y≈70 (crane ≈100, bear ≈74)
+// =====================================================================
+const eye = (x, y, closed) => closed
+  ? `<path d="M${x - 2.6} ${y} q2.6 2.2 5.2 0" stroke="#2a2440" stroke-width="1.7" fill="none" stroke-linecap="round"/>`
+  : `<circle class="eye" cx="${x}" cy="${y}" r="2.3" fill="#2a2440"/>`;
 
-const ART = {
-  t1: SKY('#26346f', '#3d5a8a', 1) + STARS + MOON() + HILLS('#2f6b5e', '#3f8a6a') +
-      // hare
-      '<g transform="translate(36 112)"><ellipse cx="30" cy="34" rx="24" ry="17" fill="#e9e1d6"/><circle cx="54" cy="22" r="12" fill="#e9e1d6"/><ellipse cx="50" cy="2" rx="4.5" ry="15" fill="#e9e1d6" transform="rotate(-12 50 2)"/><ellipse cx="60" cy="3" rx="4.5" ry="15" fill="#e9e1d6" transform="rotate(14 60 3)"/><ellipse cx="51" cy="2" rx="2" ry="10" fill="#f4a9bb" transform="rotate(-12 51 2)"/><circle cx="58" cy="20" r="2" fill="#2a2440"/><circle cx="8" cy="30" r="6" fill="#fff"/><path d="M50 38 q6 10 0 12" stroke="#cfc5b8" stroke-width="5" fill="none" stroke-linecap="round"/></g>' +
-      // tortoise
-      '<g transform="translate(118 140)"><ellipse cx="30" cy="22" rx="30" ry="20" fill="#8a6a3b"/><path d="M8 22 Q30 -10 52 22z" fill="#b58b4c"/><path d="M20 12 L30 4 L40 12 M30 4 V22" stroke="#8a6a3b" stroke-width="2.5" fill="none"/><circle cx="64" cy="20" r="8" fill="#9fb86a"/><circle cx="67" cy="18" r="1.6" fill="#2a2440"/><rect x="10" y="30" width="9" height="9" rx="4" fill="#9fb86a"/><rect x="40" y="30" width="9" height="9" rx="4" fill="#9fb86a"/></g>',
-  t2: SKY('#3a2a62', '#7a4a6a', 2) + STARS + MOON(44, 40) + HILLS('#5b3a5e', '#6e4a62') +
-      // fox
-      '<g transform="translate(22 108)"><path d="M10 60 Q-6 30 20 24" stroke="#e07a3a" stroke-width="14" fill="none" stroke-linecap="round"/><circle cx="20" cy="22" r="6" fill="#fff"/><ellipse cx="40" cy="58" rx="24" ry="18" fill="#e07a3a"/><path d="M48 40 L66 20 L80 42 Z" fill="#e88a4a"/><path d="M58 30 L60 12 L68 26 Z M70 26 L78 12 L78 32 Z" fill="#d06a2a"/><path d="M66 36 L84 46 L68 48 Z" fill="#fff"/><circle cx="68" cy="32" r="2" fill="#2a2440"/></g>' +
-      // crane + jug
-      '<g transform="translate(120 70)"><ellipse cx="34" cy="74" rx="22" ry="14" fill="#eef0f6"/><path d="M48 70 Q58 40 44 18" stroke="#eef0f6" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="44" cy="16" r="7" fill="#eef0f6"/><circle cx="44" cy="11" r="3" fill="#d9475a"/><path d="M50 16 L76 22 L50 20 Z" fill="#2a2440"/><path d="M28 86 V118 M40 86 V118" stroke="#2a2440" stroke-width="2.5"/><path d="M14 74 Q4 70 6 60 Q20 66 24 72" fill="#2a2440"/></g>' +
-      '<g transform="translate(92 128)"><path d="M10 0 h12 v14 q14 6 14 24 v14 h-40 v-14 q0 -18 14 -24z" fill="#c9824e"/><rect x="8" y="-4" width="16" height="6" rx="2" fill="#a96a3e"/></g>',
-  t3: SKY('#141a46', '#2a2f6a', 3) + STARS + MOON(150, 40) +
-      // bed + bear
-      '<rect x="22" y="128" width="156" height="50" rx="14" fill="#6b4a8a"/><rect x="22" y="160" width="156" height="22" rx="8" fill="#523873"/><rect x="34" y="112" width="52" height="26" rx="13" fill="#f7efe0"/>' +
-      '<g transform="translate(46 86)"><circle cx="24" cy="30" r="22" fill="#9a6a42"/><circle cx="6" cy="12" r="9" fill="#9a6a42"/><circle cx="42" cy="12" r="9" fill="#9a6a42"/><circle cx="6" cy="12" r="4.5" fill="#c99a6e"/><circle cx="42" cy="12" r="4.5" fill="#c99a6e"/><ellipse cx="24" cy="38" rx="10" ry="8" fill="#c99a6e"/><circle cx="24" cy="34" r="3" fill="#2a2440"/><path d="M12 26 q4 3 8 0 M28 26 q4 3 8 0" stroke="#2a2440" stroke-width="2" fill="none" stroke-linecap="round"/></g>' +
-      '<path d="M22 140 Q100 118 178 140 V172 H22z" fill="#f4a9bb"/><g fill="#fbd3dc"><circle cx="60" cy="152" r="4"/><circle cx="100" cy="146" r="4"/><circle cx="140" cy="152" r="4"/></g>' +
-      '<text x="120" y="96" font-family="serif" font-size="18" fill="#f7efe0" opacity=".7">z</text><text x="134" y="80" font-family="serif" font-size="13" fill="#f7efe0" opacity=".5">z</text>',
-  l1: SKY('#2a1f3d', '#5a3a2a', 4) + STARS + HILLS('#3a2a2a', '#4a3226') + // ნაცარქექია — boy by the fire
-      '<g transform="translate(110 120)"><path d="M10 50 Q20 10 30 50z" fill="#ffb347"/><path d="M16 50 Q22 26 28 50z" fill="#ffe08a"/><rect x="0" y="48" width="40" height="6" rx="3" fill="#6a4a2a"/></g><g transform="translate(60 112)"><circle cx="14" cy="10" r="10" fill="#e8c39e"/><path d="M4 6 Q14 -6 24 6" fill="#3a2a1a"/><rect x="2" y="20" width="24" height="34" rx="10" fill="#8a5a3a"/></g>',
-  l2: SKY('#1f3550', '#3a6a7a', 5) + STARS + MOON(40, 44) + HILLS('#2a5a4a', '#356a52') + // წიქარა — the bull
-      '<g transform="translate(56 110)"><ellipse cx="44" cy="34" rx="40" ry="22" fill="#c9a27a"/><circle cx="88" cy="26" r="14" fill="#c9a27a"/><path d="M80 14 Q72 0 80 -4 M96 14 Q104 0 96 -4" stroke="#f7efe0" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="92" cy="24" r="2" fill="#2a2440"/><rect x="14" y="48" width="9" height="20" rx="4" fill="#b08a62"/><rect x="60" y="48" width="9" height="20" rx="4" fill="#b08a62"/></g>',
-  l3: SKY('#22284d', '#4a4a7a', 6) + STARS + MOON() + HILLS('#3a4a3a', '#46583e') + // კომბლე — hut and tree
-      '<g transform="translate(44 104)"><rect x="0" y="24" width="56" height="40" fill="#a9825a"/><path d="M-6 26 L28 0 L62 26z" fill="#7a4a3a"/><rect x="22" y="40" width="12" height="24" fill="#5a3a2a"/><rect x="38" y="34" width="10" height="10" fill="#ffd98a"/></g><g transform="translate(132 90)"><rect x="14" y="40" width="8" height="40" fill="#6a4a2a"/><circle cx="18" cy="30" r="24" fill="#3f7a52"/></g>',
-  l4: SKY('#3a3a7a', '#a46a7a', 7) + STARS + HILLS('#5a4a7a', '#6a5a86') + // მზეთუნახავი — tower and sun
-      '<circle cx="100" cy="70" r="26" fill="#ffd98a"/><g stroke="#ffd98a" stroke-width="4" stroke-linecap="round">' + Array.from({length: 8}, (_, i) => { const a = i * Math.PI / 4; return `<line x1="${100 + Math.cos(a) * 34}" y1="${70 + Math.sin(a) * 34}" x2="${100 + Math.cos(a) * 44}" y2="${70 + Math.sin(a) * 44}"/>`; }).join('') + '</g>' +
-      '<g transform="translate(130 96)"><rect x="0" y="16" width="34" height="70" fill="#d9cbe6"/><path d="M-4 18 L17 -8 L38 18z" fill="#c2577a"/><rect x="11" y="32" width="12" height="16" rx="6" fill="#ffd98a"/></g>',
-  l5: SKY('#1d2a4a', '#2e4a6a', 8) + STARS + MOON(46, 42) + HILLS('#2a4a5a', '#335a62') + // ხუთკუნჭულა — tiny hero
-      '<g transform="translate(88 118)"><circle cx="12" cy="10" r="9" fill="#e8c39e"/><path d="M2 8 L12 -6 L22 8z" fill="#c2577a"/><rect x="2" y="18" width="20" height="26" rx="8" fill="#4a7ab0"/></g><g fill="#f7efe0" opacity=".85"><circle cx="70" cy="160" r="3"/><circle cx="80" cy="166" r="3"/><circle cx="130" cy="160" r="3"/></g>',
-  l6: SKY('#2a2346', '#4a3a6a', 9) + STARS + MOON() + HILLS('#3a3456', '#463e62') + // თაგუნია და კატა
-      '<g transform="translate(40 120)"><ellipse cx="40" cy="34" rx="34" ry="22" fill="#5a5a6a"/><circle cx="74" cy="18" r="16" fill="#5a5a6a"/><path d="M62 8 L64 -6 L72 4z M80 4 L88 -6 L88 10z" fill="#5a5a6a"/><circle cx="70" cy="16" r="2" fill="#ffd98a"/><circle cx="80" cy="16" r="2" fill="#ffd98a"/><path d="M6 30 Q-12 20 -2 4" stroke="#5a5a6a" stroke-width="7" fill="none" stroke-linecap="round"/></g><g transform="translate(140 150)"><ellipse cx="12" cy="10" rx="12" ry="8" fill="#c9c2d6"/><circle cx="22" cy="4" r="5" fill="#c9c2d6"/><circle cx="24" cy="3" r="1.2" fill="#2a2440"/><path d="M0 10 q-10 2 -12 -6" stroke="#c9c2d6" stroke-width="2" fill="none"/></g>',
+const C = {
+  hare: o => `<circle cx="8" cy="48" r="5.5" fill="#fff"/><ellipse cx="30" cy="52" rx="22" ry="15" fill="#e9e1d6"/><ellipse cx="44" cy="65" rx="10" ry="4.5" fill="#d8cfc2"/><ellipse cx="18" cy="66" rx="8" ry="4" fill="#d8cfc2"/>
+    <g class="ears"><ellipse cx="47" cy="16" rx="4.6" ry="14" fill="#e9e1d6" transform="rotate(-12 47 16)"/><ellipse cx="57" cy="17" rx="4.6" ry="14" fill="#e9e1d6" transform="rotate(14 57 17)"/><ellipse cx="47.5" cy="17" rx="2.1" ry="9.5" fill="#f4a9bb" transform="rotate(-12 47.5 17)"/></g>
+    <circle cx="52" cy="37" r="12.5" fill="#e9e1d6"/>${eye(57, 34, o.closed)}<circle cx="64" cy="39" r="1.8" fill="#f4a9bb"/><circle cx="55" cy="41" r="2.4" fill="#f4a9bb" opacity=".45"/>`,
+  tortoise: o => `<rect x="12" y="50" width="9" height="12" rx="4" fill="#8fae5c"/><rect x="42" y="50" width="9" height="12" rx="4" fill="#8fae5c"/><ellipse cx="32" cy="50" rx="30" ry="12" fill="#8a6a3b"/><path d="M6 50 Q32 10 58 50z" fill="#b58b4c"/><path d="M20 38 L32 26 L44 38 M32 26 V48 M14 46 L22 38 M50 46 L42 38" stroke="#8a6a3b" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M56 46 Q62 40 64 36" stroke="#9fb86a" stroke-width="8" stroke-linecap="round"/><circle cx="66" cy="34" r="8.5" fill="#9fb86a"/>${eye(69, 32, o.closed)}<path d="M68 38 q3 2 5 0" stroke="#5a7a3a" stroke-width="1.4" fill="none" stroke-linecap="round"/>`,
+  fox: o => `<path class="tail" d="M16 54 Q-6 34 16 20" stroke="#e07a3a" stroke-width="13" fill="none" stroke-linecap="round"/><circle cx="16" cy="19" r="5.5" fill="#fff"/><ellipse cx="38" cy="54" rx="22" ry="14" fill="#e07a3a"/><rect x="26" y="60" width="7" height="11" rx="3" fill="#c0602a"/><rect x="45" y="60" width="7" height="11" rx="3" fill="#c0602a"/>
+    <path d="M48 40 L63 18 L78 41 Z" fill="#e88a4a"/><path d="M56 28 L58 10 L65 24 Z M67 24 L75 10 L76 30 Z" fill="#c8602a"/><path d="M63 34 L84 43 L65 46 Z" fill="#fff"/><circle cx="83.5" cy="42.5" r="2.2" fill="#2a2440"/>${eye(66, 31, o.closed)}`,
+  crane: o => `<path d="M30 72 V100 M42 72 V100" stroke="#3a3550" stroke-width="2.6"/><ellipse cx="36" cy="64" rx="23" ry="13" fill="#eef0f6"/><path d="M15 62 Q2 58 5 47 Q20 53 24 60" fill="#3a3550"/>
+    <g class="neck"><path d="M52 60 Q62 32 47 9" stroke="#eef0f6" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="47" cy="8" r="7.5" fill="#eef0f6"/><circle cx="45" cy="2.5" r="3.2" fill="#d9475a"/><path d="M53 7 L82 13 L53 11 Z" fill="#3a3550"/>${eye(49, 7, o.closed)}</g>`,
+  bear: o => `<ellipse cx="24" cy="58" rx="19" ry="16" fill="${o.fur || '#9a6a42'}"/><ellipse cx="24" cy="62" rx="10" ry="9" fill="${o.belly || '#c99a6e'}"/><ellipse cx="13" cy="72" rx="7" ry="4" fill="${o.fur || '#9a6a42'}"/><ellipse cx="35" cy="72" rx="7" ry="4" fill="${o.fur || '#9a6a42'}"/>
+    <circle cx="9" cy="16" r="7.5" fill="${o.fur || '#9a6a42'}"/><circle cx="39" cy="16" r="7.5" fill="${o.fur || '#9a6a42'}"/><circle cx="9" cy="16" r="3.6" fill="${o.belly || '#c99a6e'}"/><circle cx="39" cy="16" r="3.6" fill="${o.belly || '#c99a6e'}"/>
+    <circle cx="24" cy="30" r="17" fill="${o.fur || '#9a6a42'}"/><ellipse cx="24" cy="37" rx="8.5" ry="6.5" fill="${o.belly || '#c99a6e'}"/><circle cx="24" cy="34" r="2.6" fill="#2a2440"/>${eye(17, 27, o.closed)}${eye(31, 27, o.closed)}<circle cx="13" cy="34" r="2.6" fill="#f4a9bb" opacity=".5"/><circle cx="35" cy="34" r="2.6" fill="#f4a9bb" opacity=".5"/>`,
+  bird: o => `<ellipse cx="12" cy="10" rx="10" ry="7" fill="#7ab0e8"/><circle cx="20" cy="5" r="5" fill="#7ab0e8"/><path d="M24 5 L30 6 L24 8z" fill="#ffb347"/>${eye(21, 4, o.closed)}`,
+  fish: o => `<ellipse cx="12" cy="6" rx="11" ry="6" fill="#ffb347"/><path d="M1 6 L-7 0 L-7 12z" fill="#ff9f43"/>${eye(18, 5, o.closed)}`,
+};
+const A = (who, x, y, s = 1, o = {}) =>
+  `<g transform="translate(${x} ${y}) scale(${o.flip ? -s : s} ${s})"><g class="${o.anim || ''}" style="${o.delay ? `animation-delay:${o.delay}s` : ''}">${C[who](o)}</g></g>`;
+
+// =====================================================================
+// Props and backgrounds (viewBox 200×200, ground ≈ y 150)
+// =====================================================================
+const tree = (x, y, s = 1, c = ['#3f8a52', '#4a9a5e', '#357a48']) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-4" y="-42" width="8" height="42" rx="2" fill="#6a4a2a"/><g class="sway"><circle cx="0" cy="-56" r="23" fill="${c[0]}"/><circle cx="-15" cy="-42" r="14" fill="${c[1]}"/><circle cx="15" cy="-44" r="14" fill="${c[2]}"/></g></g>`;
+const cloud = (y, delay, s = 1) => `<g class="cloud" style="animation-delay:-${delay}s"><g transform="translate(0 ${y}) scale(${s})"><ellipse cx="20" cy="10" rx="20" ry="9" fill="#fff"/><ellipse cx="34" cy="4" rx="13" ry="10" fill="#fff"/><ellipse cx="8" cy="6" rx="9" ry="7" fill="#fff"/></g></g>`;
+const zzz = (x, y) => [0, 1, 2].map(i => `<text class="zf" x="${x + i * 6}" y="${y - i * 6}" font-family="serif" font-size="${12 + i * 3}" fill="#f7efe0" style="animation-delay:${i}s">z</text>`).join('');
+const sparkle = (x, y, d = 0) => `<path class="twinkle" style="animation-delay:${d}s" d="M${x} ${y - 6} L${x + 1.6} ${y - 1.6} L${x + 6} ${y} L${x + 1.6} ${y + 1.6} L${x} ${y + 6} L${x - 1.6} ${y + 1.6} L${x - 6} ${y} L${x - 1.6} ${y - 1.6}Z" fill="#ffd98a"/>`;
+const starsField = n => Array.from({ length: n }, (_, i) => { const x = (i * 53 + 17) % 196 + 2, y = (i * 37 + 9) % 88 + 4; return `<circle class="twinkle" style="animation-delay:${(i % 7) * .35}s" cx="${x}" cy="${y}" r="${i % 3 ? 1.1 : 1.7}" fill="#fff6dc"/>`; }).join('');
+const flag = (x, y) => `<g transform="translate(${x} ${y})"><rect x="0" y="-60" width="3" height="60" fill="#5a4a3a"/><g class="flap"><path d="M3 -60 h26 l-6 9 l6 9 h-26z" fill="#e2445c"/></g></g>`;
+const plate = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="22" ry="5" fill="#f2efe8"/><ellipse cx="${x}" cy="${y - 1}" rx="15" ry="2.6" fill="#f0c27a"/>`;
+const jug = (x, y) => `<g transform="translate(${x} ${y})"><path d="M10 0 h12 v16 q15 6 15 24 v14 h-42 v-14 q0 -18 15 -24z" fill="#c9824e"/><rect x="8" y="-5" width="16" height="7" rx="2" fill="#a96a3e"/><path d="M-2 40 h36" stroke="#e7a978" stroke-width="3"/></g>`;
+const bulb = (x, y) => `<g transform="translate(${x} ${y})"><circle cx="-26" cy="34" r="3" fill="#fff" opacity=".8"/><circle cx="-16" cy="24" r="5" fill="#fff" opacity=".8"/><circle cx="0" cy="0" r="20" fill="#fff" opacity=".9"/><g class="glow"><circle cx="0" cy="-3" r="9" fill="#ffd98a"/><rect x="-4" y="5" width="8" height="6" rx="1.5" fill="#c9a24a"/></g></g>`;
+const heart = (x, y, d = 0) => `<path class="twinkle" style="animation-delay:${d}s" d="M${x} ${y + 6} C${x - 10} ${y - 2} ${x - 4} ${y - 9} ${x} ${y - 3} C${x + 4} ${y - 9} ${x + 10} ${y - 2} ${x} ${y + 6}Z" fill="#f4a9bb"/>`;
+const moonFace = (x, y, r = 26) => `<g class="glow"><circle cx="${x}" cy="${y}" r="${r}" fill="#ffe7a8"/><path d="M${x - 11} ${y - 4} q4 3 8 0 M${x + 3} ${y - 4} q4 3 8 0" stroke="#b08a3a" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M${x - 7} ${y + 7} q7 6 14 0" stroke="#b08a3a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="${x - 13}" cy="${y + 4}" r="3" fill="#f4a9bb" opacity=".6"/><circle cx="${x + 13}" cy="${y + 4}" r="3" fill="#f4a9bb" opacity=".6"/></g>`;
+const nest = (x, y) => `<path d="M${x - 16} ${y} q16 14 32 0z" fill="#8a5a3a"/>`;
+const burrow = (x, y) => `<ellipse cx="${x}" cy="${y}" rx="24" ry="14" fill="#2a2030"/>`;
+const water = () => `<path d="M0 168 Q50 160 100 168 T200 166 V200 H0z" fill="#2f5d8a"/><path class="wind" d="M20 178 q10 -4 20 0" stroke="#7ab0e8" stroke-width="2" fill="none"/>`;
+const windLines = () => [40, 70, 100].map((y, i) => `<path class="wind" style="animation-delay:${i * 1.6}s" d="M0 ${y} q20 -8 40 0 t40 0" stroke="#c9cef0" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>`).join('');
+const bed = () => `<rect x="22" y="132" width="156" height="46" rx="14" fill="#6b4a8a"/><rect x="22" y="162" width="156" height="20" rx="8" fill="#523873"/><rect x="34" y="116" width="54" height="26" rx="13" fill="#f7efe0"/>`;
+const blanket = () => `<path d="M22 142 Q100 120 178 142 V174 H22z" fill="#f4a9bb"/><g fill="#fbd3dc"><circle cx="60" cy="154" r="4"/><circle cx="100" cy="148" r="4"/><circle cx="140" cy="154" r="4"/></g>`;
+const mountains = c => `<path d="M-10 150 L50 70 L95 130 L140 60 L215 150z" fill="${c}"/><path d="M50 70 L62 86 L40 86z M140 60 L154 78 L128 78z" fill="#f7f7ff" opacity=".85"/>`;
+
+let gid = 0;
+const BG = {
+  day: () => { const g = ++gid; return `<defs><linearGradient id="d${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc6ff"/><stop offset="1" stop-color="#d8f1ff"/></linearGradient></defs><rect width="200" height="200" fill="url(#d${g})"/>
+    <circle class="glow" cx="36" cy="36" r="15" fill="#ffd34d"/>${cloud(28, 10)}${cloud(54, 30, .7)}
+    <path d="M0 140 Q50 112 100 132 T200 124 V200 H0z" fill="#7cc77a"/><path d="M0 158 Q60 140 120 154 T200 148 V200 H0z" fill="#5fb562"/><g fill="#ffe36e"><circle cx="30" cy="170" r="2.5"/><circle cx="150" cy="176" r="2.5"/><circle cx="96" cy="184" r="2.5"/></g><g fill="#ff9fb4"><circle cx="60" cy="182" r="2.5"/><circle cx="176" cy="166" r="2.5"/></g>`; },
+  dusk: () => { const g = ++gid; return `<defs><linearGradient id="k${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a4a9a"/><stop offset=".6" stop-color="#f08a7a"/><stop offset="1" stop-color="#ffc48a"/></linearGradient></defs><rect width="200" height="200" fill="url(#k${g})"/>
+    <g class="rise" style="animation-direction:reverse"><circle cx="100" cy="132" r="22" fill="#ffb05a"/></g>${mountains('#6a4a7a')}<path d="M0 150 Q60 136 120 148 T200 144 V200 H0z" fill="#4a3a6a"/>`; },
+  night: () => { const g = ++gid; return `<defs><linearGradient id="n${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141a46"/><stop offset="1" stop-color="#2e3a78"/></linearGradient></defs><rect width="200" height="200" fill="url(#n${g})"/>${starsField(16)}
+    <circle class="glow" cx="160" cy="40" r="17" fill="#ffd98a"/><path d="M0 146 Q50 120 100 140 T200 132 V200 H0z" fill="#25456a"/><path d="M0 166 Q60 150 120 164 T200 158 V200 H0z" fill="#1d3a5a"/>`; },
+  room: () => `<rect width="200" height="200" fill="#2e2556"/><rect x="118" y="22" width="60" height="62" rx="8" fill="#141a46"/>${starsField(5).replace(/cx="(\d+)"/g, (m, v) => `cx="${120 + (+v % 56)}"`).replace(/cy="(\d+)"/g, (m, v) => `cy="${26 + (+v % 54)}"`)}<circle class="glow" cx="160" cy="44" r="10" fill="#ffd98a"/><path d="M148 22 V84 M118 52 H178" stroke="#5a4a8a" stroke-width="4"/><rect x="0" y="176" width="200" height="24" fill="#3e3270"/>`,
+};
+
+// =====================================================================
+// Scenes — one per paragraph of the tale (see tales.json / audio/timings.json)
+// =====================================================================
+const SCENES = {
+  t1: [ // კურდღელი და კუ
+    () => BG.day() + tree(26, 150, .9) + tree(178, 152, .8) + A('hare', 64, 86, .95, { anim: 'bob' }) + sparkle(150, 70) + sparkle(46, 76, 1),
+    () => BG.day() + tree(178, 152, .8) + A('hare', 22, 88, .9, { anim: 'nod' }) + A('tortoise', 176, 104, .85, { flip: 1, anim: 'nod', delay: .6 }),
+    () => BG.day() + tree(26, 150, .8) + A('hare', 36, 84, 1, { anim: 'laugh' }) + A('tortoise', 180, 106, .8, { flip: 1 }),
+    () => BG.day() + flag(14, 150) + A('hare', 24, 90, .85, { anim: 'run' }) + A('tortoise', 26, 110, .75, { anim: 'walk' }),
+    () => BG.day() + tree(130, 152, 1.25) + A('hare', 74, 100, .85, { closed: 1, anim: 'breathe' }) + zzz(140, 92),
+    () => BG.day() + tree(172, 150, .9) + A('hare', 150, 116, .5, { closed: 1, anim: 'breathe' }) + A('tortoise', 8, 106, .85, { anim: 'walk' }),
+    () => BG.day() + flag(176, 150) + A('tortoise', 104, 106, .85, { anim: 'bob' }) + A('hare', 0, 92, .8, { anim: 'runin' }),
+    () => BG.day() + A('hare', 26, 86, .9, { anim: 'bob' }) + A('tortoise', 108, 104, .85, { anim: 'bob', delay: .5 }) + sparkle(100, 60) + sparkle(150, 46, .8) + sparkle(56, 52, 1.4),
+    () => BG.night() + A('hare', 24, 98, .85, { closed: 1, anim: 'breathe' }) + A('tortoise', 112, 110, .75, { closed: 1, anim: 'breathe', delay: 1 }) + zzz(84, 92),
+  ],
+  t2: [ // მელა და წერო
+    () => BG.day() + tree(100, 150, .7) + A('fox', 10, 86, .85, { anim: 'nod' }) + A('crane', 190, 58, .85, { flip: 1, anim: 'bob' }),
+    () => BG.day() + plate(98, 150) + A('fox', 18, 86, .9, { anim: 'lick' }) + A('crane', 188, 58, .85, { flip: 1, anim: 'sad' }),
+    () => BG.day() + tree(26, 150, .8) + A('crane', 30, 58, .85, { anim: 'nod' }) + A('fox', 196, 86, .85, { flip: 1, anim: 'bob' }),
+    () => BG.day() + jug(96, 108) + A('crane', 44, 58, .85, { anim: 'drink' }) + A('fox', 198, 88, .8, { flip: 1, anim: 'sad' }),
+    () => BG.dusk() + A('fox', 40, 92, 1, { anim: 'nod' }) + bulb(150, 46),
+    () => BG.day() + A('fox', 14, 86, .85, { anim: 'bob' }) + A('crane', 188, 58, .85, { flip: 1, anim: 'bob', delay: .4 }) + heart(100, 70) + heart(86, 50, .7) + heart(116, 42, 1.3),
+    () => BG.night() + A('fox', 20, 96, .85, { closed: 1, anim: 'breathe' }) + A('crane', 184, 60, .8, { flip: 1, closed: 1, anim: 'breathe', delay: 1 }) + zzz(96, 92),
+  ],
+  t3: [ // დათუნიას ძილი
+    () => BG.day() + mountains('#8aa0d0') + `<path d="M0 150 Q60 136 120 148 T200 144 V200 H0z" fill="#5fb562"/>` + tree(26, 152, .9) + tree(176, 154, .85) + A('bear', 76, 80, .95, { anim: 'bob' }),
+    () => BG.dusk() + `<g class="appear" style="animation-delay:2s">${starsField(8)}</g>` + A('bear', 86, 96, .7, { anim: 'nod' }),
+    () => BG.dusk() + A('bear', 30, 48, 1.4, { fur: '#7a5232', belly: '#b8875a', anim: 'nod' }) + A('bear', 118, 94, .75, { anim: 'bob' }),
+    () => BG.night() + A('bear', 70, 82, 1, { anim: 'laugh' }) + sparkle(46, 70) + sparkle(150, 84, .9),
+    () => BG.night() + water() + tree(48, 150, .95, ['#2f5a5a', '#386a66', '#284e50']) + nest(48, 104) + A('bird', 36, 90, .9, { closed: 1, anim: 'breathe' }) + burrow(140, 150) + A('hare', 124, 132, .32, { closed: 1 }) + A('fish', 120, 178, .9, { closed: 1, anim: 'bob' }) + A('bear', 164, 104, .55, { anim: 'nod' }),
+    () => BG.night().replace(/<circle class="glow" cx="160"[^>]*>/, '') + moonFace(130, 58, 30) + A('bear', 30, 92, .8, { anim: 'nod' }) + sparkle(70, 40) + sparkle(180, 100, 1.1),
+    () => BG.room() + bed() + A('bear', 40, 86, .95, { fur: '#7a5232', belly: '#b8875a', closed: 1 }) + A('bear', 92, 96, .7, { closed: 1, anim: 'breathe' }) + blanket(),
+    () => BG.night() + windLines() + starsField(10),
+    () => BG.room() + bed() + A('bear', 50, 92, .8, { closed: 1, anim: 'breathe' }) + blanket() + zzz(120, 100),
+  ],
+};
+const sceneSvg = (id, i) => `<svg viewBox="0 0 200 200" role="img" aria-hidden="true">${SCENES[id][i]()}</svg>`;
+
+// covers for the locked tales (static)
+const SKY = (a, b, id) => `<defs><linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="200" height="200" fill="url(#g${id})"/>`;
+const STARS = starsField(7);
+const HILLS = (c1, c2) => `<path d="M0 150 Q50 118 100 140 T200 132 V200 H0z" fill="${c1}"/><path d="M0 170 Q60 150 120 166 T200 160 V200 H0z" fill="${c2}"/>`;
+const LOCKED_ART = {
+  l1: SKY('#2a1f3d', '#5a3a2a', 4) + STARS + HILLS('#3a2a2a', '#4a3226') + '<g transform="translate(110 120)"><path d="M10 50 Q20 10 30 50z" fill="#ffb347"/><path d="M16 50 Q22 26 28 50z" fill="#ffe08a"/><rect x="0" y="48" width="40" height="6" rx="3" fill="#6a4a2a"/></g><g transform="translate(60 112)"><circle cx="14" cy="10" r="10" fill="#e8c39e"/><path d="M4 6 Q14 -6 24 6" fill="#3a2a1a"/><rect x="2" y="20" width="24" height="34" rx="10" fill="#8a5a3a"/></g>',
+  l2: SKY('#1f3550', '#3a6a7a', 5) + STARS + HILLS('#2a5a4a', '#356a52') + '<g transform="translate(56 110)"><ellipse cx="44" cy="34" rx="40" ry="22" fill="#c9a27a"/><circle cx="88" cy="26" r="14" fill="#c9a27a"/><path d="M80 14 Q72 0 80 -4 M96 14 Q104 0 96 -4" stroke="#f7efe0" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="92" cy="24" r="2" fill="#2a2440"/><rect x="14" y="48" width="9" height="20" rx="4" fill="#b08a62"/><rect x="60" y="48" width="9" height="20" rx="4" fill="#b08a62"/></g>',
+  l3: SKY('#22284d', '#4a4a7a', 6) + STARS + HILLS('#3a4a3a', '#46583e') + '<g transform="translate(44 104)"><rect x="0" y="24" width="56" height="40" fill="#a9825a"/><path d="M-6 26 L28 0 L62 26z" fill="#7a4a3a"/><rect x="22" y="40" width="12" height="24" fill="#5a3a2a"/><rect x="38" y="34" width="10" height="10" fill="#ffd98a"/></g><g transform="translate(132 90)"><rect x="14" y="40" width="8" height="40" fill="#6a4a2a"/><circle cx="18" cy="30" r="24" fill="#3f7a52"/></g>',
+  l4: SKY('#3a3a7a', '#a46a7a', 7) + STARS + HILLS('#5a4a7a', '#6a5a86') + '<circle cx="100" cy="70" r="26" fill="#ffd98a"/><g transform="translate(130 96)"><rect x="0" y="16" width="34" height="70" fill="#d9cbe6"/><path d="M-4 18 L17 -8 L38 18z" fill="#c2577a"/><rect x="11" y="32" width="12" height="16" rx="6" fill="#ffd98a"/></g>',
+  l5: SKY('#3a5aa0', '#f0b0c0', 8) + STARS + HILLS('#6a7ab0', '#7a8ac0') + '<g transform="translate(70 70)"><path d="M10 40 L30 0 L50 40z" fill="#9ad0f0"/><rect x="4" y="38" width="52" height="40" rx="6" fill="#f4a9bb"/><path d="M24 78 L30 60 L36 78z" fill="#fff"/></g>' + `<g transform="translate(120 140)"><path d="M0 10 Q10 0 22 10 L18 16 H4z" fill="#d9ecff"/></g>`,
+  l6: SKY('#2a2346', '#4a3a6a', 9) + STARS + HILLS('#3a3456', '#463e62') + '<g transform="translate(40 120)"><ellipse cx="40" cy="34" rx="34" ry="22" fill="#5a5a6a"/><circle cx="74" cy="18" r="16" fill="#5a5a6a"/><path d="M62 8 L64 -6 L72 4z M80 4 L88 -6 L88 10z" fill="#5a5a6a"/><circle cx="70" cy="16" r="2" fill="#ffd98a"/><circle cx="80" cy="16" r="2" fill="#ffd98a"/></g><g transform="translate(140 150)"><ellipse cx="12" cy="10" rx="12" ry="8" fill="#c9c2d6"/><circle cx="22" cy="4" r="5" fill="#c9c2d6"/><circle cx="24" cy="3" r="1.2" fill="#2a2440"/></g>',
 };
 
 const TALES = [
@@ -238,10 +376,10 @@ const TALES = [
   { id: 'l2', title: 'წიქარა' },
   { id: 'l3', title: 'კომბლე' },
   { id: 'l4', title: 'მზეთუნახავი' },
-  { id: 'l5', title: 'ხუთკუნჭულა' },
+  { id: 'l5', title: 'ფიფქია' },
   { id: 'l6', title: 'თაგუნია და კატა' },
 ];
-const svg = id => `<svg viewBox="0 0 200 200" role="img" aria-hidden="true">${ART[id]}</svg>`;
+const cover = t => t.free ? sceneSvg(t.id, 0) : `<svg viewBox="0 0 200 200" role="img" aria-hidden="true">${LOCKED_ART[t.id]}</svg>`;
 const LOCK = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd98a" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const PLAY = '<svg width="52" height="52" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
 const PAUSE = '<svg width="48" height="48" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg>';
@@ -253,10 +391,23 @@ const store = {
 };
 let chain = store.get('chain', true);
 
+// ---------- mode: cartoon by day, bedtime at night ----------
+const hour = new Date().getHours();
+let mode = store.get('mode', hour >= 19 || hour < 7 ? 'night' : 'day');
+function setMode(m) {
+  mode = m; store.set('mode', m);
+  document.documentElement.classList.toggle('day', m === 'day');
+  $('modeDay').setAttribute('aria-pressed', m === 'day');
+  $('modeNight').setAttribute('aria-pressed', m === 'night');
+}
+$('modeDay').onclick = () => setMode('day');
+$('modeNight').onclick = () => setMode('night');
+setMode(mode);
+
 // ---------- home grid ----------
 $('grid').innerHTML = TALES.map(t => `
   <button class="tile ${t.free ? '' : 'locked'}" data-id="${t.id}" aria-label="${t.title}">
-    <div class="art">${svg(t.id)}</div>
+    <div class="art">${cover(t)}</div>
     <span class="badge ${t.free ? 'free' : ''}">${t.free ? 'უფასო' : LOCK}</span>
     <span class="name">${t.title}</span>
   </button>`).join('');
@@ -266,14 +417,38 @@ $('grid').addEventListener('click', e => {
   t.free ? openPlayer(t) : gate(paywall);
 });
 
-// ---------- player ----------
+// ---------- timings: when each paragraph (scene) starts ----------
+let TIMINGS = {};
+fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; }).catch(() => {});
+function sceneAt(id, time) {
+  const n = SCENES[id].length;
+  const starts = TIMINGS[id] || Array.from({ length: n }, (_, i) => i * (audio.duration || n * 6) / n);
+  let i = 0;
+  while (i + 1 < n && starts[i + 1] <= time + .15) i++;
+  return i;
+}
+
+// ---------- player with living pictures ----------
 const audio = $('audio');
-let current = null, wake = null;
+let current = null, sceneIdx = -1, front = 'layerA', wake = null;
 const fmt = s => isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00';
+
+function showScene(i) {
+  if (i === sceneIdx) return;
+  sceneIdx = i;
+  const back = front === 'layerA' ? 'layerB' : 'layerA';
+  $(back).innerHTML = sceneSvg(current.id, i);   // fresh DOM restarts the scene's motions
+  $(back).style.opacity = 1;
+  $(front).style.opacity = 0;
+  front = back;
+}
 function openPlayer(t) {
-  current = t;
-  $('playerArt').innerHTML = svg(t.id);
+  current = t; sceneIdx = -1;
+  $('layerA').innerHTML = $('layerB').innerHTML = '';
+  showScene(0);
   $('playerTitle').textContent = t.title;
+  $('hint').textContent = mode === 'night' ? 'მთვარეზე დააჭირე — ეკრანი ჩაქრება, ზღაპარი გაგრძელდება' : 'უყურე და მოუსმინე';
+  $('sleepBtn').hidden = mode !== 'night';
   audio.src = `audio/${t.id}.mp3`;
   audio.volume = 1;
   $('player').hidden = false;
@@ -281,23 +456,23 @@ function openPlayer(t) {
 }
 function setPlayIcon() { $('playBtn').innerHTML = audio.paused ? PLAY : PAUSE; $('playBtn').setAttribute('aria-label', audio.paused ? 'დაკვრა' : 'პაუზა'); }
 $('playBtn').onclick = () => audio.paused ? audio.play() : audio.pause();
-$('closePlayer').onclick = () => { audio.pause(); $('player').hidden = true; };
-audio.addEventListener('play', async () => { setPlayIcon(); try { wake = await navigator.wakeLock?.request('screen'); } catch {} });
-audio.addEventListener('pause', () => { setPlayIcon(); try { wake?.release(); } catch {} wake = null; });
+$('closePlayer').onclick = () => { audio.pause(); $('player').hidden = true; $('layerA').innerHTML = $('layerB').innerHTML = ''; };
+audio.addEventListener('play', async () => { setPlayIcon(); $('stage').classList.remove('still'); try { wake = await navigator.wakeLock?.request('screen'); } catch {} });
+audio.addEventListener('pause', () => { setPlayIcon(); $('stage').classList.add('still'); try { wake?.release(); } catch {} wake = null; });
 audio.addEventListener('timeupdate', () => {
   $('barFill').style.width = audio.duration ? `${audio.currentTime / audio.duration * 100}%` : '0';
   $('tCur').textContent = fmt(audio.currentTime);
   $('tDur').textContent = fmt(audio.duration);
+  if (current) showScene(sceneAt(current.id, audio.currentTime));
 });
 audio.addEventListener('ended', () => {
   const free = TALES.filter(t => t.free);
   const next = free[free.indexOf(current) + 1];
-  if (chain && next) openPlayer(next);
-  else { setPlayIcon(); }
+  if (chain && next) openPlayer(next); else setPlayIcon();
 });
 setPlayIcon();
 
-// sleep mode: screen goes dark, story keeps playing
+// bedtime: screen goes dark, story keeps playing
 $('sleepBtn').onclick = () => { $('night').hidden = false; if (audio.paused) audio.play().catch(() => {}); };
 $('night').onclick = () => { $('night').hidden = true; };
 
@@ -328,10 +503,11 @@ function paywall() {
   openSheet(`
     <h3>ყველა ზღაპარი თქვენი პატარასთვის</h3>
     <ul class="perks">
-      <li>ყველა ქართული ზღაპარი, ნაზი ხმით</li>
-      <li>ყოველ კვირას — ახალი ზღაპარი</li>
-      <li>ძილის რეჟიმი: ეკრანი ქრება, ზღაპარი გრძელდება</li>
-      <li>რეკლამის გარეშე, ინტერნეტის გარეშეც მუშაობს</li>
+      <li>ქართული და მსოფლიოს საუკეთესო ზღაპრები, ნაზი ხმით</li>
+      <li>ცოცხალი სურათები — პატარა მულტფილმი ყველა ზღაპარში</li>
+      <li>ყოველ კვირას — ორი ახალი ზღაპარი</li>
+      <li>ძილის წინ: ეკრანი ქრება, ზღაპარი გრძელდება</li>
+      <li>რეკლამის გარეშე</li>
     </ul>
     <div class="plans">
       <button class="plan" data-plan="month" aria-pressed="false"><small>თვე</small><b>4.99 ₾</b><small>ყოველთვიურად</small></button>

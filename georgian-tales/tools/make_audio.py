@@ -10,18 +10,24 @@ voice = PiperVoice.load(sys.argv[1])
 config = SynthesisConfig(length_scale=1.2)
 SENTENCE_PAUSE, PARAGRAPH_PAUSE = 0.5, 1.0  # секунды тишины
 
+timings = {}  # секунда, с которой начинается каждый абзац — по ним меняются сцены мультика
 for tale in json.loads((root / "tales.json").read_text()):
     wav = root / "audio" / f"{tale['id']}.wav"
     mp3 = root / "audio" / f"{tale['id']}.mp3"
+    starts = []
     with wave.open(str(wav), "wb") as out:
         rate = voice.config.sample_rate
         out.setnchannels(1); out.setsampwidth(2); out.setframerate(rate)
         silence = lambda sec: b"\x00\x00" * int(rate * sec)
         for paragraph in tale["text"].split("\n\n"):
+            starts.append(round(out.tell() / rate, 2))
             for chunk in voice.synthesize(paragraph, config):
                 out.writeframes(chunk.audio_int16_bytes + silence(SENTENCE_PAUSE))
             out.writeframes(silence(PARAGRAPH_PAUSE - SENTENCE_PAUSE))
+    timings[tale["id"]] = starts
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav),
                     "-ac", "1", "-b:a", "64k", str(mp3)], check=True)
     wav.unlink()
     print("ok", mp3.name)
+
+(root / "audio" / "timings.json").write_text(json.dumps(timings))
