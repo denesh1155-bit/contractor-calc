@@ -1774,7 +1774,7 @@ function planMember(key, def, text, n) {
   const opts = who === 'princess' ? { princess: 1, dress: '#ffb347', ...o } : o;
   const b = bbox(who, opts), count = Math.min(def.count || 1, 4);
   const spread = 1 + .72 * (count - 1);
-  const s = Math.min((TARGET[who] || 46) * (n >= 3 ? .78 : 1) * (count > 2 ? .86 : 1) * (o.big || 1) / b.h, 110 / b.w / Math.max(1, spread * .6));
+  const s = Math.min((TARGET[who] || 46) * (n >= 5 ? .62 : n >= 3 ? .78 : 1) * (count > 2 ? .86 : 1) * (o.big || 1) / b.h, 110 / b.w / Math.max(1, spread * .6));
   return { id: key, who, draw: who === 'princess' ? 'mom' : who, o: opts, b, s, count, w: b.w * s * spread, h: b.h * s, front: HUMANS.has(who) || ['snowman', 'cloudy', 'windy', 'bun', 'devi', 'bear', 'owl', 'sun'].includes(who) };
 }
 function plannedSet(tale, text, i, q, plan) {
@@ -1794,7 +1794,7 @@ function directParagraph(tale, text, i) {
   const sents = sentencesOf(text);
   let ids, cast, nameIn;
   if (q) {
-    ids = (q.cast || []).filter(k => plan.cast[k]).slice(0, 4);
+    ids = (q.cast || []).filter(k => plan.cast[k]).slice(0, 6);
     cast = ids.map(k => planMember(k, plan.cast[k], text, ids.length));
     nameIn = s => planWho(s, plan);
   } else {
@@ -1816,7 +1816,7 @@ function directParagraph(tale, text, i) {
       Object.assign(a, { window: true, fixed: true, home: win[0], ground: win[1], s: a.s * sc, w: a.w * sc, h: a.h * sc });
     }
   }
-  const slots = (set.build ? [[56], [40, 160], [28, 150, 178], [22, 56, 148, 180]] : [[100], [66, 138], [42, 100, 160], [30, 78, 124, 170]])[cast.length - 1] || [];
+  const slots = (set.build ? [[56], [40, 160], [28, 150, 178], [22, 56, 148, 180], [20, 50, 140, 164, 186], [18, 44, 70, 140, 162, 184]] : [[100], [66, 138], [42, 100, 160], [30, 78, 124, 170], [24, 62, 100, 138, 176], [20, 52, 84, 116, 148, 180]])[cast.length - 1] || [];
   cast.forEach((a, k) => { a.home = a.home || slots[k]; });
   // hand-checked acting, sentence by sentence (plans.json "beats"): who does what, who speaks
   const anns = q?.beats?.length === sents.length ? q.beats : null;
@@ -2824,7 +2824,7 @@ const PLAYLISTS = {
   world: ['teddy_waltz', 'carefree', 'sugar_plum', 'merry_go', 'rainbows', 'monkeys'],
   short: ['monkeys', 'fluffing_duck', 'cheery_monday', 'onion_capers', 'doobly_doo', 'carefree'],
 };
-const MUSIC_VOL = { sleep: .1, ge: .13, world: .13, short: .13 };
+const MUSIC_VOL = { sleep: .17, ge: .22, world: .22, short: .22 };
 const MUSIC_CREDITS = 'Carefree, Monkeys Spinning Monkeys, Teddy Bear Waltz, Rainbows, Cheery Monday, Merry Go, Music Box Theme, Village Consort, Galway, Fluffing a Duck, Onion Capers, Doobly Doo, Dance of the Sugar Plum Fairy, Dreamer, Morning, Evening, Fireflies and Stardust, Friday Morning, Magic Scout – Farm, Magic Scout – Northern Glade, Almost Bliss — Kevin MacLeod (incompetech.com), Creative Commons: By Attribution 4.0';
 const MUSIC = { el: null, gain: null, tale: null, list: [], at: 0, timer: 1, playing: false };
 function musicEl() {
