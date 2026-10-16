@@ -251,6 +251,9 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 @keyframes aShiver { 25% { transform: translateX(-1.4px); } 75% { transform: translateX(1.4px); } }
 @keyframes aSad { to { transform: translateY(2px) rotate(-5deg) scale(1, .95); } }
 @keyframes aStomp { 50% { transform: translateY(-4px) rotate(-3deg); } }
+.build.grow { transition: transform 1.4s cubic-bezier(.3,1.4,.5,1); }
+.bpart { opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; transform: scale(.3); transition: opacity .5s, transform .7s cubic-bezier(.3,1.5,.5,1); }
+.bpart.on { opacity: 1; transform: none; }
 .fx-pop { transform-box: fill-box; transform-origin: 50% 100%; animation: fxPop .45s cubic-bezier(.3,1.6,.5,1) both; }
 @keyframes fxPop { from { transform: scale(0); opacity: 0; } }
 .dot { animation: twinkle .9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
@@ -409,16 +412,6 @@ header { display: flex; align-items: center; justify-content: space-between; gap
   </header>
   <p class="test-banner" id="testPill" hidden>სატესტო რეჟიმი: ყველა ზღაპარი და სურათი ღიაა</p>
 
-  <div class="modes" role="group" aria-label="რეჟიმი">
-    <button id="modeDay" aria-pressed="false">
-      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></g></svg>
-      მულტფილმი
-    </button>
-    <button id="modeNight" aria-pressed="false">
-      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 14A8 8 0 0 1 15 3z" fill="currentColor"/></svg>
-      ძილის წინ
-    </button>
-  </div>
 
   <div id="shelves"></div>
   <p class="weekly">ყოველ კვირას — ახალი ზღაპარი და ახალი სურათი გასაფერადებლად.</p>
@@ -1312,6 +1305,11 @@ Object.assign(C, {
   snowman: o => ART.snowman(),
   grandpa: o => C.king({ ...o, crown: false, robe: o.robe || '#6a7ab0', beard: '#f0f0f6' }),
 });
+C.sun = o => sunFace(30, 30);
+// a little star with a face (ციმციმა), a firefly with a glowing tail (ლუცია), a witch in a pointed hat
+C.star = o => `<path class="glow" d="M30 0 L38 20 L60 22 L43 36 L49 58 L30 46 L11 58 L17 36 L0 22 L22 20z" fill="#ffd34d" ${O(2)}/>${eye(24, 28, o.closed, 3.6)}${eye(37, 28, o.closed, 3.6)}${blush(19, 35, 2.6)}${blush(42, 35, 2.6)}<path d="M26 37 q4 3 8 0" ${O(1.4)} fill="none"/>`;
+C.firefly = o => `<g class="glow"><circle cx="8" cy="16" r="9" fill="#fff59a" opacity=".55"/><ellipse cx="8" cy="16" rx="7" ry="6" fill="#e8f87a" ${O(1.4)}/></g><ellipse cx="20" cy="13" rx="9" ry="7" fill="#5a8a4a" ${O(1.6)}/><g class="wings"><ellipse cx="18" cy="4" rx="7" ry="4" fill="#dff0ff" opacity=".9" ${O(1)}/></g><circle cx="31" cy="11" r="6.5" fill="#3a4a3a" ${O(1.4)}/>${eye(33, 10, o.closed, 2.6)}<path d="M33 5 q2 -6 6 -7 M30 5 q-1 -6 -4 -8" ${O(1.2)} fill="none"/>`;
+C.witch = o => C.granny({ ...o, dress: '#5a4a8a' }) + `<path d="M6 12 Q25 4 44 12 L36 10 L26 -26 L16 10z" fill="#3a3050" ${O(1.6)}/><path d="M18 6 h16" stroke="#c59cff" stroke-width="2.4"/>`;
 C.natsar = o => C.boy({ ...o, patch: 1, ash: 1 });
 C.brother = o => C.boy({ ...o, ...BRO1 });
 C.man = o => C.boy({ ...o, hat: '#6a4030', shirt: '#8a6a4a' });
@@ -1343,8 +1341,8 @@ function bbox(who, o) {
   const b = measure.querySelector('g').getBBox();
   return (sizeCache[key] = { x: b.x, y: b.y, w: b.width, h: b.height });
 }
-const HUMANS = new Set(['natsar', 'brother', 'man', 'redhood', 'king', 'mom', 'princess', 'granny', 'grandpa', 'girl', 'boy', 'prince', 'fairy']);
-const TARGET = { dove: 34, windy: 60, natsar: 64, brother: 70, man: 74, redhood: 64, quail: 34, cloudy: 60, goat: 50, crow: 40, donkey: 60, bull: 62, bee: 30, snowman: 90, fish: 30, dolphin: 40, gull: 34, bird: 34, ant: 30, hopper: 34, mouse: 32, snail: 32, hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
+const HUMANS = new Set(['witch', 'natsar', 'brother', 'man', 'redhood', 'king', 'mom', 'princess', 'granny', 'grandpa', 'girl', 'boy', 'prince', 'fairy']);
+const TARGET = { star: 44, firefly: 30, witch: 74, sun: 56, dove: 34, windy: 60, natsar: 64, brother: 70, man: 74, redhood: 64, quail: 34, cloudy: 60, goat: 50, crow: 40, donkey: 60, bull: 62, bee: 30, snowman: 90, fish: 30, dolphin: 40, gull: 34, bird: 34, ant: 30, hopper: 34, mouse: 32, snail: 32, hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
 function place(who, cx, ground, o, small) {
   const opts = who === 'princess' ? { ...o, princess: 1, dress: '#ffb347' } : o;
   const b = bbox(who, opts);
@@ -1449,6 +1447,185 @@ function buildAutoScenes() {
 }
 
 // =====================================================================
+// Scenery: about thirty places, each drawn its own way, with time of day,
+// weather, season and a per-tale palette — so no two cartoons look alike
+// =====================================================================
+const rnd = seed => () => (seed = (seed * 16807 + 11) % 2147483647) / 2147483647;
+const mixHex = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
+const SKIES = { day: ['#6cc4ff', '#d6f3ff'], morning: ['#ffc39a', '#fff1dc'], evening: ['#5a4aa0', '#ffb88a'], night: ['#121848', '#2f3c86'] };
+const GREENS = [['#a8d890', '#7cc46a', '#5aa858'], ['#b6e07a', '#8ccf5a', '#64b048'], ['#9fd6a0', '#6cbf84', '#4aa070'], ['#c8dc88', '#9cc86a', '#76ad52']];
+const AUTUMN = ['#e6c878', '#d6a656', '#bb8644'];
+// a soft wavy strip of land from far left to far right
+const band = (y, c, amp = 9, ph = 0, w = 1.8) => `<path d="M-300 ${y} ${Array.from({ length: 9 }, (_, i) => `Q${-250 + i * 100} ${(y - amp * Math.sin(i * 1.7 + ph)).toFixed(1)} ${-200 + i * 100} ${y}`).join(' ')} L600 ${y} V260 H-300z" fill="${c}" ${O(w)}/>`;
+const roundTree = (x, y, s, leaf, trunk = '#8a5a34', fruit) => `<g transform="translate(${x} ${y}) scale(${s})">${shadow(0, 0, 18)}<path d="M-4 0 L-3 -30 L3 -30 L4 0z" fill="${trunk}" ${O(1.8)}/><g class="sway"><circle cx="0" cy="-44" r="20" fill="${leaf[0]}" ${O()}/><circle cx="-12" cy="-34" r="12" fill="${leaf[1]}" ${O(1.8)}/><circle cx="12" cy="-36" r="13" fill="${leaf[1]}" ${O(1.8)}/><path d="M-8 -54 q6 -6 14 -4" stroke="#fff" stroke-width="2.4" opacity=".35" fill="none" stroke-linecap="round"/>${fruit ? [[-8, -46], [8, -40], [0, -56], [-14, -34], [12, -30]].map(([a, b]) => `<circle cx="${a}" cy="${b}" r="3.4" fill="${fruit}" ${O(1.1)}/>`).join('') : ''}</g></g>`;
+const snowPine = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><rect x="-3" y="-10" width="6" height="10" fill="#7a5232" ${O(1.4)}/><path d="M0 -60 L18 -28 L9 -28 L22 -8 L-22 -8 L-9 -28 L-18 -28z" fill="#3f7a6a" ${O()}/><path d="M0 -60 L9 -44 L4 -40 L0 -46 L-4 -40 L-9 -44z M-14 -26 L-6 -30 L0 -26 L6 -30 L14 -26 L9 -28 L-9 -28z" fill="#fff"/></g>`;
+const georgianHouse = (x, y, s, wall = '#f0e2c8', roof = '#c2483a', lit) => `<g transform="translate(${x} ${y}) scale(${s})">${shadow(0, 0, 40)}<rect x="-34" y="-36" width="68" height="36" fill="${wall}" ${O()}/><path d="M-42 -34 L0 -62 L42 -34z" fill="${roof}" ${O()}/>
+  <rect x="-38" y="-30" width="76" height="5" fill="#8a5a34" ${O(1.4)}/>${Array.from({ length: 9 }, (_, i) => `<path d="M${-34 + i * 8.5} -25 v10" stroke="#8a5a34" stroke-width="2"/>`).join('')}<path d="M-38 -15 h76" stroke="#8a5a34" stroke-width="2.6"/>
+  <rect x="-26" y="-56" width="0" height="0"/><rect x="-24" y="-46" width="12" height="10" rx="2" fill="${lit ? '#ffd98a' : '#9ad8ff'}" ${O(1.4)}/><rect x="12" y="-46" width="12" height="10" rx="2" fill="${lit ? '#ffd98a' : '#9ad8ff'}" ${O(1.4)}/><rect x="-6" y="-14" width="12" height="14" rx="2" fill="#8a5a34" ${O(1.4)}/></g>`;
+const church = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})">${shadow(0, 0, 30)}<rect x="-24" y="-40" width="48" height="40" fill="#e8d8b8" ${O()}/><path d="M-28 -38 L0 -54 L28 -38z" fill="#b0503a" ${O()}/><rect x="-9" y="-74" width="18" height="22" fill="#e8d8b8" ${O()}/><path d="M-12 -72 L0 -88 L12 -72z" fill="#b0503a" ${O()}/><path d="M0 -88 v-10 M-4 -94 h8" ${O(1.8)}/><rect x="-5" y="-68" width="10" height="10" rx="5" fill="#5a4030"/><path d="M-6 0 v-14 a6 6 0 0 1 12 0 v14z" fill="#8a5a34" ${O(1.4)}/></g>`;
+const fenceRow = (y, c = '#c9a26a') => `<g>${Array.from({ length: 26 }, (_, i) => `<path d="M${-100 + i * 16} ${y} v-18 l3 -4 l3 4 v18z" fill="${c}" ${O(1.2)}/>`).join('')}<path d="M-110 ${y - 12} H320 M-110 ${y - 5} H320" stroke="${INK}" stroke-width="1.4"/></g>`;
+const wheat = (y, c1, c2) => band(y, c1, 4) + `<g stroke="${c2}" stroke-width="1.6" stroke-linecap="round">${Array.from({ length: 60 }, (_, i) => { const x = -60 + i * 5.4, h = 8 + (i * 7) % 6; return `<path class="sway" d="M${x} ${y + 12} q1 ${-h / 2} 0 ${-h}"/>`; }).join('')}</g>`;
+const reeds = (x, y) => `<g transform="translate(${x} ${y})">${[-6, 0, 6].map((d, i) => `<path class="sway" d="M${d} 0 q-2 -14 ${d / 2} -24" stroke="#4a7a3a" stroke-width="2" fill="none"/><ellipse cx="${d + d / 2}" cy="-24" rx="2.2" ry="5" fill="#8a5a34" ${O(1)}/>`).join('')}</g>`;
+const bubbles = () => Array.from({ length: 8 }, (_, i) => `<g class="fall" style="animation-direction:reverse;animation-delay:-${i * .7}s;animation-duration:${5 + i % 3}s"><circle cx="${12 + (i * 27) % 180}" cy="${150 - (i * 13) % 40}" r="${2 + i % 3}" fill="none" stroke="#dff4ff" stroke-width="1.2"/></g>`).join('');
+const seaweedAt = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><path class="sway" d="M0 0 q-8 -14 0 -26 q8 -12 0 -26" stroke="#3aa860" stroke-width="5" fill="none" stroke-linecap="round"/><path class="sway" style="animation-delay:-1s" d="M8 0 q6 -10 0 -20" stroke="#5ac080" stroke-width="4" fill="none" stroke-linecap="round"/></g>`;
+const rockAt = (x, y, s = 1, c = '#9a9ab0') => `<g transform="translate(${x} ${y}) scale(${s})"><path d="M-16 0 Q-18 -14 -4 -18 Q12 -20 16 -6 Q18 0 16 0z" fill="${c}" ${O(1.6)}/><path d="M-6 -12 q4 -3 9 -2" stroke="#fff" stroke-width="2" opacity=".35" fill="none"/></g>`;
+const cloudFloor = y => `<g fill="#fff" ${O(1.6)}>${Array.from({ length: 12 }, (_, i) => `<circle cx="${-60 + i * 30}" cy="${y + (i % 2) * 6}" r="${20 + (i % 3) * 5}"/>`).join('')}</g><rect x="-300" y="${y + 8}" width="900" height="200" fill="#fff"/>`;
+const column = x => `<g transform="translate(${x} 0)"><rect x="-7" y="30" width="14" height="142" fill="#efe4d0" ${O(1.6)}/><rect x="-10" y="24" width="20" height="8" fill="#e0d2b8" ${O(1.4)}/><path d="M-3 36 v130" stroke="#d8cab0" stroke-width="2"/></g>`;
+const banner = (x, c) => `<g transform="translate(${x} 30)"><path d="M-10 0 h20 v40 l-10 -8 l-10 8z" fill="${c}" ${O(1.6)}/><circle cx="0" cy="14" r="4" fill="#ffd34d"/></g>`;
+const torch = (x, y) => `<g transform="translate(${x} ${y})"><rect x="-2" y="0" width="4" height="16" fill="#6a4030"/><path class="flicker" d="M0 -12 q7 6 0 12 q-7 -6 0 -12z" fill="#ffb347"/></g>`;
+const hay = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})">${shadow(0, 0, 26)}<path d="M-26 0 Q-24 -34 0 -38 Q24 -34 26 0z" fill="#f0d070" ${O()}/><g stroke="#c9a03a" stroke-width="1.6" fill="none"><path d="M-14 -6 q2 -16 10 -24 M0 -4 v-28 M14 -6 q-2 -16 -10 -24"/></g></g>`;
+
+// every place returns its landscape; the ground colour continues below the frame
+const PLACES = {
+  meadow: (P, r) => ({ svg: band(118, P.g[0], 8, r() * 6) + roundTree(r() > .5 ? 170 : 30, 128, .7, P.leaf) + band(140, P.g[1], 10, r() * 6) + band(160, P.g[2], 6, r() * 6, 2.2) + flowers() + dayLife(), ground: P.g[2] }),
+  forest: (P, r) => ({ svg: [20, 70, 120, 170].map((x, i) => roundTree(x + r() * 10, 116, .55, [mixHex(P.leaf[0], '#6a8ab0', .35), mixHex(P.leaf[1], '#6a8ab0', .35)])).join('') + band(124, mixHex(P.g[1], '#4a6a50', .25), 6) + [0, 50, 150, 196].map((x, i) => roundTree(x, 150 - (i % 2) * 6, .9 + r() * .2, P.leaf)).join('') + band(156, P.g[2], 5, 1, 2.2) + `<g transform="translate(70 168)"><path d="M0 0 v-6" ${O(1.6)}/><path d="M-6 -6 a6 5 0 0 1 12 0z" fill="#e2445c" ${O(1.4)}/></g>` + butterfly(120, 110, 1, '#ffd34d'), ground: P.g[2] }),
+  pine: (P, r) => ({ svg: Array.from({ length: 7 }, (_, i) => pine(-10 + i * 36 + r() * 8, 122, .6).replace(/#3f8a5a/g, '#5a8a8a')).join('') + band(126, mixHex(P.g[1], '#4a7a6a', .4), 5) + [8, 52, 156, 198].map((x, i) => pine(x, 156 - (i % 2) * 4, 1 + (i % 2) * .25)).join('') + band(158, mixHex(P.g[2], '#3a6a4a', .3), 4, 2, 2.2), ground: mixHex(P.g[2], '#3a6a4a', .3) }),
+  darkforest: (P, r) => PLACES.pine({ ...P, g: P.g.map(c => mixHex(c, '#1a3040', .45)) }, r),
+  village: (P, r) => ({ svg: band(112, P.g[0], 10, r() * 6) + church(r() > .5 ? 156 : 46, 112, .55) + band(130, P.g[1], 8, r() * 6) + georgianHouse(r() > .5 ? 40 : 160, 138, .7, ['#f0e2c8', '#f4d8c0', '#e8e0d0'][Math.floor(r() * 3)], ['#c2483a', '#b0603a', '#8a4a6a'][Math.floor(r() * 3)], P.lit) + `<path d="M60 200 Q90 170 100 150 T120 132" stroke="#e8d2a6" stroke-width="16" fill="none" stroke-linecap="round" opacity=".9"/>` + band(158, P.g[2], 4, 1, 2.2) + tufts() + birdV(30, 3), ground: P.g[2] }),
+  yard: (P, r) => ({ svg: band(116, P.g[0], 6) + georgianHouse(150, 128, .8, '#f0e2c8', '#c2483a', P.lit) + fenceRow(140) + `<rect x="-300" y="140" width="900" height="120" fill="#d8c08a"/><path d="M-300 140 H600" ${O(1.8)}/>` + `<g transform="translate(30 150)">${shadow(0, 0, 16)}<rect x="-12" y="-16" width="24" height="16" fill="#a8a4b8" ${O(1.6)}/><path d="M-14 -16 h28 M-10 -16 v-20 M10 -16 v-20 M-14 -36 h28" ${O(2)}/></g>` + `<g fill="#c9b07a">${Array.from({ length: 10 }, (_, i) => `<ellipse cx="${10 + i * 20}" cy="${170 + (i % 3) * 8}" rx="3" ry="1.4"/>`).join('')}</g>`, ground: '#d8c08a' }),
+  garden: (P, r) => ({ svg: band(118, P.g[0], 6) + roundTree(30, 132, .8, P.leaf, '#8a5a34', '#ff5a5a') + roundTree(176, 128, .7, P.leaf, '#8a5a34', '#ffd34d') + fenceRow(136, '#e8d0a0') + band(146, P.g[1], 3) + `<g>${[150, 162, 174].map((y, k) => `<path d="M-40 ${y} H240" stroke="#8a5a34" stroke-width="7" stroke-linecap="round"/>${Array.from({ length: 12 }, (_, i) => `<g transform="translate(${-30 + i * 22 + k * 7} ${y - 3})"><path d="M0 0 q-4 -6 -1 -9 M0 0 q4 -6 1 -9" stroke="#3aa860" stroke-width="2.2" fill="none"/></g>`).join('')}`).join('')}</g>`, ground: P.g[1] }),
+  orchard: (P, r) => ({ svg: band(116, P.g[0], 6) + [10, 62, 114, 166].map(x => roundTree(x + 10, 124, .55, P.leaf, '#8a5a34', '#ff7a5a')).join('') + band(132, P.g[1], 5) + [0, 70, 140, 210].map(x => roundTree(x, 152, .85, P.leaf, '#8a5a34', ['#ff5a5a', '#ffd34d', '#ff9f43'][Math.floor(r() * 3)])).join('') + band(158, P.g[2], 4, 0, 2.2), ground: P.g[2] }),
+  vineyard: (P, r) => ({ svg: band(108, P.g[0], 12, r() * 6) + georgianHouse(160, 112, .45, '#f0e2c8', '#b0603a', P.lit) + band(122, P.g[1], 6) + vines() + band(178, P.g[2], 2, 0, 2), ground: P.g[2] }),
+  field: (P, r) => ({ svg: band(118, P.g[0], 5) + roundTree(170, 122, .5, P.leaf) + wheat(132, '#f0d070', '#d8a840') + hay(30, 146, .8) + band(156, '#e8c860', 3, 0, 2) + birdV(36, 2), ground: '#e8c860' }),
+  mountain: (P, r) => ({ svg: mountains('#9aa4c8') + band(122, P.g[0], 10, r() * 6) + pine(18, 130, .7) + pine(184, 124, .6) + band(152, P.g[2], 8, r() * 6, 2.2) + rockAt(40, 170, .7) + birdV(26, 4), ground: P.g[2] }),
+  river: (P, r) => ({ svg: band(110, P.g[0], 8) + roundTree(20, 124, .6, P.leaf) + `<path d="M-300 124 L600 124 L600 146 L-300 146z" fill="#4a90d8" ${O(1.8)}/>${[0, 1, 2].map(i => `<path class="wind" style="animation-delay:${i * 1.3}s" d="M${10 + i * 60} ${132 + i * 4} q10 -4 20 0 t20 0" stroke="#bfe3ff" stroke-width="2.4" fill="none" stroke-linecap="round"/>`).join('')}` + band(150, P.g[2], 4, 1, 2.2) + reeds(176, 154) + reeds(14, 158), ground: P.g[2] }),
+  bridge: (P, r) => ({ svg: PLACES.river(P, r).svg.replace(/(<path d="M-300 150)/, `<g><path d="M40 146 Q100 96 160 146" fill="none" stroke="${INK}" stroke-width="14"/><path d="M40 146 Q100 96 160 146" fill="none" stroke="#b8a890" stroke-width="10"/><path d="M60 130 v16 M80 118 v28 M100 114 v32 M120 118 v28 M140 130 v16" stroke="#8a7a6a" stroke-width="2"/></g>$1`), ground: P.g[2] }),
+  pond: (P, r) => ({ svg: band(118, P.g[0], 6) + roundTree(176, 128, .7, P.leaf) + band(136, P.g[1], 4) + `<ellipse cx="96" cy="150" rx="70" ry="13" fill="#4a90d8" ${O(1.8)}/><path class="wind" d="M60 150 q10 -4 20 0" stroke="#bfe3ff" stroke-width="2.2" fill="none"/>${[[70, 148], [118, 152]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="8" ry="3" fill="#5ab060" ${O(1.2)}/>`).join('')}` + reeds(30, 150) + reeds(160, 152) + band(162, P.g[2], 3, 0, 2.2), ground: P.g[2] }),
+  sea: (P, r) => ({ svg: `<path d="M-300 112 L600 112 V150 H-300z" fill="#3a7ac0" ${O(1.6)}/>${[0, 1, 2, 3].map(i => `<path class="wind" style="animation-delay:${i}s;animation-duration:6s" d="M${10 + i * 50} ${120 + (i % 2) * 12} q8 -5 16 0 t16 0" stroke="#bfe3ff" stroke-width="2.4" fill="none" stroke-linecap="round"/>`).join('')}<g class="flyby" style="animation-duration:30s"><g transform="translate(40 110) scale(.35)">${boat(0, 0)}</g></g>` + band(146, '#f2dca4', 4, 0, 2) + `<path d="M-300 146 q50 -6 100 0 t100 0 t100 0 t100 0 t100 0" fill="none" stroke="#fff" stroke-width="3" opacity=".8"/>` + rockAt(170, 164, .6, '#c9b89a'), ground: '#f2dca4' }),
+  beach: (P, r) => ({ svg: `<path d="M-300 116 L600 116 V140 H-300z" fill="#3aa0d8" ${O(1.6)}/>` + band(138, '#f6e2ae', 3, 0, 2) + `<g transform="translate(166 150)"><path d="M0 0 q-4 -30 6 -56" stroke="#8a5a34" stroke-width="6" fill="none" stroke-linecap="round"/><g transform="translate(6 -56)" fill="#3aa860" ${O(1.4)}>${[-50, -10, 30, 70, 110].map(a => `<path d="M0 0 q${Math.cos(a * Math.PI / 180) * 14} ${Math.sin(a * Math.PI / 180) * 14 - 10} ${Math.cos(a * Math.PI / 180) * 26} ${Math.sin(a * Math.PI / 180) * 26} q-10 -2 -26 -26z"/>`).join('')}</g></g>` + `<g transform="translate(36 166)"><path d="M0 0 v-34" ${O(2)}/><path d="M-22 -30 Q0 -50 22 -30z" fill="#ff7f9a" ${O(1.6)}/></g>`, ground: '#f6e2ae' }),
+  underwater: (P, r) => ({ svg: `<rect x="-400" y="-800" width="1000" height="1800" fill="#2a78b8"/>` + grad('uw' + ++gid, [[0, '#4ab0e0'], [1, '#1a5a98']]) + `<g opacity=".25" fill="#fff">${[30, 80, 140].map(x => `<path d="M${x} 0 l12 0 l-30 140 l-8 0z"/>`).join('')}</g>` + band(160, '#e6d29a', 5, 0, 2) + seaweedAt(20, 168) + seaweedAt(180, 166, 1.2) + seaweedAt(140, 172, .7) + `<g transform="translate(60 170)" fill="#ff7f7f" ${O(1.4)}><path d="M0 0 v-12 M0 -6 l-6 -6 M0 -8 l6 -6"/></g>` + rockAt(110, 172, .8, '#8a7aa0') + bubbles(), ground: '#e6d29a', sky: '#1a5a98' }),
+  snow: (P, r) => ({ svg: band(114, '#eef4ff', 10, r() * 6) + snowPine(30, 124, .7) + snowPine(164, 120, .8) + band(140, '#f6faff', 8, r() * 6) + snowPine(190, 152, 1) + band(160, '#ffffff', 4, 1, 2.2) + snow(), ground: '#ffffff' }),
+  wintervillage: (P, r) => ({ svg: band(114, '#eef4ff', 8) + church(150, 114, .5).replace(/#b0503a/g, '#f6faff') + band(134, '#f6faff', 6) + georgianHouse(46, 144, .7, '#f0e2c8', '#ffffff', true) + `<g class="appear"><path class="zf" d="M30 90 q6 -8 0 -14 q-6 -8 0 -14" stroke="#e6ecf6" stroke-width="5" fill="none" stroke-linecap="round"/></g>` + snowPine(186, 150, .9) + band(160, '#ffffff', 3, 0, 2.2) + snow(), ground: '#ffffff' }),
+  palace: (P, r) => ({ svg: band(118, P.g[0], 6) + castle(100, 136, .95) + band(140, P.g[1], 4) + `<g fill="#ff9fd0">${[20, 40, 160, 180].map(x => `<circle cx="${x}" cy="146" r="7" ${O(1.2)}/>`).join('')}</g><rect x="76" y="140" width="48" height="120" fill="#e8d2a6"/>` + band(162, P.g[2], 2, 0, 2) + confettiLite(), ground: P.g[2] }),
+  castle: (P, r) => ({ svg: band(96, P.g[0], 14, 2) + castle(r() > .5 ? 150 : 50, 100, .55) + band(128, P.g[1], 8, r() * 6) + `<path d="M100 200 Q70 160 110 140 T100 110" stroke="#e8d2a6" stroke-width="12" fill="none" opacity=".9"/>` + band(156, P.g[2], 4, 1, 2.2) + tufts(), ground: P.g[2] }),
+  road: (P, r) => ({ svg: band(116, P.g[0], 8, r() * 6) + band(130, P.g[1], 6, r() * 6) + `<path d="M40 210 Q100 170 96 150 T104 120" stroke="#e8d2a6" stroke-width="30" fill="none" stroke-linecap="round"/><path d="M40 210 Q100 170 96 150 T104 120" stroke="#d8c08a" stroke-width="2" fill="none" stroke-dasharray="4 8"/>` + roundTree(26, 140, .75, P.leaf) + roundTree(176, 136, .65, P.leaf) + sign(160, 160, '→') + band(166, P.g[2], 2, 0, 2) + flowers(), ground: P.g[2] }),
+  sky: (P, r) => ({ svg: cloud(60, 4, 1.2) + cloud(90, 22, .9) + cloudFloor(150) + `<g class="flutter" style="animation-duration:12s">${[[40, 100], [160, 90]].map(([x, y]) => `<g transform="translate(${x} ${y})"><path d="M-14 0 a14 8 0 0 1 28 0z" fill="#fff" ${O(1.4)}/></g>`).join('')}</g>`, ground: '#ffffff' }),
+  space: (P, r) => ({ svg: `<rect x="-400" y="-800" width="1000" height="1800" fill="#0e1240"/>` + starsField(30) + `<circle cx="40" cy="44" r="14" fill="#ff7f5a" ${O(1.6)}/><ellipse cx="160" cy="62" rx="26" ry="6" fill="none" stroke="#ffd98a" stroke-width="3" transform="rotate(-14 160 62)"/><circle cx="160" cy="62" r="13" fill="#e8c06a" ${O(1.6)}/>` + `<path d="M-300 170 Q100 140 500 170 V260 H-300z" fill="#b8b0d8" ${O(1.8)}/><g fill="#9890c0">${[[40, 176, 8], [120, 168, 6], [170, 180, 10]].map(([x, y, rr]) => `<ellipse cx="${x}" cy="${y}" rx="${rr}" ry="${rr / 3}"/>`).join('')}</g>` + shootingStar(), ground: '#b8b0d8', sky: '#0e1240', noSky: 1 }),
+  city: (P, r) => ({ svg: `<g transform="translate(150 70) scale(.6)"><path d="M-30 30 L-24 -10 L-10 -16 L0 -40 L10 -16 L24 -10 L30 30z" fill="#c9b89a" ${O()}/></g>` + Array.from({ length: 8 }, (_, i) => { const h = 34 + (i * 17) % 30, x = -10 + i * 28, c = ['#f0d8c0', '#e8c8a8', '#f4e4d0', '#e0d0e8'][i % 4]; return `<rect x="${x}" y="${150 - h}" width="26" height="${h}" fill="${c}" ${O(1.6)}/><path d="M${x - 2} ${150 - h} h30 l-4 -8 h-22z" fill="#b0503a" ${O(1.4)}/><rect x="${x + 4}" y="${156 - h}" width="18" height="4" fill="#8a5a34"/>${Array.from({ length: Math.floor(h / 16) }, (_, j) => `<rect x="${x + 5}" y="${162 - h + j * 16}" width="6" height="7" fill="${P.lit ? '#ffd98a' : '#9ad8ff'}"/><rect x="${x + 15}" y="${162 - h + j * 16}" width="6" height="7" fill="${P.lit ? '#ffd98a' : '#9ad8ff'}"/>`).join('')}`; }).join('') + `<rect x="-300" y="150" width="900" height="120" fill="#c8c0b8"/><path d="M-300 150 H600" ${O(1.8)}/>${Array.from({ length: 14 }, (_, i) => `<path d="M${-10 + i * 16} 162 h10 M${-2 + i * 16} 174 h10" stroke="#a8a098" stroke-width="2"/>`).join('')}` + lamp(30, 150) + lamp(170, 150), ground: '#c8c0b8' }),
+  cave: (P, r) => ({ svg: band(116, P.g[0], 8) + cave(110, 152, 1.1) + rockAt(30, 156, 1) + rockAt(186, 160, .8) + band(158, mixHex(P.g[2], '#8a8a70', .4), 3, 0, 2.2), ground: mixHex(P.g[2], '#8a8a70', .4) }),
+  swamp: (P, r) => ({ svg: band(116, '#7a9a6a', 6) + `<path d="M-300 132 L600 132 V156 H-300z" fill="#5a7a6a" ${O(1.6)}/>` + reeds(20, 140) + reeds(90, 138) + reeds(170, 142) + `<g transform="translate(130 148)"><rect x="-26" y="-6" width="52" height="10" rx="5" fill="#8a5a34" ${O(1.6)}/></g>` + band(156, '#6a8a4a', 3, 0, 2.2) + fog(), ground: '#6a8a4a' }),
+  // indoors
+  hut: (P, r) => ({ svg: BG.hut(P.night) + hearth(166, 168, .8) + `<g transform="translate(40 120)"><rect x="-18" y="0" width="36" height="4" fill="#8a5a34"/>${[[-12, '#d98b52'], [0, '#c2483a'], [12, '#fff']].map(([x, c]) => `<rect x="${x - 4}" y="-10" width="8" height="10" rx="2" fill="${c}" ${O(1.2)}/>`).join('')}</g>`, ground: '#8a5a34', indoor: 1 }),
+  room: (P, r) => ({ svg: BG.room() + `<g transform="translate(36 120)"><rect x="-20" y="0" width="40" height="4" fill="#a8743f"/>${[[-14, '#ff9fb4'], [-6, '#7ab8f0'], [2, '#ffd34d'], [10, '#8fd07a']].map(([x, c]) => `<rect x="${x}" y="-12" width="6" height="12" fill="${c}" ${O(1)}/>`).join('')}</g>`, ground: '#4e4290', indoor: 1 }),
+  kitchen: (P, r) => ({ svg: `<rect x="-400" width="1000" height="200" fill="#f4e4c8"/><g stroke="#e0caa0" stroke-width="1.4">${Array.from({ length: 30 }, (_, i) => `<path d="M${-60 + i * 12} 100 v70"/>`).join('')}<path d="M-400 100 H600 M-400 112 H600 M-400 124 H600 M-400 136 H600 M-400 148 H600 M-400 160 H600"/></g>
+    <rect x="18" y="30" width="44" height="40" rx="6" fill="${P.night ? '#141a52' : '#9ad8ff'}" ${O()}/><path d="M40 30 V70 M18 50 H62" stroke="${INK}" stroke-width="2.4"/><rect x="100" y="50" width="80" height="5" fill="#a8743f" ${O(1.2)}/>${[110, 128, 146, 164].map((x, i) => `<rect x="${x}" y="36" width="12" height="14" rx="3" fill="${['#ff9f43', '#e2445c', '#8fd07a', '#ffd34d'][i]}" ${O(1.2)}/>`).join('')}
+    <g transform="translate(150 172)"><path d="M-30 0 V-50 Q0 -70 30 -50 V0z" fill="#e8d8c8" ${O()}/><path d="M-14 0 V-24 Q0 -34 14 -24 V0z" fill="#3a2a2a" ${O(1.6)}/><path class="flicker" d="M-6 -2 q6 -14 12 0z" fill="#ffb347"/></g><rect x="-400" y="172" width="1000" height="40" fill="#b88a5a"/><path d="M-400 172 H600" ${O(2)}/>`, ground: '#b88a5a', indoor: 1 }),
+  hall: (P, r) => ({ svg: `<rect x="-400" width="1000" height="200" fill="#f6e8d4"/><rect x="-400" y="150" width="1000" height="60" fill="#d8c0a0"/><path d="M-400 150 H600" ${O(1.8)}/>` + column(14) + column(186) + banner(52, '#c2483a') + banner(148, '#4a7ab0') + `<g transform="translate(100 150)"><path d="M-22 0 V-56 Q0 -76 22 -56 V0z" fill="#c2483a" ${O()}/><rect x="-26" y="-22" width="52" height="22" rx="4" fill="#ffd34d" ${O()}/><path d="M-8 -70 l4 -8 l4 6 l4 -6 l4 8z" fill="#ffd34d" ${O(1.2)}/></g><path d="M70 200 L84 150 H116 L130 200z" fill="#c2483a"/>` + `<g transform="translate(100 18)"><path d="M-30 0 h60 M-24 0 v8 M0 0 v10 M24 0 v8" ${O(1.6)}/>${[-24, 0, 24].map(x => `<circle class="glow" cx="${x}" cy="${x ? 10 : 12}" r="3.4" fill="#ffd98a"/>`).join('')}</g>`, ground: '#d8c0a0', indoor: 1 }),
+  barn: (P, r) => ({ svg: `<rect x="-400" width="1000" height="200" fill="#a8603a"/>${Array.from({ length: 14 }, (_, i) => `<path d="M${-60 + i * 24} 0 V170" stroke="#8a4a2a" stroke-width="3"/>`).join('')}<path d="M-400 40 H600 M0 40 L100 0 L200 40" stroke="#6a3a20" stroke-width="6"/>` + hay(34, 172, 1.2) + hay(176, 172, 1) + `<rect x="-400" y="172" width="1000" height="40" fill="#d8b870"/><path d="M-400 172 H600" ${O(2)}/>`, ground: '#d8b870', indoor: 1 }),
+  cavein: (P, r) => ({ svg: `<rect x="-400" width="1000" height="200" fill="#4a4060"/><g fill="#5a5070" ${O(1.4)}>${[[20, 40, 30], [90, 20, 40], [170, 50, 34], [40, 110, 26], [150, 120, 30]].map(([x, y, rr]) => `<ellipse cx="${x}" cy="${y}" rx="${rr}" ry="${rr * .6}"/>`).join('')}</g><path d="M-400 0 H600 V14 Q500 30 400 14 T200 18 T0 14 T-200 18 T-400 14z" fill="#3a3050"/>` + torch(40, 90) + torch(160, 90) + rockAt(20, 172, 1, '#6a6080') + `<rect x="-400" y="172" width="1000" height="40" fill="#5a5070"/><path d="M-400 172 H600" ${O(2)}/>`, ground: '#5a5070', indoor: 1 }),
+};
+const confettiLite = () => `<g opacity=".7">${flag(30, 150)}${flag(170, 150)}</g>`;
+
+// ---------- props: things the story needs in the picture ----------
+const goldEggSvg = `<ellipse cx="0" cy="-12" rx="9" ry="12" fill="#ffd34d" ${O(1.6)}/><path d="M-4 -18 q3 -3 6 -2" stroke="#fff" stroke-width="2" fill="none"/>`;
+const PROP = {
+  house: [() => georgianHouse(0, 0, 1), 54, 'back'], church: [() => church(0, 0, 1), 70, 'back'], well: [() => `${shadow(0, 0, 16)}<rect x="-12" y="-16" width="24" height="16" fill="#a8a4b8" ${O(1.6)}/><path d="M-14 -16 h28 M-10 -16 v-20 M10 -16 v-20 M-14 -36 h28" ${O(2)}/><path d="M-16 -36 L0 -46 L16 -36z" fill="#b0503a" ${O(1.4)}/>`, 36, 'back'],
+  fence: [() => `<g>${Array.from({ length: 6 }, (_, i) => `<path d="M${i * 10} 0 v-16 l3 -4 l3 4 v16z" fill="#c9a26a" ${O(1.2)}/>`).join('')}<path d="M-2 -10 h62 M-2 -4 h62" ${O(1.4)}/></g>`, 18, 'back'],
+  tree: [() => roundTree(0, 0, 1, GREENS[0]), 70, 'back'], appletree: [() => roundTree(0, 0, 1, GREENS[1], '#8a5a34', '#ff4a4a'), 70, 'back'], goldtree: [() => roundTree(0, 0, 1, ['#8fd07a', '#6cbf84'], '#8a5a34', '#ffd34d') + sparkle(-14, -60, 0, '#fff1b8', 5) + sparkle(16, -50, .6, '#fff1b8', 5), 74, 'back'],
+  pine: [() => pine(0, 0, 1), 70, 'back'], bush: [() => `<g fill="#5cb85c" ${O(1.6)}><circle cx="-10" cy="-8" r="10"/><circle cx="8" cy="-10" r="12"/><circle cx="0" cy="-16" r="9"/></g><g fill="#ff7f9a"><circle cx="-8" cy="-12" r="2"/><circle cx="6" cy="-16" r="2"/></g>`, 24, 'back'],
+  flowers: [() => flowers(), 0, 'full'], mushrooms: [() => [[0, 1], [12, .7], [-10, .6]].map(([x, s]) => `<g transform="translate(${x} 0) scale(${s})"><path d="M-3 0 v-10 h6 v10z" fill="#fff6e6" ${O(1.2)}/><path d="M-12 -10 a12 9 0 0 1 24 0z" fill="#e2445c" ${O(1.4)}/><circle cx="-4" cy="-14" r="1.8" fill="#fff"/><circle cx="4" cy="-13" r="1.5" fill="#fff"/></g>`).join(''), 16, 'front'],
+  haystack: [() => hay(0, 0, 1), 34, 'back'], beehive: [() => `${shadow(0, 0, 14)}<path d="M-12 0 v-6 h24 v6z M-14 -6 Q-14 -30 0 -30 Q14 -30 14 -6z" fill="#e0a43a" ${O(1.6)}/><path d="M-13 -12 h26 M-11 -20 h22" stroke="#b8802a" stroke-width="2"/><circle cx="0" cy="-8" r="3" fill="#3a2a2a"/>`, 28, 'back'],
+  sunflower: [() => `<path d="M0 0 V-60" stroke="#3aa860" stroke-width="5"/><g class="sway">${Array.from({ length: 12 }, (_, k) => `<ellipse cx="${Math.cos(k * Math.PI / 6) * 14}" cy="${-66 + Math.sin(k * Math.PI / 6) * 14}" rx="7" ry="4" fill="#ffd34d" transform="rotate(${k * 30} ${Math.cos(k * Math.PI / 6) * 14} ${-66 + Math.sin(k * Math.PI / 6) * 14})" ${O(1)}/>`).join('')}<circle cx="0" cy="-66" r="10" fill="#8a5a34" ${O(1.6)}/></g>`, 70, 'back'],
+  chichilaki: [() => `<path d="M0 0 V-70" stroke="#a8743f" stroke-width="5"/>${Array.from({ length: 7 }, (_, k) => `<path d="M0 ${-66 + k * 9} q${-8 - k * 2.4} 4 ${-12 - k * 3} 10 M0 ${-66 + k * 9} q${8 + k * 2.4} 4 ${12 + k * 3} 10" stroke="#fff6dc" stroke-width="3" fill="none" stroke-linecap="round"/>`).join('')}${[[-10, -40, '#e2445c'], [12, -30, '#ffd34d'], [-14, -18, '#7ab8f0'], [8, -54, '#8fd07a']].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="3" fill="${c}"/>`).join('')}`, 60, 'back'],
+  xmastree: [() => `<rect x="-4" y="-10" width="8" height="10" fill="#8a5a34" ${O(1.4)}/><path d="M0 -76 L24 -40 L12 -40 L30 -10 L-30 -10 L-12 -40 L-24 -40z" fill="#3f8a5a" ${O()}/>${[[-8, -30, '#e2445c'], [10, -22, '#ffd34d'], [-14, -16, '#7ab8f0'], [4, -50, '#ff9fd0'], [14, -36, '#8fd07a']].map(([x, y, c], i) => `<circle class="twinkle" style="animation-delay:${i * .3}s" cx="${x}" cy="${y}" r="3" fill="${c}" ${O(.8)}/>`).join('')}${sparkle(0, -80, 0, '#ffd34d', 7)}`, 72, 'back'],
+  snowman: [() => ART.snowman(), 64, 'back'],
+  table: [() => table(0, -28), 30, 'back'], bread: [() => bread(0, 0), 12, 'front'], pot: [() => pot(0, 0), 24, 'front'], jug: [() => jug(-16, -56), 28, 'front'],
+  hearth: [() => hearth(0, 0), 60, 'back'], bed: [() => `<g transform="translate(-100 -182)">${bed()}${blanket()}</g>`, 70, 'back'],
+  boat: [() => boat(0, -14), 40, 'back'], ship: [() => ART.ship(), 70, 'back'], castle: [() => castle(0, 0), 80, 'back'],
+  tower: [() => `${shadow(0, 0, 18)}<rect x="-14" y="-80" width="28" height="80" fill="#dccdb4" ${O()}/><path d="M-18 -80 L0 -100 L18 -80z" fill="#4a7ab0" ${O()}/><rect x="-5" y="-66" width="10" height="12" rx="5" fill="#ffd98a" ${O(1.4)}/>`, 90, 'back'],
+  cart: [() => `${shadow(0, 0, 26)}<rect x="-26" y="-26" width="52" height="16" fill="#a8743f" ${O()}/><circle cx="-16" cy="-6" r="7" fill="#6a4030" ${O(1.6)}/><circle cx="16" cy="-6" r="7" fill="#6a4030" ${O(1.6)}/><path d="M26 -20 l20 -6" ${O(2.4)}/>`, 30, 'back'],
+  nest: [() => `<path d="M-18 -2 q18 18 36 0z" fill="#a8743f" ${O(1.6)}/><g fill="#dff0ff" ${O(1)}><ellipse cx="-6" cy="-4" rx="4" ry="5"/><ellipse cx="4" cy="-5" rx="4" ry="5"/></g>`, 14, 'front'],
+  egg: [() => `<ellipse cx="0" cy="-10" rx="7" ry="10" fill="#fff9ee" ${O(1.6)}/>`, 14, 'front'], goldegg: [() => goldEggSvg + sparkle(10, -22, 0, '#fff1b8', 4), 18, 'front'],
+  basket: [() => basket(0, 0), 16, 'front'], chest: [() => chest(0, 0), 26, 'front'], throne: [() => `<path d="M-18 0 V-50 Q0 -66 18 -50 V0z" fill="#c2483a" ${O()}/><rect x="-22" y="-20" width="44" height="20" rx="4" fill="#ffd34d" ${O()}/>`, 50, 'back'],
+  crown: [() => `<path d="M-14 0 L-16 -16 L-8 -8 L0 -20 L8 -8 L16 -16 L14 0z" fill="#ffd34d" ${O(1.6)}/>` + sparkle(14, -22, 0, '#fff1b8', 4), 14, 'front'],
+  beanstalk: [() => `<path class="sway" d="M0 0 C-14 -40 14 -80 -4 -120 S10 -170 0 -200" stroke="#3aa860" stroke-width="8" fill="none" stroke-linecap="round"/>${Array.from({ length: 8 }, (_, i) => `<ellipse cx="${i % 2 ? 10 : -10}" cy="${-20 - i * 22}" rx="10" ry="5" fill="#5ac070" ${O(1.2)} transform="rotate(${i % 2 ? -20 : 20} ${i % 2 ? 10 : -10} ${-20 - i * 22})"/>`).join('')}`, 150, 'back'],
+  gingerhouse: [() => `${shadow(0, 0, 34)}<rect x="-30" y="-36" width="60" height="36" fill="#c88a50" ${O()}/><path d="M-38 -34 L0 -64 L38 -34z" fill="#f6f0ff" ${O()}/><path d="M-30 -40 q8 6 16 0 q8 6 16 0 q8 6 16 0 q8 6 14 0" stroke="#ff7f9a" stroke-width="3" fill="none"/>${[[-20, -24, '#e2445c'], [20, -24, '#7ab8f0'], [-8, -50, '#ffd34d'], [8, -46, '#8fd07a']].map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="4" fill="${c}" ${O(1)}/>`).join('')}<rect x="-7" y="-18" width="14" height="18" rx="6" fill="#8a5a34" ${O(1.4)}/>`, 64, 'back'],
+  strawhouse: [() => straw(0, 0), 50, 'back'], stickhouse: [() => sticks(0, 0), 50, 'back'], brickhouse: [() => bricks(0, 0), 52, 'back'],
+  rocket: [() => ART.rocket(), 60, 'sky'], planets: [() => `<circle cx="-40" cy="0" r="12" fill="#ff7f5a" ${O(1.6)}/><ellipse cx="30" cy="10" rx="22" ry="5" fill="none" stroke="#ffd98a" stroke-width="3"/><circle cx="30" cy="10" r="11" fill="#e8c06a" ${O(1.6)}/>`, 30, 'sky'],
+  train: [() => train(0, -40, 1), 50, 'back'], lamp: [() => lamp(0, 0), 32, 'back'], lantern: [() => `<path d="M0 -40 v8" ${O(1.6)}/><rect x="-7" y="-32" width="14" height="18" rx="3" fill="#ffd98a" ${O(1.6)}/><path class="flicker" d="M0 -28 q4 4 0 8 q-4 -4 0 -8z" fill="#ff9f43"/>`, 30, 'front'],
+  swing: [() => `<path d="M-24 0 V-60 H24 V0" fill="none" stroke="#8a5a34" stroke-width="4"/><g class="sway"><path d="M-8 -60 v40 M8 -60 v40" ${O(1.4)}/><rect x="-12" y="-22" width="24" height="5" rx="2" fill="#e2445c" ${O(1.2)}/></g>`, 56, 'back'],
+  toys: [() => `<g transform="translate(-14 -30) scale(.4)">${ART.teddy()}</g><g transform="translate(10 -12) scale(.3)">${ART.ball()}</g>`, 28, 'front'],
+  books: [() => [['#e2445c', 0], ['#7ab8f0', -6], ['#ffd34d', -12]].map(([c, y]) => `<rect x="-12" y="${y - 6}" width="24" height="6" rx="1" fill="${c}" ${O(1.2)}/>`).join(''), 16, 'front'],
+  rainbow: [() => ART.rainbow(), 60, 'sky'], kite: [() => `<path d="M0 -30 L12 -14 L0 0 L-12 -14z" fill="#ff7f9a" ${O(1.6)}/><path d="M0 0 q-6 16 6 30 q-8 10 2 24" stroke="${INK}" stroke-width="1.2" fill="none"/>`, 40, 'sky'],
+  stone: [() => rockAt(0, 0, 1), 18, 'front'], cage: [() => `<path d="M-14 0 V-26 Q0 -40 14 -26 V0z" fill="none" ${O(1.6)}/>${[-8, -2, 4, 10].map(x => `<path d="M${x} 0 V-30" ${O(1)}/>`).join('')}<path d="M-16 0 h32" ${O(2.4)}/>`, 30, 'back'],
+  carrot: [() => `<path d="M-4 0 L0 -24 L4 0z" fill="#ff9f43" ${O(1.4)}/><path d="M0 -24 q-6 -8 -2 -12 M0 -24 q6 -8 2 -12" stroke="#3aa860" stroke-width="2.4" fill="none"/>`, 16, 'front'],
+  turnip: [() => `<circle cx="0" cy="-16" r="16" fill="#f6eedc" ${O(1.8)}/><path d="M-12 -24 a14 10 0 0 1 24 0" fill="#c59cff"/><path d="M0 -32 q-10 -16 -4 -22 M0 -32 q10 -16 4 -22 M0 -32 v-20" stroke="#3aa860" stroke-width="3" fill="none" stroke-linecap="round"/>`, 40, 'front'],
+  apples: [() => [[-8, 0], [6, -2], [-1, -9]].map(([x, y]) => `<circle cx="${x}" cy="${y - 6}" r="6" fill="#ff4a4a" ${O(1.4)}/>`).join(''), 14, 'front'],
+  cake: [() => `<rect x="-18" y="-20" width="36" height="20" rx="4" fill="#ffd6e0" ${O(1.6)}/><path d="M-18 -14 q6 4 12 0 q6 4 12 0 q6 4 12 0" stroke="#fff" stroke-width="3" fill="none"/><path d="M0 -20 v-8" ${O(1.4)}/><path class="flicker" d="M0 -34 q3 3 0 6 q-3 -3 0 -6z" fill="#ffb347"/>`, 26, 'front'],
+  gifts: [() => [['#e2445c', -12, 0], ['#7ab8f0', 10, 0], ['#ffd34d', -2, -14]].map(([c, x, y]) => `<rect x="${x - 8}" y="${y - 14}" width="16" height="14" fill="${c}" ${O(1.4)}/><path d="M${x} ${y - 14} v14 M${x - 8} ${y - 7} h16" stroke="#fff" stroke-width="2"/>`).join(''), 24, 'front'],
+  campfire: [() => fire(0, 0), 28, 'front'], tent: [() => `${shadow(0, 0, 30)}<path d="M-30 0 L0 -40 L30 0z" fill="#e9784e" ${O()}/><path d="M0 -40 L-8 0 h16z" fill="#c2577a" ${O(1.4)}/>`, 40, 'back'],
+  mill: [() => `${shadow(0, 0, 20)}<path d="M-14 0 L-10 -50 H10 L14 0z" fill="#e8d8c0" ${O()}/><g class="spin" style="transform-origin:0px -50px;transform-box:view-box">${[0, 90, 180, 270].map(a => `<rect x="-3" y="-90" width="6" height="40" fill="#fff" ${O(1.2)} transform="rotate(${a} 0 -50)"/>`).join('')}</g><circle cx="0" cy="-50" r="4" fill="${INK}"/>`, 90, 'back'],
+  fishnet: [() => net(-45, -80), 60, 'back'], flute: [() => `<rect x="-14" y="-3" width="28" height="5" rx="2" fill="#c9a26a" ${O(1.2)}/>`, 6, 'front'],
+  ladder: [() => `<path d="M-8 0 L-4 -60 M8 0 L4 -60" ${O(2.4)}/>${Array.from({ length: 6 }, (_, i) => `<path d="M${-7 + i * .6} ${-6 - i * 10} H${7 - i * .6}" ${O(1.8)}/>`).join('')}`, 60, 'back'],
+  bigstar: [() => sparkle(0, 0, 0, '#ffd34d', 16), 30, 'sky'], moon: [() => moonFace(0, 0, 22), 44, 'sky'], stars: [() => starsField(16), 0, 'full'],
+  fireflies: [() => fireflies(), 0, 'full'], butterflies: [() => dayLife(), 0, 'full'], confetti: [() => confetti(), 0, 'full'],
+  shell: [() => `<path d="M-10 0 Q-12 -14 0 -16 Q12 -14 10 0z" fill="#ffd6e0" ${O(1.4)}/><path d="M0 -16 V0 M-5 -14 L-4 0 M5 -14 L4 0" stroke="#e8a0b0" stroke-width="1.4"/>`, 12, 'front'],
+  seaweed: [() => seaweedAt(0, 0), 50, 'back'],
+  lighthouse: [() => `${shadow(0, 0, 18)}<path d="M-12 0 L-8 -70 H8 L12 0z" fill="#fff" ${O()}/><path d="M-11 -20 h22 M-10 -44 h20" stroke="#e2445c" stroke-width="7"/><rect x="-9" y="-84" width="18" height="14" fill="#ffd98a" class="glow" ${O(1.6)}/><path d="M-12 -84 L0 -94 L12 -84z" fill="#e2445c" ${O(1.6)}/>`, 90, 'back'],
+  coach: [() => coach(0, 0), 50, 'back'], slipper: [() => slipper(0, 0), 12, 'front'], clock: [() => clock(0, -20), 40, 'sky'], boots: [() => boots(-20, 0), 24, 'front'],
+  sword: [() => `<path d="M0 0 V-34" stroke="#c9cfe0" stroke-width="4"/><path d="M-8 -6 h16" ${O(2.4)}/><path d="M0 -34 l-2 -4 h4z" fill="#c9cfe0"/>`, 30, 'front'],
+  cradle: [() => `${shadow(0, 0, 22)}<path d="M-24 -10 Q0 10 24 -10 V-24 H-24z" fill="#ffd6e0" ${O(1.6)}/><path d="M-20 0 L-26 6 M20 0 L26 6" ${O(2)}/>`, 30, 'back'],
+  bench: [() => `<rect x="-26" y="-14" width="52" height="5" rx="2" fill="#a8743f" ${O(1.4)}/><path d="M-22 -9 v9 M22 -9 v9" ${O(2.4)}/><rect x="-26" y="-26" width="52" height="5" rx="2" fill="#a8743f" ${O(1.4)}/>`, 26, 'back'],
+  'garden-bed': [() => `<path d="M-30 0 h60" stroke="#8a5a34" stroke-width="8" stroke-linecap="round"/>${[-20, -6, 8, 22].map(x => `<path d="M${x} -2 q-4 -8 -1 -12 M${x} -2 q4 -8 1 -12" stroke="#3aa860" stroke-width="2.4" fill="none"/>`).join('')}`, 14, 'front'],
+};
+const propBoxes = {};
+function propFit(name, x, ground, h) {
+  const [draw] = PROP[name];
+  const body = draw();
+  if (!propBoxes[name]) { measure.innerHTML = `<svg viewBox="0 0 200 200"><g>${body}</g></svg>`; const b = measure.querySelector('g').getBBox(); propBoxes[name] = { x: b.x, y: b.y, w: b.width || 1, h: b.height || 1 }; }
+  const b = propBoxes[name], s = Math.min(h / b.h, 1.4 * h / b.w + 1);
+  return { svg: `<g transform="translate(${(x - (b.x + b.w / 2) * s).toFixed(1)} ${(ground - (b.y + b.h) * s).toFixed(1)}) scale(${s.toFixed(3)})">${body}</g>`, s, b };
+}
+// the snowman (or anything else) the characters build, revealed beat by beat
+function buildSvg(name, x, ground) {
+  if (name === 'snowman') return `<g class="build snow-build" data-steps="4"><g transform="translate(${x} ${ground})">${shadow(0, 0, 26)}
+    <g class="bpart" data-step="1"><circle cx="0" cy="-20" r="22" fill="#fff" ${O()}/></g>
+    <g class="bpart" data-step="2"><circle cx="0" cy="-52" r="15" fill="#fff" ${O()}/><circle cx="0" cy="-52" r="1.8" fill="${INK}"/><circle cx="0" cy="-44" r="1.8" fill="${INK}"/></g>
+    <g class="bpart" data-step="3"><circle cx="0" cy="-76" r="11" fill="#fff" ${O()}/><circle cx="-4" cy="-78" r="1.6" fill="${INK}"/><circle cx="4" cy="-78" r="1.6" fill="${INK}"/><path d="M-3 -72 q3 2 6 0" ${O(1.2)} fill="none"/></g>
+    <g class="bpart" data-step="4"><path d="M0 -75 l12 3 l-12 2z" fill="#ff9f43" ${O(1.2)}/><path d="M-12 -64 q12 6 24 0 l2 6 q-14 6 -28 0z" fill="#e2445c" ${O(1.4)}/><path d="M8 -62 l4 14 l5 -2 l-4 -12z" fill="#e2445c" ${O(1.2)}/><path d="M-9 -86 h18 l-3 -12 h-12z" fill="#3a3550" ${O(1.4)}/><path d="M-14 -52 l-14 -10 M14 -52 l14 -10" stroke="#8a5a34" stroke-width="2.4" stroke-linecap="round"/></g>
+  </g></g>`;
+  const f = propFit(name, x, ground, PROP[name][1] * 1.2);
+  return `<g class="build grow" data-steps="4" style="transform-origin:${x}px ${ground}px;transform:scale(.15)">${f.svg}</g>`;
+}
+
+const SEASON = text => /შემოდგომ|ფოთოლცვენ/.test(text) ? 'autumn' : /გაზაფხულ/.test(text) ? 'spring' : '';
+// a paragraph's picture from its plan: place, time, weather, props
+function scenery(q, tale, text, i) {
+  const r = rnd(hashOf(tale.id) + i * 7 + 1);
+  const pal = GREENS[hashOf(tale.id) % GREENS.length];
+  const season = SEASON(text);
+  const night = q.time === 'night', evening = q.time === 'evening';
+  const P = { g: season === 'autumn' ? AUTUMN : pal, leaf: season === 'autumn' ? ['#f0a040', '#e07030'] : season === 'spring' ? ['#ffc0d8', '#ff9fc0'] : [pal[1], pal[2]], night, lit: night || evening };
+  const place = (PLACES[q.bg] || PLACES.meadow)(P, r);
+  const indoor = !!place.indoor;
+  const [s0, s1] = SKIES[q.time] || SKIES.day;
+  let svg = indoor || place.noSky ? '' : grad('sk' + ++gid, [[0, s0], [1, s1]]) + (night ? '' : evening ? `<circle cx="${r() > .5 ? 150 : 50}" cy="104" r="20" fill="#ffb05a" ${O(2)}/>` : sunFace(r() > .5 ? 34 : 166, q.time === 'morning' ? 64 : 32) + cloud(18 + r() * 20, r() * 30, .8) + cloud(46 + r() * 10, 10 + r() * 30, .6));
+  svg += place.svg;
+  const gy = indoor ? 172 : 156;
+  // props: big things stand behind the characters, small things lie in front, sky things float
+  const back = [[28, gy - 4], [172, gy - 6], [100, gy - 16], [60, gy - 10], [140, gy - 10]], front = [[22, gy + 20], [178, gy + 18], [100, gy + 26]], sky = [[150, 44], [50, 52], [100, 30]];
+  let behind = '', before = '', above = '';
+  for (const name of (q.props || []).slice(0, 5)) {
+    const spec = PROP[name]; if (!spec) continue;
+    const [, h, layer] = spec;
+    if (layer === 'full') { above += spec[0](); continue; }
+    const slot = (layer === 'sky' ? sky : layer === 'front' ? front : back).shift(); if (!slot) continue;
+    const f = propFit(name, slot[0], slot[1], h * (layer === 'back' && slot[0] === 100 ? .85 : 1));
+    if (layer === 'front') before += f.svg; else behind += f.svg;
+  }
+  if (q.build && PROP[q.build]) behind += buildSvg(q.build, 100, gy + 2);
+  svg += behind;
+  // night: everything dims under a blue veil, then the moon and stars come out
+  if (night && !place.noSky) svg += `<rect x="-400" y="-800" width="1000" height="1800" fill="#0b1240" opacity="${indoor ? .3 : .45}"/>` + (indoor ? '' : starsField(14) + ((q.props || []).includes('moon') ? '' : bigMoon(r() > .5 ? 160 : 40, 34, 13)) + (/forest|meadow|garden|pond|village|yard/.test(q.bg) ? fireflies() : ''));
+  if (evening && !place.noSky) svg += `<rect x="-400" y="-800" width="1000" height="1800" fill="#6a2a7a" opacity=".16"/>`;
+  if (!indoor) svg += q.weather === 'rain' ? rain() : q.weather === 'snow' && q.bg !== 'snow' && q.bg !== 'wintervillage' ? snow() : q.weather === 'wind' ? windLines() : q.weather === 'fog' ? fog() : '';
+  svg += above;
+  const groundC = night ? mixHex(place.ground, '#0b1240', indoor ? .3 : .45) : place.ground;
+  const top = indoor ? mixHex(place.ground, '#000000', .2) : place.sky || (night ? '#121848' : s0);
+  return { bg: svg, front: before, edge: [night && !indoor ? mixHex(top, '#0b1240', .2) : top, groundC], indoor, gy, build: q.build && PROP[q.build] ? q.build : null };
+}
+
+// =====================================================================
 // The director: a tale plays like a cartoon. Every sentence is a beat —
 // characters walk in, run off, turn to whoever speaks, laugh, cry, get scared,
 // fall asleep, and the camera follows whoever is acting.
@@ -1489,7 +1666,7 @@ const SPEED = { walk: 50, run: 125, fly: 85, swim: 60 };
 const MOOD_ACT = { happy: 'joy', sad: 'sad', scared: 'shiver', angry: 'stomp', surprised: 'pop', love: 'idle', sleep: 'sleep' };
 const ACT_FX = { talk: 'talk', sing: 'notes', dance: 'notes', eat: 'yum', run: 'dust', sleep: 'zzz', hug: 'hearts' };
 const MOOD_FX = { sad: 'tears', scared: 'sweat', angry: 'puff', surprised: 'bang', happy: 'sparks', love: 'hearts', sleep: 'zzz' };
-const SKY = new Set([...FLYERS, 'cloudy', 'bee', 'dove', 'windy']);
+const SKY = new Set([...FLYERS, 'cloudy', 'bee', 'dove', 'windy', 'sun', 'star', 'firefly']);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const offstage = x => x < 100 ? -80 : 280;
 
@@ -1521,20 +1698,61 @@ function castMember(w, text, n) {
   return { id: w, who, draw: who === 'princess' ? 'mom' : who, o: opts, b, s, w: b.w * s, h: b.h * s, front: HUMANS.has(who) || ['snowman', 'cloudy', 'bun', 'devi', 'bear', 'owl', 'moon'].includes(who) };
 }
 
+// hand-written plans (plans.json): who is in each scene, where and when, what objects
+let PLANS = {};
+// which planned characters a sentence names: their stems, at the start of a word
+function planWho(text, plan) {
+  const found = [];
+  for (const [key, def] of Object.entries(plan.cast)) {
+    let at = -1;
+    for (const w of def.words || []) {
+      let from = 0, j;
+      while ((j = text.indexOf(w, from)) >= 0) { if (!/[ა-ჰ]/.test(text[j - 1] || '')) { if (at < 0 || j < at) at = j; break; } from = j + 1; }
+    }
+    if (at >= 0) found.push({ key, at });
+  }
+  return found.sort((a, b) => a.at - b.at).map(f => f.key);
+}
+const GROUP_TINTS = ['#4a7ab0', '#5a9a5a', '#c2577a', '#e9a03a'];
+function planMember(key, def, text, n) {
+  const who = def.who, o = { ...(def.o || {}) };
+  const opts = who === 'princess' ? { princess: 1, dress: '#ffb347', ...o } : o;
+  const b = bbox(who, opts), count = Math.min(def.count || 1, 4);
+  const spread = 1 + .72 * (count - 1);
+  const s = Math.min((TARGET[who] || 46) * (n >= 3 ? .78 : 1) * (count > 2 ? .86 : 1) * (o.big || 1) / b.h, 110 / b.w / Math.max(1, spread * .6));
+  return { id: key, who, draw: who === 'princess' ? 'mom' : who, o: opts, b, s, count, w: b.w * s * spread, h: b.h * s, front: HUMANS.has(who) || ['snowman', 'cloudy', 'windy', 'bun', 'devi', 'bear', 'owl', 'sun'].includes(who) };
+}
+function plannedSet(tale, text, i, q, plan) {
+  const props = (q.props || []).filter(p => p !== 'bed' || q.bg !== 'room');
+  const sc = scenery({ ...q, props }, tale, text, i);
+  const wantBed = q.bg === 'room' && (q.props || []).includes('bed');
+  return { bg: sc.bg + (wantBed ? bed() : ''), front: sc.front, edge: sc.edge, indoor: sc.indoor, wantBed, build: sc.build,
+    asleep: /სძინ|ეძინ|ჩაეძინ|დაიძინ|ჩაიძინ|დახუჭ|ხვრინ|ძილი ნებისა/.test(text) };
+}
+
 // one paragraph → background, cast, and a state of every actor for every sentence
 function directParagraph(tale, text, i) {
-  const set = autoScene(tale, text, i, true);
+  const plan = PLANS[tale.id], q = plan?.paras?.[i];
+  const set = q ? plannedSet(tale, text, i, q, plan) : autoScene(tale, text, i, true);
   // 'mother' is an animal mother only in a tale about animals
   const any = taleHeroAny(tale), hero = any && !HUMANS.has(any) ? taleHero(tale) : null, alias = aliasOf(tale);
   const sents = sentencesOf(text);
-  let ids = whoIn(text, hero, alias).filter(w => w !== 'moon').slice(0, 3);
-  if (!ids.length && taleHeroAny(tale)) ids = [taleHeroAny(tale)];
-  const cast = ids.map(w => castMember(w, text, ids.length));
+  let ids, cast, nameIn;
+  if (q) {
+    ids = (q.cast || []).filter(k => plan.cast[k]).slice(0, 4);
+    cast = ids.map(k => planMember(k, plan.cast[k], text, ids.length));
+    nameIn = s => planWho(s, plan);
+  } else {
+    ids = whoIn(text, hero, alias).filter(w => w !== 'moon').slice(0, 3);
+    if (!ids.length && taleHeroAny(tale)) ids = [taleHeroAny(tale)];
+    cast = ids.map(w => castMember(w, text, ids.length));
+    nameIn = s => whoIn(s, hero, alias);
+  }
   cast.forEach(a => { a.ground = SKY.has(a.who) && !set.indoor ? 96 : SWIMMERS.has(a.who) ? 182 : set.indoor ? 172 : 156; });
   if (set.wantBed && cast.length) Object.assign(cast[0], { bed: true, home: 78, ground: 142 });
-  const slots = [[100], [66, 138], [42, 100, 160]][cast.length - 1] || [];
+  const slots = (set.build ? [[56], [40, 160], [28, 150, 178], [22, 56, 148, 180]] : [[100], [66, 138], [42, 100, 160], [30, 78, 124, 170]])[cast.length - 1] || [];
   cast.forEach((a, k) => { a.home = a.home || slots[k]; });
-  const named = sents.map(s => whoIn(s, hero, alias).map(w => ids.indexOf(w)).filter(k => k >= 0));
+  const named = sents.map(s => nameIn(s).map(w => ids.indexOf(w)).filter(k => k >= 0));
   const firstAt = cast.map((_, k) => { const j = named.findIndex(n => n.includes(k)); return j < 0 ? 0 : j; });
   if (cast.length && !firstAt.includes(0)) firstAt[firstAt.indexOf(Math.min(...firstAt))] = 0;
   const sleepyEnd = tale.cat === 'sleep' && set.asleep;
@@ -1633,7 +1851,16 @@ const playOf = t => TEXTS[t.id] ? (PLAYS[t.id] ||= TEXTS[t.id].split('\n\n').map
 
 function charSvg(a, mood) {
   MOOD = mood || '';
-  try { return C[a.draw]({ ...a.o, closed: mood === 'sleep' }); } finally { MOOD = ''; }
+  try {
+    if (!(a.count > 1)) return C[a.draw]({ ...a.o, closed: mood === 'sleep' });
+    const n = a.count, cx = a.b.x + a.b.w / 2, people = HUMANS.has(a.who);
+    return Array.from({ length: n }, (_, k) => {
+      const o = { ...a.o, closed: mood === 'sleep' };
+      if (people && k) { if (a.who === 'girl' || a.who === 'mom' || a.who === 'princess') o.dress = GROUP_TINTS[k % 4]; else o.shirt = GROUP_TINTS[k % 4]; }
+      const dx = (k - (n - 1) / 2) * a.b.w * .72, sc = k === Math.floor(n / 2) ? 1 : .93;
+      return `<g transform="translate(${dx + cx * (1 - sc)} ${(a.b.y + a.b.h) * (1 - sc)}) scale(${sc})"><g class="gsub" style="animation-delay:-${k * .37}s">${C[a.draw](o)}</g></g>`;
+    }).reverse().join('');
+  } finally { MOOD = ''; }
 }
 // little signs above a character's head: speech, tears, hearts, notes…
 function fxSvg(list, a, face) {
@@ -1661,13 +1888,12 @@ function fxSvg(list, a, face) {
 function actorSvg(a, k, p) {
   return `<g class="actor" data-k="${k}" style="transform:translate(${p.x}px,${a.ground + p.y}px)"><g class="facing" style="transform:scaleX(${p.face})"><g class="act a-${p.act}" style="animation-delay:-${k * .7}s"><g transform="translate(${-(a.b.x + a.b.w / 2) * a.s} ${-(a.b.y + a.b.h) * a.s}) scale(${a.s})"><g class="body">${charSvg(a, p.mood)}</g></g></g></g><g class="fx">${fxSvg(p.fx, a, p.face)}</g></g>`;
 }
-function paragraphSvg(para) {
+function paragraphSvg(para, st = para.start) {
   const [top, ground] = para.edge;
-  const st = para.start;
   const actors = para.cast.map((a, k) => actorSvg(a, k, st[k]) + (a.bed ? blanket() : '')).join('');
   return `<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
     <rect x="-400" y="-800" width="1000" height="801" fill="${top}"/><rect x="-400" y="199" width="1000" height="800" fill="${ground}"/>
-    <g class="cam dir">${para.bg}${actors}</g></svg>`;
+    <g class="cam dir">${para.bg}${actors}${para.front || ''}</g></svg>`;
 }
 let beatTimers = [];
 function applyBeat(root, para, bi, instant) {
@@ -1683,6 +1909,12 @@ function applyBeat(root, para, bi, instant) {
     if ((el.dataset.mood || '') !== p.mood) { el.dataset.mood = p.mood; el.querySelector('.body').innerHTML = charSvg(a, p.mood); }
     el.querySelector('.fx').innerHTML = fxSvg(p.fx, a, p.face);
     if (p.dur && p.after !== p.act) beatTimers.push(setTimeout(() => { actEl.setAttribute('class', `act a-${p.after}`); el.querySelector('.dust')?.remove(); }, p.dur * 1000));
+  });
+  // whatever is being built grows sentence by sentence
+  const nb = para.beats.length, done = Math.min(1, (bi + 1) / Math.max(1, nb - 1));
+  root.querySelectorAll('.build').forEach(el => {
+    if (el.classList.contains('grow')) el.style.transform = `scale(${(.15 + .85 * done).toFixed(2)})`;
+    else el.querySelectorAll('.bpart').forEach(pt => pt.classList.toggle('on', +pt.dataset.step <= Math.ceil(done * 4)));
   });
   const cam = root.querySelector('.cam'), c = beat.cam;
   const cx = c.x + (100 - c.x) * .4, cy = c.y + (110 - c.y) * .4;
@@ -1798,7 +2030,9 @@ const SHELVES = [
   { cat: 'short', title: 'პატარა ზღაპრები ცხოველებზე', note: '1–2 წუთი' },
 ];
 const ready = t => !!SCENES[t.id];
-const cover = t => ready(t) ? sceneSvg(t.id, 0)
+const coverCache = {};
+const coverOf = t => { if (!(t.id in coverCache)) { const p = directParagraph(t, TEXTS[t.id].split('\n\n')[0], 0); coverCache[t.id] = paragraphSvg(p, p.beats[0].actors).replace('class="cam dir"', 'class="cam"'); } return coverCache[t.id]; };
+const cover = t => TEXTS[t.id] && PLANS[t.id] ? coverOf(t) : ready(t) ? sceneSvg(t.id, 0)
   : `<svg viewBox="0 0 200 200" role="img" aria-hidden="true">${LOCKED_ART[t.id] ? LOCKED_ART[t.id]() : coverSky(t.cat === 'sleep' ? '#1d2a6a' : '#6cc4ff', t.cat === 'sleep' ? '#4a5aa0' : '#d6f3ff') + coverHills(t.cat === 'sleep' ? '#2a4a7a' : '#9ad88a', t.cat === 'sleep' ? '#1e3e62' : '#6cc46a') + (t.cat === 'sleep' ? bigMoon(100, 70, 22) : sunFace(100, 70))}</svg>`;
 const LOCK = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd98a" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const PLAY = '<svg width="44" height="44" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
@@ -1876,16 +2110,9 @@ function giveSticker(t) {
 
 // ---------- mode: cartoon by day, bedtime at night ----------
 const hour = new Date().getHours();
-let mode = store.get('mode', hour >= 19 || hour < 7 ? 'night' : 'day');
-function setMode(m) {
-  mode = m; store.set('mode', m);
-  document.documentElement.classList.toggle('day', m === 'day');
-  $('modeDay').setAttribute('aria-pressed', m === 'day');
-  $('modeNight').setAttribute('aria-pressed', m === 'night');
-}
-$('modeDay').onclick = () => setMode('day');
-$('modeNight').onclick = () => { setMode('night'); setTab('sleep'); };
-setMode(mode);
+// each section is its own world: bedtime tales are calm and dark, the rest bright cartoons
+let mode = 'day';
+function setMode(m) { mode = m; document.documentElement.classList.toggle('day', m === 'day'); }
 
 // ---------- timings: when each paragraph (scene) starts, and how long the tale is ----------
 let TIMINGS = {};
@@ -1893,7 +2120,8 @@ const minutes = id => { const d = TIMINGS[id]?.duration; return d ? `${Math.max(
 
 // ---------- home shelves ----------
 let tab = store.get('tab', 'ge');
-function setTab(t) { tab = t; store.set('tab', t); $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === t)); renderShelves(); window.scrollTo(0, 0); }
+setMode(tab === 'sleep' ? 'night' : 'day');
+function setTab(t) { tab = t; store.set('tab', t); setMode(t === 'sleep' ? 'night' : 'day'); $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === t)); renderShelves(); window.scrollTo(0, 0); }
 $('tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); };
 function renderShelves() {
   $('testPill').hidden = !testMode;
@@ -1914,8 +2142,8 @@ function renderShelves() {
   const sh = SHELVES.find(x => x.cat === tab);
   const list = TALES.filter(t => t.cat === tab);
   const strip = (title, items) => items.length ? `<div class="strip"><h3>${title}</h3><div class="strip-row">${items.map(t => `<button class="mini" data-id="${t.id}" aria-label="${t.title}"><div class="art">${cover(t)}</div><span>${t.title}</span></button>`).join('')}</div></div>` : '';
-  const going = TALES.filter(t => open_(t) && positions[t.id] > 8);
-  const loved = TALES.filter(t => open_(t) && favs[t.id]);
+  const going = list.filter(t => open_(t) && positions[t.id] > 8);
+  const loved = list.filter(t => open_(t) && favs[t.id]);
   const pool = list.filter(open_);
   const today = pool.length ? pool[Math.floor(Date.now() / 864e5) % pool.length] : null;
   const daily = today ? `<button class="daily" data-id="${today.id}" aria-label="დღის ზღაპარი: ${today.title}">${cover(today)}<span class="tag">დღის ზღაპარი</span><span class="info"><b>${today.title}</b><span class="go">${PLAY}</span></span></button>` : '';
@@ -2117,7 +2345,7 @@ const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML =
 renderShelves();
 paintProfile();
 fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; renderShelves(); }).catch(() => {});
-fetch('tales.json').then(r => r.json()).then(list => { list.forEach(t => { TEXTS[t.id] = t.text; }); buildAutoScenes(); renderShelves(); }).catch(() => {});
+Promise.all([fetch('tales.json').then(r => r.json()), fetch('plans.json').then(r => r.json()).catch(() => ({}))]).then(([list, plans]) => { PLANS = plans; list.forEach(t => { TEXTS[t.id] = t.text; }); buildAutoScenes(); renderShelves(); }).catch(() => {});
 
 function sceneAt(id, time) {
   const n = PLAYS[id]?.length || SCENES[id].length;
@@ -2158,8 +2386,8 @@ function openPlayer(t) {
   showBeat(0);
   $('playerTitle').textContent = t.title;
   paintFav();
-  $('hint').textContent = mode === 'night' ? 'მთვარეზე დააჭირე — ეკრანი ჩაქრება, ზღაპარი გაგრძელდება' : '';
-  $('sleepBtn').hidden = mode !== 'night';
+  $('hint').textContent = t.cat === 'sleep' ? 'მთვარეზე დააჭირე — ეკრანი ჩაქრება, ზღაპარი გაგრძელდება' : '';
+  $('sleepBtn').hidden = t.cat !== 'sleep';
   audio.src = `audio/${t.id}.mp3`;
   audio.volume = 1;
   // continue where the child stopped last time
