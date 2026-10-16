@@ -237,12 +237,12 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .tile.page .art img { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: multiply; }
 
 /* ---------- bottom tab bar ---------- */
-.wrap { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 96px) !important; }
+.wrap { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 110px) !important; }
 .tabs { position: fixed; z-index: 15; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr);
   background: var(--card); box-shadow: 0 -6px 24px rgba(0,0,0,.18);
   padding-top: 6px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
   padding-left: max(6px, env(safe-area-inset-left, 0px)); padding-right: max(6px, env(safe-area-inset-right, 0px)); }
-.tabs button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px; border-radius: 14px; color: var(--muted); font-size: .66rem; font-weight: 700; line-height: 1.2; text-align: center; }
+.tabs button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px; border-radius: 14px; color: var(--muted); font-size: .62rem; font-weight: 700; line-height: 1.2; text-align: center; }
 .tabs button svg { width: 26px; height: 26px; }
 .tabs button[aria-pressed="true"] { color: var(--on-moon); background: var(--moon); }
 .shelf-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0 0 14px; }
@@ -318,11 +318,11 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 </div>
 
 <nav class="tabs" id="tabs" aria-label="განყოფილებები">
-  <button data-tab="ge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11h-5v-6H9v6z" fill="currentColor"/></svg>ხალხური</button>
-  <button data-tab="sleep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 14A8 8 0 0 1 15 3z" fill="currentColor"/></svg>ძილის წინ</button>
-  <button data-tab="world"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>მსოფლიო</button>
-  <button data-tab="short"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4c1.5 0 2 3 2 6H7c0-3 .5-6 2-6zm6 0c1.5 0 2 3 2 6h-4c0-3 .5-6 2-6zM5 15a7 6 0 0 0 14 0v-3H5z" fill="currentColor"/></svg>პატარა</button>
-  <button data-tab="paint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5S14 15 15 15h2a4 4 0 0 0 4-4c0-4.5-4-8-9-8zM7.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>ხატვა</button>
+  <button data-tab="ge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V9l8-5 8 5v11h-5v-6H9v6z" fill="currentColor"/></svg>ხალხური<br>ზღაპრები</button>
+  <button data-tab="sleep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 14A8 8 0 0 1 15 3z" fill="currentColor"/></svg>ზღაპრები<br>ძილის წინ</button>
+  <button data-tab="world"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>მსოფლიოს<br>ზღაპრები</button>
+  <button data-tab="short"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4c1.5 0 2 3 2 6H7c0-3 .5-6 2-6zm6 0c1.5 0 2 3 2 6h-4c0-3 .5-6 2-6zM5 15a7 6 0 0 0 14 0v-3H5z" fill="currentColor"/></svg>პატარა<br>ზღაპრები</button>
+  <button data-tab="paint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5S14 15 15 15h2a4 4 0 0 0 4-4c0-4.5-4-8-9-8zM7.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>გაფერა-<br>დება</button>
 </nav>
 
 <div class="player" id="player" hidden>
@@ -354,9 +354,9 @@ header { display: flex; align-items: center; justify-content: space-between; gap
   </div>
   <div class="canvas" id="canvas"><div class="page-stage" id="pageStage"><div id="pageArt"></div><canvas id="paintCanvas"></canvas></div></div>
   <div class="brushes" id="brushes">
-    <button data-size="8" aria-label="წვრილი ფუნჯი"><i style="width:8px;height:8px"></i></button>
-    <button data-size="18" aria-label="საშუალო ფუნჯი" aria-pressed="true"><i style="width:16px;height:16px"></i></button>
-    <button data-size="34" aria-label="სქელი ფუნჯი"><i style="width:26px;height:26px"></i></button>
+    <button data-size="12" aria-label="წვრილი ფუნჯი"><i style="width:9px;height:9px"></i></button>
+    <button data-size="26" aria-label="საშუალო ფუნჯი" aria-pressed="true"><i style="width:16px;height:16px"></i></button>
+    <button data-size="46" aria-label="სქელი ფუნჯი"><i style="width:26px;height:26px"></i></button>
     <button data-eraser="1" aria-label="საშლელი"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2a2440" stroke-width="2" stroke-linejoin="round"><path d="M4 16l9-9 6 6-7 7H8z"/><path d="M9 11l6 6M4 20h16"/></svg></button>
   </div>
   <div class="palette" id="palette"></div>
@@ -1131,27 +1131,36 @@ $('shelves').addEventListener('click', e => {
 
 // ---------- colouring pages: the tale characters as line art ----------
 const PAGES = [
-  { id: 'c1', who: 'hare', title: 'კურდღელი', x: 48, y: 84, s: 1.35, free: true },
-  { id: 'c2', who: 'boy', title: 'ნაცარქექია', x: 58, y: 34, s: 1.65, o: { patch: 1 }, free: true },
-  { id: 'c3', who: 'devi', title: 'დევი', x: 30, y: 10, s: 1.24 },
-  { id: 'c4', who: 'bull', title: 'წიქარა', x: 22, y: 86, s: 1.48 },
-  { id: 'c5', who: 'fox', title: 'მელია', x: 30, y: 82, s: 1.4 },
-  { id: 'c6', who: 'bear', title: 'დათუნია', x: 60, y: 46, s: 1.62 },
-  { id: 'c7', who: 'tortoise', title: 'კუ', x: 40, y: 96, s: 1.4 },
-  { id: 'c8', who: 'pig', title: 'გოჭი', x: 34, y: 92, s: 2.4 },
-  { id: 'c9', who: 'lion', title: 'ლომი', x: 36, y: 80, s: 1.38 },
-  { id: 'c10', who: 'crane', title: 'წერო', x: 50, y: 40, s: 1.32 },
-  { id: 'c11', who: 'sheep', title: 'ცხვარი', x: 40, y: 92, s: 2.6 },
-  { id: 'c12', who: 'cloudy', title: 'ღრუბელი', x: 26, y: 56, s: 1.9 },
-  { id: 'c13', who: 'mom', title: 'მზეთუნახავი', x: 60, y: 36, s: 1.6, o: { princess: 1, dress: '#ffb347' } },
-  { id: 'c14', who: 'fairy', title: 'ფერია', x: 64, y: 40, s: 1.5 },
-  { id: 'c15', who: 'crow', title: 'ყვავი', x: 50, y: 74, s: 2.2 },
-  { id: 'c16', who: 'dog', title: 'ძაღლი', x: 34, y: 92, s: 2.2 },
+  { id: 'c1', who: 'hare', title: 'კურდღელი', free: true },
+  { id: 'c2', who: 'boy', title: 'ნაცარქექია', o: { patch: 1 }, free: true },
+  { id: 'c3', who: 'devi', title: 'დევი' },
+  { id: 'c4', who: 'bull', title: 'წიქარა' },
+  { id: 'c5', who: 'fox', title: 'მელია' },
+  { id: 'c6', who: 'bear', title: 'დათუნია' },
+  { id: 'c7', who: 'tortoise', title: 'კუ' },
+  { id: 'c8', who: 'pig', title: 'გოჭი' },
+  { id: 'c9', who: 'lion', title: 'ლომი' },
+  { id: 'c10', who: 'crane', title: 'წერო' },
+  { id: 'c11', who: 'sheep', title: 'ცხვარი' },
+  { id: 'c12', who: 'cloudy', title: 'ღრუბელი' },
+  { id: 'c13', who: 'mom', title: 'მზეთუნახავი', o: { princess: 1, dress: '#ffb347' } },
+  { id: 'c14', who: 'fairy', title: 'ფერია' },
+  { id: 'c15', who: 'crow', title: 'ყვავი' },
+  { id: 'c16', who: 'dog', title: 'ძაღლი' },
 ];
-const pageSvg = pg => `<svg viewBox="0 0 200 200" role="img" aria-label="${pg.title}">
-  <circle cx="168" cy="32" r="16" fill="#ffd34d" ${O()}/><path d="M-10 172 Q60 150 120 166 T210 160 V210 H-10z" fill="#8fd07a" ${O()}/>
-  ${[[22, 182], [178, 184]].map(([x, y]) => `<g transform="translate(${x} ${y})">${[0, 72, 144, 216, 288].map(a => `<circle cx="${Math.cos(a * Math.PI / 180) * 4}" cy="${Math.sin(a * Math.PI / 180) * 4}" r="3.2" fill="#ff7f9a" ${O(1.2)}/>`).join('')}<circle r="2.4" fill="#ffd34d" ${O(1)}/></g>`).join('')}
-  ${A(pg.who, pg.x, pg.y, pg.s, { ...(pg.o || {}), anim: 'none' })}</svg>`;
+// the character alone, zoomed so it fills the page: big areas a small finger can hit
+const pageSvg = pg => `<svg viewBox="0 0 200 200" role="img" aria-label="${pg.title}" data-fit><g data-who>${A(pg.who, 0, 0, 1, { ...(pg.o || {}), anim: 'none' })}</g></svg>`;
+const measure = document.createElement('div');
+measure.style.cssText = 'position:absolute;left:-9999px;top:0;width:200px;height:200px;visibility:hidden';
+document.body.appendChild(measure);
+function fitArt(svgEl) {
+  const parent = svgEl.parentNode, next = svgEl.nextSibling;
+  measure.appendChild(svgEl);
+  const bb = svgEl.querySelector('[data-who]').getBBox();
+  const size = Math.max(bb.width, bb.height) * 1.1, cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
+  svgEl.setAttribute('viewBox', `${cx - size / 2} ${cy - size / 2} ${size} ${size}`);
+  if (parent) parent.insertBefore(svgEl, next); else measure.removeChild(svgEl);
+}
 // turn a coloured drawing into an outline page: every filled shape becomes white and tappable
 function toLineArt(root) {
   root.querySelectorAll('[class]').forEach(el => el.removeAttribute('class'));
@@ -1161,12 +1170,16 @@ function toLineArt(root) {
     const op = el.getAttribute('opacity');
     if ((op !== null && +op < 1) || f === '#1a1030') { el.remove(); return; }
     el.setAttribute('fill', '#ffffff');
-    if (!el.getAttribute('stroke')) { el.setAttribute('stroke', '#cfc6dc'); el.setAttribute('stroke-width', '1'); }
+    if (!el.getAttribute('stroke')) { el.setAttribute('stroke', '#cfc6dc'); el.setAttribute('stroke-width', '.8'); }
   });
-  root.querySelectorAll('[stroke]').forEach(el => { const st = el.getAttribute('stroke').toLowerCase(); if (st !== INK && st !== '#cfc6dc' && el.getAttribute('fill') === 'none') el.setAttribute('stroke', '#cfc6dc'); });
+  root.querySelectorAll('[stroke]').forEach(el => {
+    const st = el.getAttribute('stroke').toLowerCase();
+    if (st === INK) el.setAttribute('stroke-width', (+el.getAttribute('stroke-width') || 2) * 1.35);   // bolder lines for colouring
+    else if (st !== '#cfc6dc' && el.getAttribute('fill') === 'none') el.setAttribute('stroke', '#cfc6dc');
+  });
 }
 const COLORS = ['#ff5a6e', '#ff9f43', '#ffd34d', '#8fd07a', '#3aa860', '#7ab8f0', '#4a6ad0', '#a07ae0', '#ff9fd0', '#f2c9a0', '#a8743f', '#9a9aa6', '#3a3550', '#e8e2f0'];
-let brush = COLORS[0], brushSize = 18, eraser = false, paintHistory = [], page = null;
+let brush = COLORS[0], brushSize = 26, eraser = false, paintHistory = [], page = null;
 const saved = store.get('paint2', {});
 const cnv = $('paintCanvas'), ctx = cnv.getContext('2d');
 let dpr = 1, side = 0, last = null, drawing = false;
@@ -1183,7 +1196,7 @@ function restore(url) { if (!url) return; const img = new Image(); img.onload = 
 function savePage() { try { saved[page.id] = cnv.toDataURL('image/png'); store.set('paint2', saved); } catch {} }
 function openPage(pg) {
   page = pg; paintHistory = [];
-  $('pageArt').innerHTML = pageSvg(pg); toLineArt($('pageArt').firstElementChild);
+  $('pageArt').innerHTML = pageSvg(pg); fitArt($('pageArt').firstElementChild); toLineArt($('pageArt').firstElementChild);
   $('paint').hidden = false;
   fitPage(); restore(saved[pg.id]);
 }
@@ -1213,7 +1226,7 @@ $('brushes').onclick = e => {
   $('brushes').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
 };
 $('closePaint').onclick = () => { $('paint').hidden = true; renderShelves(); };
-const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML = pageSvg(pg); toLineArt(d.firstElementChild); return d.innerHTML + (saved[pg.id] ? `<img src="${saved[pg.id]}" alt="">` : ''); };
+const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML = pageSvg(pg); fitArt(d.firstElementChild); toLineArt(d.firstElementChild); return d.innerHTML + (saved[pg.id] ? `<img src="${saved[pg.id]}" alt="">` : ''); };
 
 renderShelves();
 fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; renderShelves(); }).catch(() => {});
