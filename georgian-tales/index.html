@@ -1505,7 +1505,7 @@ const PLACES = {
   cave: (P, r) => ({ svg: band(116, P.g[0], 8) + cave(110, 152, 1.1) + rockAt(30, 156, 1) + rockAt(186, 160, .8) + band(158, mixHex(P.g[2], '#8a8a70', .4), 3, 0, 2.2), ground: mixHex(P.g[2], '#8a8a70', .4) }),
   swamp: (P, r) => ({ svg: band(116, '#7a9a6a', 6) + `<path d="M-300 132 L600 132 V156 H-300z" fill="#5a7a6a" ${O(1.6)}/>` + reeds(20, 140) + reeds(90, 138) + reeds(170, 142) + `<g transform="translate(130 148)"><rect x="-26" y="-6" width="52" height="10" rx="5" fill="#8a5a34" ${O(1.6)}/></g>` + band(156, '#6a8a4a', 3, 0, 2.2) + fog(), ground: '#6a8a4a' }),
   // indoors
-  hut: (P, r) => ({ svg: BG.hut(P.night) + hearth(166, 168, .8) + `<g transform="translate(40 120)"><rect x="-18" y="0" width="36" height="4" fill="#8a5a34"/>${[[-12, '#d98b52'], [0, '#c2483a'], [12, '#fff']].map(([x, c]) => `<rect x="${x - 4}" y="-10" width="8" height="10" rx="2" fill="${c}" ${O(1.2)}/>`).join('')}</g>`, ground: '#8a5a34', indoor: 1 }),
+  hut: (P, r) => { const k = Math.floor(r() * 4), wall = ['#b8844e', '#c9a070', '#a8785a', '#d4b088'][k], plank = mixHex(wall, '#5a3a20', .25), rug = ['#c2483a', '#4a7ab0', '#5a9a5a', '#8a5aa0'][Math.floor(r() * 4)]; return { svg: BG.hut(P.night).replace(/#b8844e/g, wall).replace(/#9a6a3a/g, plank).replace(/#c2483a/g, rug).replace(/#e8806a/g, mixHex(rug, '#ffffff', .35)) + (P.hearth || r() > .5 ? hearth(166, 168, .8) : `<g transform="translate(160 120)"><rect x="-22" y="0" width="44" height="4" fill="#8a5a34"/>${jug(-18, -52).replace('translate(-18 -52)', 'translate(-18 -52) scale(.5)')}</g>` + table(150, 150)) + `<g transform="translate(40 120)"><rect x="-18" y="0" width="36" height="4" fill="#8a5a34"/>${[[-12, '#d98b52'], [0, '#c2483a'], [12, '#fff']].map(([x, c]) => `<rect x="${x - 4}" y="-10" width="8" height="10" rx="2" fill="${c}" ${O(1.2)}/>`).join('')}</g>`, ground: '#8a5a34', indoor: 1 }; },
   room: (P, r) => ({ svg: BG.room() + `<g transform="translate(36 120)"><rect x="-20" y="0" width="40" height="4" fill="#a8743f"/>${[[-14, '#ff9fb4'], [-6, '#7ab8f0'], [2, '#ffd34d'], [10, '#8fd07a']].map(([x, c]) => `<rect x="${x}" y="-12" width="6" height="12" fill="${c}" ${O(1)}/>`).join('')}</g>`, ground: '#4e4290', indoor: 1 }),
   kitchen: (P, r) => ({ svg: `<rect x="-400" width="1000" height="200" fill="#f4e4c8"/><g stroke="#e0caa0" stroke-width="1.4">${Array.from({ length: 30 }, (_, i) => `<path d="M${-60 + i * 12} 100 v70"/>`).join('')}<path d="M-400 100 H600 M-400 112 H600 M-400 124 H600 M-400 136 H600 M-400 148 H600 M-400 160 H600"/></g>
     <rect x="18" y="30" width="44" height="40" rx="6" fill="${P.night ? '#141a52' : '#9ad8ff'}" ${O()}/><path d="M40 30 V70 M18 50 H62" stroke="${INK}" stroke-width="2.4"/><rect x="100" y="50" width="80" height="5" fill="#a8743f" ${O(1.2)}/>${[110, 128, 146, 164].map((x, i) => `<rect x="${x}" y="36" width="12" height="14" rx="3" fill="${['#ff9f43', '#e2445c', '#8fd07a', '#ffd34d'][i]}" ${O(1.2)}/>`).join('')}
@@ -1595,7 +1595,7 @@ function scenery(q, tale, text, i) {
   const pal = GREENS[hashOf(tale.id) % GREENS.length];
   const season = SEASON(text);
   const night = q.time === 'night', evening = q.time === 'evening';
-  const P = { g: season === 'autumn' ? AUTUMN : pal, leaf: season === 'autumn' ? ['#f0a040', '#e07030'] : season === 'spring' ? ['#ffc0d8', '#ff9fc0'] : [pal[1], pal[2]], night, lit: night || evening };
+  const P = { g: season === 'autumn' ? AUTUMN : pal, leaf: season === 'autumn' ? ['#f0a040', '#e07030'] : season === 'spring' ? ['#ffc0d8', '#ff9fc0'] : [pal[1], pal[2]], night, lit: night || evening, hearth: q.bg === 'hut' && (q.props || []).includes('hearth') };
   const place = (PLACES[q.bg] || PLACES.meadow)(P, r);
   const indoor = !!place.indoor;
   const [s0, s1] = SKIES[q.time] || SKIES.day;
@@ -1605,7 +1605,7 @@ function scenery(q, tale, text, i) {
   // props: big things stand behind the characters, small things lie in front, sky things float
   const back = [[28, gy - 4], [172, gy - 6], [100, gy - 16], [60, gy - 10], [140, gy - 10]], front = [[22, gy + 20], [178, gy + 18], [100, gy + 26]], sky = [[150, 44], [50, 52], [100, 30]];
   let behind = '', before = '', above = '';
-  for (const name of (q.props || []).slice(0, 5)) {
+  for (const name of (q.props || []).filter(n => !(q.bg === 'hut' && n === 'hearth')).slice(0, 5)) {
     const spec = PROP[name]; if (!spec) continue;
     const [, h, layer] = spec;
     if (layer === 'full') { above += spec[0](); continue; }
