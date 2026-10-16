@@ -203,6 +203,59 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .squeeze .arm { transform-origin: 30% 10%; animation: squeeze 1.1s ease-in-out infinite; }
 .wave .arm { transform-origin: 30% 10%; animation: waveArm .8s ease-in-out infinite alternate; }
 
+
+/* ---------- the director's actors: they travel, react and feel ---------- */
+.stage .layer svg > .cam.dir { animation: none; transform-origin: 0 0; transition: transform 2.2s cubic-bezier(.45,.05,.35,1); }
+.actor .facing { transition: transform .35s ease; }
+.act { transform-origin: 0 0; }
+.a-idle { animation: aBreath 2.6s ease-in-out infinite; }
+.a-walk { animation: aWalk .62s linear infinite; }
+.a-run { animation: aRun .34s linear infinite; }
+.a-fly { animation: aFly .9s ease-in-out infinite; }
+.a-swim { animation: aSwim 1s ease-in-out infinite; }
+.a-jump { animation: aJump .8s ease-out 1, aBreath 2.6s ease-in-out .8s infinite; }
+.a-joy { animation: aJump .62s ease-out 2, aBreath 2.6s ease-in-out 1.3s infinite; }
+.a-pop { animation: aPop .5s cubic-bezier(.3,1.6,.5,1) 1, aBreath 2.6s ease-in-out .5s infinite; }
+.a-sleep { animation: aSleep 3.6s ease-in-out infinite; }
+.a-sit { animation: aSit .8s ease-out both; }
+.a-eat { animation: aEat .34s ease-in-out infinite alternate; }
+.a-dance { animation: aDance .5s ease-in-out infinite alternate; }
+.a-sing { animation: aSing 1s ease-in-out infinite alternate; }
+.a-talk { animation: aTalk .3s ease-in-out infinite alternate; }
+.a-look { animation: aLook 2.6s ease-in-out infinite; }
+.a-think { animation: aThink 3s ease-in-out infinite alternate; }
+.a-work { animation: aWork .5s ease-in-out infinite alternate; }
+.a-wave { animation: aWave .4s ease-in-out infinite alternate; }
+.a-hug { animation: aHug 1s ease-in-out infinite; }
+.a-shiver { animation: aShiver .12s linear infinite; }
+.a-sad { animation: aSad 1.2s ease-out both; }
+.a-stomp { animation: aStomp .5s ease-in-out infinite; }
+@keyframes aBreath { 50% { transform: scale(1.012, 1.035); } }
+@keyframes aWalk { 0%, 100% { transform: rotate(-4deg); } 25%, 75% { transform: translateY(-3.5px) rotate(0); } 50% { transform: rotate(4deg); } }
+@keyframes aRun { 0%, 100% { transform: rotate(5deg) scale(1.04, .96); } 50% { transform: translateY(-7px) rotate(9deg) scale(.97, 1.04); } }
+@keyframes aFly { 50% { transform: translateY(-8px) rotate(-4deg); } }
+@keyframes aSwim { 50% { transform: translateY(-3px) rotate(-6deg); } }
+@keyframes aJump { 0% { transform: scale(1.1, .88); } 40% { transform: translateY(-24px) scale(.94, 1.08); } 75% { transform: scale(1.08, .9); } 100% { transform: none; } }
+@keyframes aPop { 0% { transform: scale(1); } 40% { transform: translateY(-8px) scale(.94, 1.1); } 100% { transform: none; } }
+@keyframes aSleep { 0%, 100% { transform: scale(1.02, .95); } 50% { transform: scale(1.04, .98); } }
+@keyframes aSit { to { transform: scale(1.06, .86); } }
+@keyframes aEat { to { transform: rotate(5deg) scale(1.02, .97); } }
+@keyframes aDance { from { transform: rotate(-8deg); } to { transform: translateY(-6px) rotate(8deg); } }
+@keyframes aSing { from { transform: rotate(-3deg); } to { transform: rotate(4deg) scale(1, 1.03); } }
+@keyframes aTalk { to { transform: scale(1.015, 1.04) rotate(-1.5deg); } }
+@keyframes aLook { 0%, 40% { transform: none; } 50%, 90% { transform: scaleX(-1); } }
+@keyframes aThink { from { transform: rotate(-2deg); } to { transform: rotate(-6deg); } }
+@keyframes aWork { from { transform: rotate(3deg); } to { transform: rotate(10deg) scale(1, .96); } }
+@keyframes aWave { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+@keyframes aHug { 50% { transform: scale(1.05, .95); } }
+@keyframes aShiver { 25% { transform: translateX(-1.4px); } 75% { transform: translateX(1.4px); } }
+@keyframes aSad { to { transform: translateY(2px) rotate(-5deg) scale(1, .95); } }
+@keyframes aStomp { 50% { transform: translateY(-4px) rotate(-3deg); } }
+.fx-pop { transform-box: fill-box; transform-origin: 50% 100%; animation: fxPop .45s cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes fxPop { from { transform: scale(0); opacity: 0; } }
+.dot { animation: twinkle .9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.puff { transform-box: fill-box; transform-origin: center; animation: puffOut .45s ease-out infinite; }
+@keyframes puffOut { from { transform: scale(.4); opacity: .9; } to { transform: scale(1.4) translateY(-4px); opacity: 0; } }
 @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
 @keyframes wiggle { 0%, 60%, 100% { transform: rotate(0); } 72% { transform: rotate(-10deg); } 86% { transform: rotate(7deg); } }
 @keyframes wag { from { transform: rotate(-10deg); } to { transform: rotate(12deg); } }
@@ -437,9 +490,19 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 // =====================================================================
 const INK = '#3b2a4a';
 const O = (w = 2.2) => `stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
-const eye = (x, y, closed, r = 4.4) => closed
-  ? `<path d="M${x - r} ${y} q${r} ${r * .9} ${r * 2} 0" ${O(1.9)} fill="none"/><path d="M${x - r + .5} ${y + .8} l-2 1.6 M${x + r - .5} ${y + .8} l2 1.6" ${O(1.4)}/>`
-  : `<g class="eye"><ellipse cx="${x}" cy="${y}" rx="${r * .86}" ry="${r}" fill="#fff" ${O(1.6)}/><circle cx="${x + .7}" cy="${y + .7}" r="${r * .58}" fill="#2a1f3a"/><circle cx="${x + 1.7}" cy="${y - .9}" r="${r * .26}" fill="#fff"/><circle cx="${x - .4}" cy="${y + 1.9}" r="${r * .12}" fill="#fff"/></g>`;
+// MOOD is set by the director while it draws a character: the same eyes laugh, cry, get scared or fall asleep
+let MOOD = '';
+const eye = (x, y, closed, r = 4.4) => {
+  if (closed || MOOD === 'sleep') return `<path d="M${x - r} ${y} q${r} ${r * .9} ${r * 2} 0" ${O(1.9)} fill="none"/><path d="M${x - r + .5} ${y + .8} l-2 1.6 M${x + r - .5} ${y + .8} l2 1.6" ${O(1.4)}/>`;
+  if (MOOD === 'happy' || MOOD === 'love') return `<path d="M${x - r} ${y + r * .3} q${r} ${-r * 1.7} ${r * 2} 0" ${O(2.1)} fill="none"/>`;
+  if (MOOD === 'sad' || MOOD === 'angry') {
+    const top = y - r * .15;
+    return `<path d="M${x - r * .9} ${top} h${r * 1.8} a${r * .9} ${r * .85} 0 0 1 ${-r * 1.8} 0z" fill="#fff" ${O(1.6)}/><circle cx="${x + .3}" cy="${top + r * .38}" r="${r * .44}" fill="#2a1f3a"/>
+      ${MOOD === 'angry' ? `<path d="M${x - r * 1.1} ${top - r * .35} h${r * 2.2}" ${O(2.4)}/>` : ''}`;
+  }
+  const big = MOOD === 'surprised' || MOOD === 'scared' ? 1.22 : 1, pr = big > 1 ? .36 : .58;
+  return `<g class="eye"><ellipse cx="${x}" cy="${y}" rx="${r * .86 * big}" ry="${r * big}" fill="#fff" ${O(1.6)}/><circle cx="${x + .7}" cy="${y + .7}" r="${r * pr}" fill="#2a1f3a"/><circle cx="${x + 1.7}" cy="${y - .9}" r="${r * .26}" fill="#fff"/><circle cx="${x - .4}" cy="${y + 1.9}" r="${r * .12}" fill="#fff"/></g>`;
+};
 const blush = (x, y, r = 3.4) => `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * .62}" fill="#ff8fa8" opacity=".55"/>`;
 const shadow = (x, y, rx) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${rx * .18}" fill="#1a1030" opacity=".18"/>`;
 const SKIN = '#f2c9a0';
@@ -1249,20 +1312,27 @@ Object.assign(C, {
   snowman: o => ART.snowman(),
   grandpa: o => C.king({ ...o, crown: false, robe: o.robe || '#6a7ab0', beard: '#f0f0f6' }),
 });
+C.natsar = o => C.boy({ ...o, patch: 1, ash: 1 });
+C.brother = o => C.boy({ ...o, ...BRO1 });
+C.man = o => C.boy({ ...o, hat: '#6a4030', shirt: '#8a6a4a' });
+C.redhood = o => C.girl({ ...o, hood: 1 });
 const firefly = (x, y, d = 0) => `<g class="firefly" style="animation-delay:-${d}s"><circle cx="${x}" cy="${y}" r="3" fill="#fff59a"/><circle cx="${x}" cy="${y}" r="8" fill="#fff59a" opacity=".3"/></g>`;
 const rain = () => Array.from({ length: 18 }, (_, i) => `<g class="fall" style="animation-delay:-${i * .3}s;animation-duration:${2 + (i % 3) * .5}s"><path d="M${6 + (i * 23) % 190} ${(i * 9) % 20} l-2 8" stroke="#9fd0ff" stroke-width="2.2" stroke-linecap="round"/></g>`).join('');
 const pond = () => `<ellipse cx="100" cy="172" rx="80" ry="14" fill="#4a90d8" ${O(1.8)}/><path class="wind" d="M60 172 q10 -4 20 0" stroke="#bfe3ff" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
 
 // ---------- automatic scenes: read the paragraph, pick who, where and when ----------
 const WHO_WORDS = [
+  [/ნაცარქექი/, 'natsar'], [/წიქარა/, 'bull'], [/კომბლე/, 'man'], [/ხუთკუნჭულა|ჭინჭრაქა|ჯეკი/, 'boy'], [/კონკია/, 'girl'], [/წითელქუდა/, 'redhood'], [/მწყერ/, 'quail'],
+  [/ჰანსელ/, 'boy'], [/გრეტელ/, 'girl'], [/ბავშვ/, 'kids'], [/მოხუცი ქალ|ჯადოქარ/, 'granny'], [/მტრედ/, 'dove'], [/ქარმა|ქარო[,!]/, 'windy'],
+  [/(^|\s)ძმ(ა|ებ|ამ|ას|ის|ებმა)/, 'brother'], [/მოხუც(?!ი ქალ)|(^|\s)კაც(ი|მა|ს|ის)[\s,.!?]/, 'man'],
   [/კურდღ|ფაფუკა/, 'hare'], [/(^|[\s,.!?])კუ([\s,.!?]|ს |მ |მა |ს,)/, 'tortoise'], [/მელი|მელა/, 'fox'], [/წერო/, 'crane'], [/დათვ|დათუნ/, 'bear'],
-  [/ჩიტ|ბარტყ/, 'bird'], [/თევზ/, 'fish'], [/ცხვ|ბატკ/, 'sheep'], [/ზღარბ/, 'hedgehog'], [/(^|[\s,.!?])ბუ([\s,.!?]|მ |ს |ს,)/, 'owl'], [/ციყვ/, 'squirrel'],
+  [/ჩიტ|ბარტყ/, 'bird'], [/თევზ/, 'fish'], [/ცხვარ|ცხვრ|ბატკ/, 'sheep'], [/ზღარბ/, 'hedgehog'], [/(^|[\s,.!?])ბუ([\s,.!?]|მ |ს |ს,)/, 'owl'], [/ციყვ/, 'squirrel'],
   [/ირემ|ირმ/, 'deer'], [/დელფ/, 'dolphin'], [/თოლი/, 'gull'], [/კატა|კატამ|კატას|კნუტ|ფისო/, 'cat'], [/თაგვ/, 'mouse'], [/ძაღლ|მურია/, 'dog'], [/ცხენ/, 'horse'],
   [/ძროხ/, 'cow'], [/ქათამ|ქათმ/, 'hen'], [/მამალ/, 'rooster'], [/(^|\s)ლომ/, 'lion'], [/მგელ|მგლ/, 'wolf'], [/გოჭ|ღორ/, 'pig'], [/ყვავ(?!ილ)/, 'crow'],
-  [/ჭიანჭველ/, 'ant'], [/ფუტკ/, 'bee'], [/თოვლის ბაბუა|ფიფქუნა/, 'snowman'], [/(^|\s)თხა|თხამ|თხას|ციკან/, 'goat'], [/ჭრიჭინამ|ჭრიჭინა /, 'hopper'], [/არწივ/, 'eagle'], [/დევი|დევმა|დევს|დევის|დევებ/, 'devi'], [/მეფე|მეფემ|მეფის|მეფეს/, 'king'],
-  [/უფლისწ|პრინც/, 'prince'], [/დედოფ|მზეთუნ|ქალიშვ/, 'princess'], [/(^|\s)ვირ/, 'donkey'], [/იხვ/, 'duck'], [/(^|\s)გედ/, 'swan'], [/ფუნთუშ/, 'bun'],
+  [/ჭიანჭველ/, 'ant'], [/ფუტკ/, 'bee'], [/თოვლის ბაბუა|ფიფქუნა/, 'snowman'], [/(^|\s)თხა|თხამ|თხას|ციკან/, 'goat'], [/ჭრიჭინ/, 'hopper'], [/არწივ/, 'eagle'], [/დევი|დევმა|დევს|დევის|დევებ/, 'devi'], [/მეფე|მეფემ|მეფის|მეფეს/, 'king'],
+  [/უფლისწ|პრინც/, 'prince'], [/დედოფ|მზეთუნ|ქალიშვ/, 'princess'], [/(^|\s)ვირ/, 'donkey'], [/იხვ(ი|მა|ს[ ,.!]|ის|ებ|უნ|ის|ო)/, 'duck'], [/(^|\s)გედ/, 'swan'], [/ფუნთუშ/, 'bun'],
   [/ბაყაყ/, 'frog'], [/ლოკოკინ/, 'snail'], [/ფერია/, 'fairy'], [/ღრუბ/, 'cloudy'],
-  [/ბიჭ|ნიკა|გიორგი|დათო|ლუკა|საბა/, 'boy'], [/გოგო|მარიამ|ნინო|თამარ|ქეთო|(^|\s)ანა(\s|ს |მ |,)/, 'girl'], [/ბებია|ბებიკო/, 'granny'], [/ბაბუა/, 'grandpa'], [/დედა(?!ბერ| (დათვ|კურდღ|ზღარბ|იხვ|ირემ))|დედიკო/, 'mom'],
+  [/ბიჭ|ნიკა|გიორგი|დათო|ლუკა|საბა|ლევან|სანდრო|ირაკლი|ბექა|დავით|ლაშა|ტატო|გიგა/, 'boy'], [/გოგო|მარიამ|ნინო|თამარ|ქეთო|(^|\s)ანა(\s|ს |მ |,)|ელენე|ნატო|სალომე|ბარბარე|ლიზი|ანი[\s,.!?]|ანიმ|ანის /, 'girl'], [/ბებია|ბებიკო/, 'granny'], [/ბაბუა/, 'grandpa'], [/დედა(?!ბერ| (დათვ|კურდღ|ზღარბ|იხვ|ირემ))|დედიკო/, 'mom'],
 ];
 const FLYERS = new Set(['bird', 'gull', 'owl', 'eagle']), SWIMMERS = new Set(['fish', 'dolphin']);
 const sizeCache = {};
@@ -1273,8 +1343,8 @@ function bbox(who, o) {
   const b = measure.querySelector('g').getBBox();
   return (sizeCache[key] = { x: b.x, y: b.y, w: b.width, h: b.height });
 }
-const HUMANS = new Set(['king', 'mom', 'princess', 'granny', 'grandpa', 'girl', 'boy', 'prince', 'fairy']);
-const TARGET = { bee: 30, snowman: 90, fish: 30, dolphin: 40, gull: 34, bird: 34, ant: 30, hopper: 34, mouse: 32, snail: 32, hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
+const HUMANS = new Set(['natsar', 'brother', 'man', 'redhood', 'king', 'mom', 'princess', 'granny', 'grandpa', 'girl', 'boy', 'prince', 'fairy']);
+const TARGET = { dove: 34, windy: 60, natsar: 64, brother: 70, man: 74, redhood: 64, quail: 34, cloudy: 60, goat: 50, crow: 40, donkey: 60, bull: 62, bee: 30, snowman: 90, fish: 30, dolphin: 40, gull: 34, bird: 34, ant: 30, hopper: 34, mouse: 32, snail: 32, hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
 function place(who, cx, ground, o, small) {
   const opts = who === 'princess' ? { ...o, princess: 1, dress: '#ffb347' } : o;
   const b = bbox(who, opts);
@@ -1287,19 +1357,19 @@ const heroCache = {};
 function taleHero(tale) {
   if (tale.id in heroCache) return heroCache[tale.id];
   const first = (TEXTS[tale.id] || '').split('\n\n').slice(0, 2).join(' ');
-  const found = WHO_WORDS.find(([re, who]) => re.test(first) && !HUMANS.has(who) && who !== 'cloudy');
-  return (heroCache[tale.id] = found ? found[1] : null);
+  const found = whoIn(first).find(w => !HUMANS.has(w) && w !== 'cloudy' && w !== 'girl' && w !== 'boy');
+  return (heroCache[tale.id] = found || null);
 }
 // whoever the tale is about, animal or child — shown when a paragraph names nobody
 const anyHeroCache = {};
 function taleHeroAny(tale) {
   if (tale.id in anyHeroCache) return anyHeroCache[tale.id];
   const first = (TEXTS[tale.id] || '').split('\n\n').slice(0, 2).join(' ');
-  const found = WHO_WORDS.find(([re, who]) => re.test(first) && who !== 'cloudy' && who !== 'mom');
-  return (anyHeroCache[tale.id] = found ? found[1] : null);
+  const found = whoIn(first).find(w => w !== 'cloudy' && w !== 'mom');
+  return (anyHeroCache[tale.id] = found || null);
 }
 const hashOf = str => [...str].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
-function autoScene(tale, text, i) {
+function autoScene(tale, text, i, parts) {
   const has = re => re.test(text);
   const sleepy = tale.cat === 'sleep';
   const night = sleepy && i > 0 || has(/ღამ|ვარსკვლ|მთვარ|დაიძინ|ძილი ნებისა|სიბნელ/);
@@ -1326,8 +1396,8 @@ function autoScene(tale, text, i) {
   if (has(/ქარ(ი|მა)|ნიავ/)) extra += windLines();
   if (has(/წვიმ|წვეთ/)) extra += rain();
   if (has(/ზეიმ|ქორწილ|ცეკვ|ლხინ/)) extra += confetti();
-  if (has(/მღერ|სიმღერ|ნანა|სალამურ|მუსიკ/)) extra += notes(140, 70);
-  if (has(/ჩაიხუტ|მიეხუტ|გულში|უყვარ|აკოცა/)) extra += heart(100, 60) + heart(84, 44, .6);
+  if (!parts && has(/მღერ|სიმღერ|ნანა|სალამურ|მუსიკ/)) extra += notes(140, 70);
+  if (!parts && has(/ჩაიხუტ|მიეხუტ|გულში|უყვარ|აკოცა/)) extra += heart(100, 60) + heart(84, 44, .6);
   if (has(/ნისლ/)) extra += fog();
   if (has(/რაკეტ/)) extra += `<g class="flutter" style="animation-duration:9s"><g transform="translate(150 40) scale(.5) rotate(20)">${ART.rocket()}</g></g>`;
   if (has(/პლანეტ|დედამიწ/)) extra += `<circle cx="40" cy="44" r="14" fill="#ff7f5a" ${O(1.6)}/><ellipse cx="160" cy="70" rx="26" ry="6" fill="none" stroke="#ffd98a" stroke-width="3" transform="rotate(-14 160 70)"/><circle cx="160" cy="70" r="13" fill="#e8c06a" ${O(1.6)}/>`;
@@ -1337,12 +1407,13 @@ function autoScene(tale, text, i) {
   if (has(/ფეიერვერკ/)) extra += [[40, 40, '#ff7f9a'], [100, 26, '#ffd34d'], [160, 46, '#7ab8f0']].map(([x, y, c], k) => `<g class="twinkle" style="animation-delay:${k * .4}s">${Array.from({ length: 8 }, (_, j) => `<path d="M${x} ${y} l${Math.cos(j * Math.PI / 4) * 14} ${Math.sin(j * Math.PI / 4) * 14}" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/>`).join('')}</g>`).join('');
   // who
   const cast = [];
-  for (const [re, who] of WHO_WORDS) if (re.test(text) && !cast.includes(who)) cast.push(who);
+  for (const [re, who] of WHO_WORDS) if (re.test(text)) for (const w of who === 'kids' ? ['boy', 'girl'] : [who]) if (!cast.includes(w)) cast.push(w);
   // in an animal tale 'mother' is the hero's mother, not a person
   const hero = taleHero(tale);
   if (hero && !HUMANS.has(hero)) cast.forEach((w, k) => { if (w === 'mom') cast[k] = 'mother:' + hero; });
   if (!cast.length && taleHeroAny(tale)) cast.push(taleHeroAny(tale));
   if (!cast.length && i === 0 && sleepy) cast.push('moon');
+  if (parts) return { bg: scene + extra + (cast.includes('moon') || (sleepy && !cast.length && night) ? moonFace(100, 70, 30) : ''), wantBed, asleep, edge: EDGE[curBg], indoor: curBg === 'room' || curBg === 'hut' };
   const anim = asleep ? 'breathe' : has(/ზეიმ|ცეკვ|ლხინ/) ? 'dance' : has(/შეშინ|ეშინ|ცახცახ/) ? 'shiver' : has(/გაიცინ|იცინ|გაეცინ/) ? 'laugh' : has(/ხტ|ჰოპ|გაგორ/) ? 'hop' : null;
   const picks = ['bob', 'nod', 'idle', 'hop', 'nod'];
   const people = cast.filter(w => w !== 'moon').filter((w, k, arr) => arr.indexOf(w) === k).slice(0, 3);
@@ -1375,6 +1446,258 @@ function buildAutoScenes() {
     if (SCENES[t.id] || !TEXTS[t.id]) return;
     SCENES[t.id] = TEXTS[t.id].split('\n\n').map((p, i) => () => autoScene(t, p, i));
   });
+}
+
+// =====================================================================
+// The director: a tale plays like a cartoon. Every sentence is a beat —
+// characters walk in, run off, turn to whoever speaks, laugh, cry, get scared,
+// fall asleep, and the camera follows whoever is acting.
+// =====================================================================
+const sentencesOf = p => (p.match(/[^.!?…]+(?:[.!?…]+|$)/g) || [p]).map(x => x.trim()).filter(x => x.length > 1);
+// what the sentence's hero does; the first match wins, so movement beats talking
+const ACTS = [
+  ['wake', /გაიღვიძ|გამოეღვიძ|გაეღვიძ|წამოდგა|ადგნენ|(^|\s)ადგა/],
+  ['sleep', /სძინ|ეძინ|ჩაეძინ|დაიძინ|ჩაიძინ|დახუჭ|ხვრინ|თვლემ|მიიძინ/],
+  ['run', /გაიქც|გარბ|მირბ|მორბ|გამოიქც|მიირბინ|მოირბინ|სირბილ|დაედევნ|გაქან|მოქრ|გაიქცნენ/],
+  ['fly', /გაფრინ|მიფრინ|მოფრინ|დაფრინ|აფრინ|ფრენ|ფრთები გაშალ|ცაში ავიდ/],
+  ['swim', /ცურავ|გაცურ|მოცურ|მიცურ|ყვინთ/],
+  ['leave', /წავიდ|გაემგზავრ|გაუჩინარდ|გაქრა|გაეცალ|შინ დაბრუნდ|სახლში დაბრუნდ|შინისკენ/],
+  ['come', /მოვიდ|მივიდ|მიუახლოვდ|მოუახლოვდ|მიადგ|შევიდ|შემოვიდ|გამოვიდ|გამოჩნდ|მოადგ|მოიჭრ|გამოხტ|ეწვი|სტუმრად/],
+  ['jump', /ხტ|შეხტ|გადახტ|ახტ|ჰოპ|ხტუნ/],
+  ['walk', /მიდი|მოდი|დადი|გაემართ|გაუყვ|მიაბიჯ|ნაბიჯ|გასეირნ|სეირნ|იარა|იარეს|მიჰყვ|გზა/],
+  ['hug', /ჩაეხუტ|მიეხუტ|ჩაიხუტ|გადაეხვი|აკოცა|კოცნ|მოეფერ|ეფერებ/],
+  ['dance', /ცეკვ|იცეკვ|ტრიალ|ბზრიალ/],
+  ['sing', /მღერ|სიმღერ|იმღერ|ნანა|სალამურ|დაუკრ|უკრავ/],
+  ['eat', /ჭამ|შეჭამ|მიირთვ|სადილ|ვახშამ|საუზმ|დალი(ა|ეს)|სვამ|ღეჭ|კბეჩ/],
+  ['sit', /დაჯდ|ჩამოჯდ|წამოწვ|დაწვ|ჩაწვ|მიწვ|(^|\s)ზის|იჯდა|იჯდნენ|დასხდ/],
+  ['look', /ეძებ|დაეძებ|მიმოიხედ|მოიხედ|იყურებ|დაინახ|შეხედ|უყურ|გაიხედ|ჩაიხედ|ხედავ/],
+  ['think', /ფიქრ|მოიფიქრ|იფიქრ|ჩაფიქრ|გაახსენდ|მიხვდ/],
+  ['work', /მუშა|შრომ|აშენ|თესავ|თესა|მოჭრ|ჭრიდ|ზიდ|ქაჩ|გამოსწი|ასწი|ეხმარ|დაეხმარ|აგრო|კრეფ|(^|\s)თხრ|გათხარ|რწყავ|ალაგ/],
+  ['wave', /გამარჯობ|მიესალმ|დაემშვიდობ|ნახვამდის|ხელი დაუქნი|მიესალმნენ/],
+  ['talk', /თქვა|უთხრა|ჰკითხა|კითხა|უპასუხა|დაიძახა|შესძახა|ეუბნებ|ამბობ|მიმართა|ჩასჩურჩულ|ჩურჩულ|სთხოვ|თხოვა|ეძახ|პასუხობ|:/],
+];
+const MOODS = [
+  ['scared', /შეშინ|ეშინ|ცახცახ|შიშ|კანკალ|შეკრთ|შეძრწ/],
+  ['sad', /მოწყენ|ტირ|სევდ|ცრემლ|ნაღვლ|დაღონ|ეწყინ|წუხ|მარტოდ|შესცივდ|მოშივდ|ცოდო/],
+  ['angry', /გაბრაზ|ბრაზ|იღრიალ|ღრიალ|ყვირ|გაჯავრ|ჯავრობ/],
+  ['surprised', /გაუკვირდ|გაოცდ|გაოგნ|უცებ|ვაიმე|ოჰო|ჰოი|მოულოდნ|საოცარ|გაკვირვ|ნახე[,!]/],
+  ['happy', /გაუხარდ|გაეხარ|ბედნიერ|სიხარულ|გაიცინ|იცინ|გაეცინ|ღიმილ|გაუღიმ|მხიარულ|ხარობ|უხაროდ|კმაყოფ|მადლობ|გმადლობ|ჰოორა|ვაშა/],
+  ['love', /უყვარ|სიყვარულ|გულში|საყვარელ/],
+];
+const MOVES = new Set(['walk', 'run', 'fly', 'swim', 'leave', 'come', 'jump', 'hug']);
+const SPEED = { walk: 50, run: 125, fly: 85, swim: 60 };
+const MOOD_ACT = { happy: 'joy', sad: 'sad', scared: 'shiver', angry: 'stomp', surprised: 'pop', love: 'idle', sleep: 'sleep' };
+const ACT_FX = { talk: 'talk', sing: 'notes', dance: 'notes', eat: 'yum', run: 'dust', sleep: 'zzz', hug: 'hearts' };
+const MOOD_FX = { sad: 'tears', scared: 'sweat', angry: 'puff', surprised: 'bang', happy: 'sparks', love: 'hearts', sleep: 'zzz' };
+const SKY = new Set([...FLYERS, 'cloudy', 'bee', 'dove', 'windy']);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const offstage = x => x < 100 ? -80 : 280;
+
+// in a tale with a named hero, 'the girl' or 'the boy' is that hero
+const aliasOf = tale => { const all = TEXTS[tale.id] || ''; return { ...(/წითელქუდა/.test(all) && { girl: 'redhood' }), ...(/ნაცარქექი/.test(all) && { boy: 'natsar' }), ...(/ჰანსელ/.test(all) && { brother: 'boy' }) }; };
+function whoIn(text, hero, alias = {}) {
+  const found = [];
+  for (const [re, who] of WHO_WORDS) {
+    // only at the start of a word: 'საჭმელი' (food) is not a fox
+    let at = -1;
+    for (const m of text.matchAll(new RegExp(re.source, 'g'))) if (!/[ა-ჰ]/.test(m[0][0]) || !/[ა-ჰ]/.test(text[m.index - 1] || '')) { at = m.index; break; }
+    if (at < 0) continue;
+    const w = who === 'mom' && hero && !HUMANS.has(hero) ? 'mother:' + hero : alias[who] || who;
+    for (const one of w === 'kids' ? ['boy', 'girl'] : [w]) { const f = found.find(f => f.w === one); if (!f) found.push({ w: one, at }); else f.at = Math.min(f.at, at); }
+  }
+  return found.sort((a, b) => a.at - b.at).map(f => f.w);
+}
+
+function castMember(w, text, n) {
+  const o = {};
+  let who = w;
+  if (w.startsWith('mother:')) { who = w.slice(7); o.big = 1.3; if (who === 'bear') { o.fur = '#7a5232'; o.belly = '#b8875a'; } }
+  if (who === 'hedgehog' && /სოკო/.test(text)) o.shrooms = 1;
+  if ((who === 'hen' || who === 'duck') && /ოქრო/.test(text)) o.gold = 1;
+  if (who === 'duck' && /ნაცრისფ|მახინჯ/.test(text)) o.grey = 1;
+  const opts = who === 'princess' ? { ...o, princess: 1, dress: '#ffb347' } : o;
+  const b = bbox(who, opts);
+  const s = Math.min((TARGET[who] || 46) * (n === 3 ? .78 : 1) * (o.big || 1) / b.h, 110 / b.w);
+  return { id: w, who, draw: who === 'princess' ? 'mom' : who, o: opts, b, s, w: b.w * s, h: b.h * s, front: HUMANS.has(who) || ['snowman', 'cloudy', 'bun', 'devi', 'bear', 'owl', 'moon'].includes(who) };
+}
+
+// one paragraph → background, cast, and a state of every actor for every sentence
+function directParagraph(tale, text, i) {
+  const set = autoScene(tale, text, i, true);
+  // 'mother' is an animal mother only in a tale about animals
+  const any = taleHeroAny(tale), hero = any && !HUMANS.has(any) ? taleHero(tale) : null, alias = aliasOf(tale);
+  const sents = sentencesOf(text);
+  let ids = whoIn(text, hero, alias).filter(w => w !== 'moon').slice(0, 3);
+  if (!ids.length && taleHeroAny(tale)) ids = [taleHeroAny(tale)];
+  const cast = ids.map(w => castMember(w, text, ids.length));
+  cast.forEach(a => { a.ground = SKY.has(a.who) && !set.indoor ? 96 : SWIMMERS.has(a.who) ? 182 : set.indoor ? 172 : 156; });
+  if (set.wantBed && cast.length) Object.assign(cast[0], { bed: true, home: 78, ground: 142 });
+  const slots = [[100], [66, 138], [42, 100, 160]][cast.length - 1] || [];
+  cast.forEach((a, k) => { a.home = a.home || slots[k]; });
+  const named = sents.map(s => whoIn(s, hero, alias).map(w => ids.indexOf(w)).filter(k => k >= 0));
+  const firstAt = cast.map((_, k) => { const j = named.findIndex(n => n.includes(k)); return j < 0 ? 0 : j; });
+  if (cast.length && !firstAt.includes(0)) firstAt[firstAt.indexOf(Math.min(...firstAt))] = 0;
+  const sleepyEnd = tale.cat === 'sleep' && set.asleep;
+  // the tale opens with its heroes walking into the picture
+  const opening = k => i === 0 && !cast[k].bed && firstAt[k] === 0;
+  let st = cast.map((a, k) => ({ x: firstAt[k] === 0 && !opening(k) ? a.home : offstage(a.home), y: 0, on: firstAt[k] === 0 && !opening(k), face: a.home > 100 ? -1 : 1, act: 'idle', after: 'idle', mood: '', fx: [], dur: 0, sleep: !!(a.bed && sleepyEnd) }));
+  const start = st.map(p => ({ ...p, fx: [] }));
+  let last = cast.length ? 0 : -1;
+  const beats = sents.map((s, b) => {
+    // speech after a colon is what someone says, not what happens
+    const narr = s.includes(':') ? s.slice(0, s.indexOf(':')) : s;
+    let act = (ACTS.find(([, re]) => re.test(narr)) || [])[0] || (s.includes(':') || /!$/.test(s) && named[b].length ? 'talk' : 'idle');
+    const mood = (MOODS.find(([, re]) => re.test(s)) || [])[0] || '';
+    const nx = st.map(p => ({ ...p, y: 0, dur: 0, act: p.sleep ? 'sleep' : 'idle', after: p.sleep ? 'sleep' : 'idle', mood: p.sleep ? 'sleep' : '', fx: p.sleep ? ['zzz'] : [], on: p.on && !p.gone, gone: false }));
+    const who = named[b];
+    const together = who.length > 1 && /ნენ[\s,.!?:]|ერთად|ორივე|ყველამ|ყველანი|ყველა /.test(narr);
+    let subj = who.length ? (together ? who : [who[0]]) : last >= 0 && nx[last].on && (act !== 'idle' || mood) ? [last] : [];
+    const target = who.find(k => !subj.includes(k));
+    // whoever is named for the first time walks in
+    [...new Set([...who, ...(b === 0 ? cast.map((_, k) => k).filter(opening) : [])])].forEach(k => {
+      if (nx[k].on) return;
+      const a = cast[k], p = nx[k];
+      p.on = true; p.face = p.x < a.home ? 1 : -1;
+      p.dur = clamp(Math.abs(a.home - p.x) / SPEED.walk, 1.2, 2.6); p.x = a.home;
+      p.act = SKY.has(a.who) ? 'fly' : SWIMMERS.has(a.who) ? 'swim' : 'walk';
+    });
+    subj.forEach((k, j) => {
+      const a = cast[k], p = nx[k];
+      if (act === 'wake') { p.sleep = false; p.act = p.after = 'joy'; p.mood = 'happy'; p.fx = ['sparks']; return; }
+      if (act === 'sleep') { p.sleep = true; p.act = p.after = 'sleep'; p.mood = 'sleep'; p.fx = ['zzz']; return; }
+      let a2 = act;
+      if (a.bed && MOVES.has(a2)) a2 = 'idle';
+      if (MOVES.has(a2)) {
+        let tx = p.x;
+        const t = target !== undefined && nx[target].on ? nx[target].x : null;
+        if (a2 === 'leave') { tx = p.x < 100 ? -80 : 280; p.gone = true; }
+        else if ((a2 === 'come' || a2 === 'hug') && t !== null) { const gap = (a.w + cast[target].w) * (a2 === 'hug' ? .3 : .5) + 4; tx = p.x < t ? t - gap : t + gap; }
+        else if (a2 === 'come') tx = p.x + (100 - p.x) * .5;
+        else if (a2 === 'jump') tx = p.x + (p.x > 130 ? -22 : 22);
+        else { const d = a2 === 'run' ? 92 : 60; tx = p.x > 100 ? p.x - d - j * 6 : p.x + d + j * 6; }
+        if (!p.gone) tx = clamp(tx, 16 + a.w / 2, 184 - a.w / 2);
+        const gait = a2 === 'run' || (a2 === 'leave' || a2 === 'come') && /გაიქც|გარბ|მირბ|მიირბინ|სწრაფ/.test(narr) ? 'run'
+          : SKY.has(a.who) || a2 === 'fly' ? 'fly' : SWIMMERS.has(a.who) || a2 === 'swim' ? 'swim' : a2 === 'jump' ? 'jump' : 'walk';
+        if (Math.abs(tx - p.x) > 3) { p.face = tx > p.x ? 1 : -1; p.dur = clamp(Math.abs(tx - p.x) / (SPEED[gait] || 50), gait === 'jump' ? .8 : .7, 3); p.x = tx; }
+        p.act = a2 === 'hug' && !p.dur ? 'hug' : gait;
+        if (a2 === 'fly' && !SKY.has(a.who)) p.y = -34;
+        p.after = a2 === 'hug' ? 'hug' : MOOD_ACT[mood] || 'idle';
+        if (a2 === 'hug' && target !== undefined) { const q = nx[target]; q.act = q.after = 'hug'; q.mood = 'love'; q.fx = ['hearts']; q.face = q.x > p.x ? -1 : 1; }
+      } else {
+        p.after = a2 !== 'idle' ? a2 : MOOD_ACT[mood] || 'idle';
+        if (!p.dur) p.act = p.after;   // someone still walking in does it on arrival
+      }
+      p.mood = mood || (['dance', 'sing', 'hug'].includes(a2) ? 'happy' : '');
+      p.fx = [...new Set([ACT_FX[a2 === 'leave' || a2 === 'come' ? p.act : a2], MOOD_FX[p.mood], a2 === 'think' ? (/მოიფიქრ|მიხვდ|გაახსენდ/.test(s) ? 'idea' : 'think') : '', a2 === 'look' && /ეძებ|დაეძებ|სად/.test(s) ? 'ask' : ''].filter(Boolean))];
+    });
+    // a happy or scared sentence that names several characters moves them all
+    if (mood && !together) who.slice(1).forEach(k => { const p = nx[k]; if (p.dur || p.sleep) return; if (mood === 'happy' || mood === 'scared') { p.mood = mood; p.act = p.after = MOOD_ACT[mood]; p.fx = [MOOD_FX[mood]]; } });
+    // nobody ends a beat standing on someone else: whoever is in the way steps aside
+    const onStage = nx.map((_, k) => k).filter(k => nx[k].on && !nx[k].gone);
+    const meant = (k, j) => (act === 'hug' || act === 'come') && (subj.includes(k) && j === target || subj.includes(j) && k === target);
+    const near = (k, j, x) => Math.abs(cast[j].ground - cast[k].ground) < 30 && Math.abs(nx[j].x - x) < (cast[j].w + cast[k].w) * .42 + 4;
+    for (const k of onStage) {
+      if (cast[k].bed || subj.includes(k) && MOVES.has(act)) continue;
+      const others = onStage.filter(j => j !== k && !meant(k, j));
+      if (!others.some(j => near(k, j, nx[k].x))) continue;
+      let best = nx[k].x, score = -1e9;
+      for (let x = 16 + cast[k].w / 2; x <= 184 - cast[k].w / 2; x += 4) {
+        const room = Math.min(...others.map(j => Math.abs(nx[j].x - x) - (cast[j].w + cast[k].w) * .42));
+        const sc = room >= 0 ? 1000 - Math.abs(x - nx[k].x) : room;
+        if (sc > score) { score = sc; best = x; }
+      }
+      const p = nx[k], from = st[k].x;
+      if (Math.abs(best - p.x) < 3) continue;
+      p.x = best; p.face = best > from ? 1 : -1; p.dur = clamp(Math.abs(best - from) / SPEED.walk, .8, 2.8);
+      if (!['walk', 'run', 'fly', 'swim'].includes(p.act)) { p.after = p.act; p.act = SKY.has(cast[k].who) ? 'fly' : SWIMMERS.has(cast[k].who) ? 'swim' : 'walk'; }
+    }
+    // everyone else turns to look at whoever acts
+    const lead = subj[0] ?? who[0];
+    if (lead !== undefined) nx.forEach((p, k) => { if (k !== lead && p.on && !p.dur && !p.gone && !p.sleep && !cast[k].bed) p.face = nx[lead].x > p.x ? 1 : -1; });
+    if (subj.length) last = subj[0];
+    // camera: close on whoever acts, wide when the narrator just tells
+    let cam = { x: 100, y: 110, z: 1 };
+    if (lead !== undefined && nx[lead].on && !nx[lead].gone) {
+      const a = cast[lead], p = nx[lead];
+      const z = b === 0 ? 1.04 : act === 'talk' || mood ? 1.16 : MOVES.has(act) ? 1.06 : 1.1;
+      cam = { x: clamp(p.x, 50, 150), y: clamp(a.ground + p.y - a.h * .55, 70, 150), z };
+    }
+    st = nx;
+    return { s, cam, actors: nx.map(p => ({ ...p })) };
+  });
+  return { ...set, cast, start, beats, weights: sents.map(s => s.length + 14) };
+}
+
+const PLAYS = {};
+const playOf = t => TEXTS[t.id] ? (PLAYS[t.id] ||= TEXTS[t.id].split('\n\n').map((p, i) => directParagraph(t, p, i))) : null;
+
+function charSvg(a, mood) {
+  MOOD = mood || '';
+  try { return C[a.draw]({ ...a.o, closed: mood === 'sleep' }); } finally { MOOD = ''; }
+}
+// little signs above a character's head: speech, tears, hearts, notes…
+function fxSvg(list, a, face) {
+  const top = -a.h, hx = a.front ? 0 : face * a.w * .24, side = a.front ? 1 : face;
+  return list.map(f => {
+    switch (f) {
+      case 'talk': { const bx = hx + (side > 0 ? 4 : -34); return `<g class="fx-pop"><path d="M${bx} ${top - 22} h30 a8 8 0 0 1 0 16 h-${side > 0 ? 22 : 8} l${side > 0 ? -7 : 5} 7 l${side > 0 ? 1 : 1} -7 h-${side > 0 ? 1 : 15} a8 8 0 0 1 0 -16z" fill="#fff" ${O(1.4)}/>${[0, 1, 2].map(d => `<circle class="dot" style="animation-delay:${d * .18}s" cx="${bx + 7 + d * 8}" cy="${top - 14}" r="2.2" fill="${INK}"/>`).join('')}</g>`; }
+      case 'tears': return [-1, 1].map((d, k) => `<g transform="translate(${hx + d * Math.min(7, a.w * .12)} ${top + a.h * .22})">${drips(0, 0)}</g>`).join('');
+      case 'sweat': return `<path class="fx-pop" d="M${hx + side * a.w * .22} ${top + 2} q-4 6 0 8 q4 -2 0 -8z" fill="#8fd0ff" ${O(1)}/>`;
+      case 'bang': return `<text class="fx-pop" x="${hx + side * 10}" y="${top - 4}" text-anchor="middle" font-family="Georgia, serif" font-weight="900" font-size="20" fill="#ff5a6e" stroke="${INK}" stroke-width="1">!</text>`;
+      case 'ask': return `<text class="fx-pop" x="${hx + side * 10}" y="${top - 4}" text-anchor="middle" font-family="Georgia, serif" font-weight="900" font-size="18" fill="#7ab8f0" stroke="${INK}" stroke-width="1">?</text>`;
+      case 'idea': return `<g class="fx-pop"><g transform="translate(${hx} ${top - 16}) scale(.42)"><circle r="20" fill="#ffd34d" ${O(3)}/><rect x="-7" y="18" width="14" height="10" rx="3" fill="#b0a0c0" ${O(2.4)}/></g>${sparkle(hx - 12, top - 22, 0, '#fff1b8', 4)}${sparkle(hx + 12, top - 20, .4, '#fff1b8', 4)}</g>`;
+      case 'think': return `<g class="fx-pop">${[[4, 2], [9, 3.2], [16, 5]].map(([d, r], k) => `<circle class="dot" style="animation-delay:${k * .25}s" cx="${hx + side * d}" cy="${top - d}" r="${r}" fill="#fff" ${O(1.2)}/>`).join('')}</g>`;
+      case 'hearts': return `<g class="zf">${heart(hx - 6, top - 6)}</g><g class="zf" style="animation-delay:.7s">${heart(hx + 8, top - 2, .3)}</g><g class="zf" style="animation-delay:1.4s">${heart(hx, top - 10, .6)}</g>`;
+      case 'notes': return notes(hx + side * 6, top + 4);
+      case 'zzz': return zzz(hx + 4, top + 6);
+      case 'sparks': return [[-14, 4], [14, -2], [0, -10]].map(([dx, dy], k) => sparkle(hx + dx, top + dy, k * .3, '#ffd34d', 5)).join('');
+      case 'puff': return `<g class="fx-pop">${[[-8, 0], [0, -6], [8, 0]].map(([dx, dy]) => `<circle cx="${hx + dx}" cy="${top - 4 + dy}" r="5" fill="#d0d0dc" ${O(1)}/>`).join('')}</g>`;
+      case 'dust': return `<g class="dust">${[0, 1, 2].map(k => `<circle class="puff" style="animation-delay:${k * .15}s" cx="${-face * (a.w * .45 + k * 6)}" cy="-3" r="${3 + k}" fill="#efe6d6" opacity=".9"/>`).join('')}</g>`;
+      case 'yum': return `<g transform="translate(${hx + side * a.w * .25} ${top + a.h * .45})">${sand(0, 0)}</g>`;
+      default: return '';
+    }
+  }).join('');
+}
+function actorSvg(a, k, p) {
+  return `<g class="actor" data-k="${k}" style="transform:translate(${p.x}px,${a.ground + p.y}px)"><g class="facing" style="transform:scaleX(${p.face})"><g class="act a-${p.act}" style="animation-delay:-${k * .7}s"><g transform="translate(${-(a.b.x + a.b.w / 2) * a.s} ${-(a.b.y + a.b.h) * a.s}) scale(${a.s})"><g class="body">${charSvg(a, p.mood)}</g></g></g></g><g class="fx">${fxSvg(p.fx, a, p.face)}</g></g>`;
+}
+function paragraphSvg(para) {
+  const [top, ground] = para.edge;
+  const st = para.start;
+  const actors = para.cast.map((a, k) => actorSvg(a, k, st[k]) + (a.bed ? blanket() : '')).join('');
+  return `<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+    <rect x="-400" y="-800" width="1000" height="801" fill="${top}"/><rect x="-400" y="199" width="1000" height="800" fill="${ground}"/>
+    <g class="cam dir">${para.bg}${actors}</g></svg>`;
+}
+let beatTimers = [];
+function applyBeat(root, para, bi, instant) {
+  beatTimers.forEach(clearTimeout); beatTimers = [];
+  const beat = para.beats[bi];
+  root.querySelectorAll('.actor').forEach(el => {
+    const k = +el.dataset.k, a = para.cast[k], p = beat.actors[k];
+    el.style.transition = instant ? 'none' : `transform ${p.dur || .4}s ${p.act === 'run' ? 'cubic-bezier(.55,0,.5,1)' : 'cubic-bezier(.42,0,.4,1)'}`;
+    el.style.transform = `translate(${p.x}px,${a.ground + p.y}px)`;
+    el.querySelector('.facing').style.transform = `scaleX(${p.face})`;
+    const actEl = el.querySelector('.act');
+    actEl.setAttribute('class', `act a-${p.act}`);
+    if ((el.dataset.mood || '') !== p.mood) { el.dataset.mood = p.mood; el.querySelector('.body').innerHTML = charSvg(a, p.mood); }
+    el.querySelector('.fx').innerHTML = fxSvg(p.fx, a, p.face);
+    if (p.dur && p.after !== p.act) beatTimers.push(setTimeout(() => { actEl.setAttribute('class', `act a-${p.after}`); el.querySelector('.dust')?.remove(); }, p.dur * 1000));
+  });
+  const cam = root.querySelector('.cam'), c = beat.cam;
+  const cx = c.x + (100 - c.x) * .4, cy = c.y + (110 - c.y) * .4;
+  if (instant) cam.style.transition = 'none'; else cam.style.removeProperty('transition');
+  cam.style.transform = `translate(${cx}px,${cy}px) scale(${c.z}) translate(${-c.x}px,${-c.y}px)`;
+}
+// when, inside a paragraph, each sentence starts: paragraph times come from the audio, sentences share them by length
+function beatAt(id, para, pi, time) {
+  const starts = TIMINGS[id]?.starts, total = TIMINGS[id]?.duration || audio.duration || 0;
+  if (!starts) return 0;
+  const a = starts[pi], z = starts[pi + 1] ?? total;
+  const sum = para.weights.reduce((x, y) => x + y, 0);
+  let acc = 0, bi = 0;
+  for (let b = 0; b < para.weights.length; b++) { if (a + (z - a) * acc / sum <= time + .1) bi = b; acc += para.weights[b]; }
+  return bi;
 }
 
 // one scene as SVG; slabs above and below continue the sky and ground beyond the frame
@@ -1797,7 +2120,7 @@ fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; renderS
 fetch('tales.json').then(r => r.json()).then(list => { list.forEach(t => { TEXTS[t.id] = t.text; }); buildAutoScenes(); renderShelves(); }).catch(() => {});
 
 function sceneAt(id, time) {
-  const n = SCENES[id].length;
+  const n = PLAYS[id]?.length || SCENES[id].length;
   const starts = TIMINGS[id]?.starts || Array.from({ length: n }, (_, i) => i * (audio.duration || n * 6) / n);
   let i = 0;
   while (i + 1 < n && starts[i + 1] <= time + .15) i++;
@@ -1806,23 +2129,33 @@ function sceneAt(id, time) {
 
 // ---------- player with living pictures ----------
 const audio = $('audio');
-let current = null, sceneIdx = -1, front = 'layerA', wake = null;
+let current = null, sceneIdx = -1, front = 'layerA', wake = null, play = null, beatIdx = -1;
 const fmt = s => isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00';
 
 function showScene(i) {
   if (i === sceneIdx) return;
   sceneIdx = i;
   const back = front === 'layerA' ? 'layerB' : 'layerA';
-  $(back).innerHTML = sceneSvg(current.id, i);   // fresh DOM restarts the scene's motions
+  beatIdx = -1;
+  $(back).innerHTML = play ? paragraphSvg(play[i]) : sceneSvg(current.id, i);   // fresh DOM restarts the scene's motions
   $(back).classList.remove('in'); void $(back).offsetWidth; $(back).classList.add('in');
   $(back).style.opacity = 1;
   $(front).style.opacity = 0;
   front = back;
 }
+// a cartoon: the paragraph sets the scene, every sentence moves the characters
+function showBeat(time) {
+  const pi = sceneAt(current.id, time);
+  showScene(pi);
+  if (!play) return;
+  const bi = beatAt(current.id, play[pi], pi, time);
+  if (bi !== beatIdx) { beatIdx = bi; applyBeat($(front), play[pi], bi); }
+}
 function openPlayer(t) {
-  current = t; sceneIdx = -1;
+  current = t; sceneIdx = -1; play = playOf(t);
   $('layerA').innerHTML = $('layerB').innerHTML = '';
-  showScene(0);
+  $('player').hidden = false;   // visible first, so the opening walk-in can animate
+  showBeat(0);
   $('playerTitle').textContent = t.title;
   paintFav();
   $('hint').textContent = mode === 'night' ? 'მთვარეზე დააჭირე — ეკრანი ჩაქრება, ზღაპარი გაგრძელდება' : '';
@@ -1851,7 +2184,7 @@ audio.addEventListener('timeupdate', () => {
   $('barFill').style.width = audio.duration ? `${audio.currentTime / audio.duration * 100}%` : '0';
   $('tCur').textContent = fmt(audio.currentTime);
   $('tDur').textContent = fmt(audio.duration);
-  if (current) showScene(sceneAt(current.id, audio.currentTime));
+  if (current) showBeat(audio.currentTime);
   if (current && Math.floor(audio.currentTime) % 5 === 0) { positions[current.id] = audio.currentTime; store.set('pos', positions); }
   // sleep timer: fade out over the last 20 seconds, then stop
   if (sleepAt) {
