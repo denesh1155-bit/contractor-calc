@@ -2452,6 +2452,1490 @@ const MORE_PAGES = [
   ['b9', 'robot', 'რობოტი', 'boys'], ['b10', 'ship', 'გემი', 'boys'], ['b11', 'helicopter', 'ვერტმფრენი', 'boys'], ['b12', 'knight', 'რაინდი', 'boys'], ['b13', 'ball', 'ბურთი', 'boys'],
 ].map(([id, art, title, cat, free]) => ({ id, art, title, cat, free: !!free }));
 
+
+// ---------- the characters, redrawn with moving parts (legs, arms, head, tail, talking mouth) ----------
+
+// --- part 1 ---
+// R1 rig: boy (+ natsar, brother, man), mom (+ princess look, stepmother frown), girl (+ redhood), granny (+ witch).
+// Back parts first, front parts last; every moving part is its own top-level group with its pivot set explicitly.
+const r1_f = v => +v.toFixed(2);
+const r1_SHADE = (d, op = .15) => `<path d="${d}" fill="#2a1840" opacity="${op}"/>`;
+const r1_SHINE = (d, op = .35) => `<path d="${d}" fill="#fff" opacity="${op}"/>`;
+// pivot inline style from a part's geometric box [x0, y0, x1, y1] and the wanted pivot point
+const r1_org = (b, px, py) => `style="transform-origin:${r1_f((px - b[0]) / (b[2] - b[0]) * 100)}% ${r1_f((py - b[1]) / (b[3] - b[1]) * 100)}%"`;
+const r1_box = (...bs) => bs.reduce((a, b) => [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])]);
+// a tapered capsule from (sx,sy) radius rs to (wx,wy) radius rw
+const r1_limb = (sx, sy, wx, wy, rs, rw) => {
+  const dx = wx - sx, dy = wy - sy, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L, f = r1_f;
+  return `M${f(sx + nx * rs)} ${f(sy + ny * rs)} L${f(wx + nx * rw)} ${f(wy + ny * rw)} A${rw} ${rw} 0 0 0 ${f(wx - nx * rw)} ${f(wy - ny * rw)} L${f(sx - nx * rs)} ${f(sy - ny * rs)} A${rs} ${rs} 0 0 0 ${f(sx + nx * rs)} ${f(sy + ny * rs)}z`;
+};
+// geometric boxes of the HOLD items (they sit around the near hand at 43,59)
+const r1_HOLDBOX = { stick: [43, 59, 64, 76], axe: [43, 28, 54, 62], cheese: [39, 52, 55, 65], stone: [39, 50, 53, 64], bird: [40, 49.6, 58, 60.5] };
+// an arm: sleeve from shoulder S to wrist W, hand at H; the held item goes under the fingers
+const r1_arm = (cls, sx, sy, wx, wy, hx, hy, sleeve, o = {}) => {
+  const rs = o.rs || 4.6, rw = o.rw || 3.7, dx = wx - sx, dy = wy - sy, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, nx = -uy, ny = ux;
+  const hold = o.hold && HOLD[o.hold] ? HOLD[o.hold] : '';
+  let b = [Math.min(sx - rs, wx - rw, hx - 4.2), Math.min(sy - rs, wy - rw, hy - 4.2), Math.max(sx + rs, wx + rw, hx + 4.2), Math.max(sy + rs, wy + rw, hy + 4.2)];
+  if (o.puff) b = r1_box(b, [sx - 5.6, sy - 4.4, sx + 5.6, sy + 5.4]);
+  if (hold) b = r1_box(b, r1_HOLDBOX[o.hold] || b);
+  const cx = wx - ux * 2.2, cy = wy - uy * 2.2, f = r1_f;
+  return `<g class="${cls}" ${r1_org(b, sx, sy)}>
+    ${o.puff ? `<path d="M${sx - 5.4} ${sy + 4} q-1 -8 5.4 -8.4 q6.4 .4 5.4 8.4 q-5.4 2.6 -10.8 0z" fill="${sleeve}" ${O(1.8)}/><path d="M${sx - 2.6} ${sy - 3.6} q-.6 4 .4 7 M${sx + 2.6} ${sy - 3.6} q.6 4 -.4 7" stroke="#2a1840" stroke-width="1" fill="none" opacity=".25"/>${r1_SHINE(`M${sx - 4} ${sy} q1 -3.4 4 -3.6 q-2.4 1.4 -3 4z`, .45)}` : ''}
+    <path d="${r1_limb(sx, sy, wx, wy, rs, rw)}" fill="${sleeve}" ${O()}/>
+    ${r1_SHADE(r1_limb(sx - nx * rs * .5, sy - ny * rs * .5 + 1, wx - nx * rw * .5, wy - ny * rw * .5, rs * .45, rw * .45), .16)}
+    <path d="M${f(sx + nx * rs * .5 + ux * 3)} ${f(sy + ny * rs * .5 + uy * 3)} L${f(wx + nx * rw * .5 - ux * 4)} ${f(wy + ny * rw * .5 - uy * 4)}" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".32"/>
+    ${o.cuff ? `<path d="M${f(cx + nx * rw * 1.05)} ${f(cy + ny * rw * 1.05)} L${f(cx - nx * rw * 1.05)} ${f(cy - ny * rw * 1.05)}" stroke="${o.cuff}" stroke-width="2.6" stroke-linecap="round"/>` : `<path d="M${f(cx + nx * rw)} ${f(cy + ny * rw)} L${f(cx - nx * rw)} ${f(cy - ny * rw)}" ${O(1.2)} opacity=".45"/>`}
+    ${hold}
+    <circle cx="${hx}" cy="${hy}" r="4.2" fill="${SKIN}" ${O(1.6)}/><path d="M${hx - 2.6} ${hy - 1.2} q1.2 -1.6 2.6 -.6" ${O(1.1)} fill="none" opacity=".55"/>${r1_SHINE(`M${hx - 2.6} ${hy + .6} q.4 -2.4 2.4 -2.8 q-1 1.4 -1.2 3z`, .4)}</g>`;
+};
+// an open mouth that reads at any vertical scale: dark half-moon with a pink tongue
+const r1_mouth = (x, y, w, closed, deep = 6) => `<g class="r-mouth">${closed}
+  <g class="m-open"><path d="M${x - w / 2} ${y} q${w / 2} -1 ${w} 0 q0 ${deep} ${-w / 2} ${deep + .5} q${-w / 2} -.5 ${-w / 2} ${-deep - .5}z" fill="#7a3a4a" ${O(1.4)}/><path d="M${x - w * .3} ${y + .6} h${w * .6}" stroke="#fff" stroke-width="1.3" stroke-linecap="round" opacity=".85"/><ellipse cx="${x}" cy="${y + deep * .78}" rx="${w * .26}" ry="${deep * .22}" fill="#ff8fa8"/></g></g>`;
+const r1_lashes = (x, y, r, side) => (o_closed => o_closed || !['', 'surprised', 'scared'].includes(MOOD) ? '' :
+  `<path d="M${x + side * r * .7} ${y - r * .75} l${side * 1.8} -1.6 M${x + side * r * .95} ${y - r * .2} l${side * 2.2} -.6" ${O(1.2)}/>`);
+
+// ===================================================================== the boy
+C.boy = o => {
+  const sh = o.shirt || '#e9784e', pants = '#5a4a6a', shoe = '#6a4030', hair = '#3a2a1a';
+  const leg = (cls, x, near) => {
+    const b = [x - 5, 58, x + 9, 80];
+    return `<g class="${cls}" ${r1_org(b, x, 59.5)}>
+      <rect x="${x - 4.5}" y="58" width="9" height="19" rx="4" fill="${pants}" ${O()}/>${r1_SHADE(`M${x + 1} 60 h3 v15 q-1.5 2 -3 1z`, .2)}<path d="M${x - 2.4} 62 v8" stroke="#fff" stroke-width="1.2" stroke-linecap="round" opacity=".18"/>
+      ${near && o.patch ? `<rect x="${x - 3.4}" y="65" width="6" height="5.5" rx="1.4" fill="#c9a26a" ${O(1.1)}/><path d="M${x - 2.4} 66.2 l1 1 M${x + 1.6} 66.2 l-1 1" stroke="${INK}" stroke-width=".7" opacity=".6"/>` : ''}
+      <path d="M${x - 5} 77 q0 -4.2 5 -4.2 q7 0 9 4.2 q0 3 -3 3 h-9 q-2 0 -2 -3z" fill="${shoe}" ${O(1.6)}/>
+      <path d="M${x - 4.6} 78.4 h13.4" stroke="#2a1840" stroke-width="1.2" opacity=".3"/>${r1_SHINE(`M${x - 2} 75.6 q3 -1.4 5.4 -.2 q-2.6 0 -5.4 1.4z`, .45)}</g>`;
+  };
+  const headBox = [6.5, o.hat ? 0 : -1.5, 43.5, 38];
+  const hairD = `M9 19 Q7 5 18 3.5 L19.6 -1.5 L23.6 3.4 L28.4 -1.2 L31 4.6 Q42 6 41 19 Q39 13.5 34.5 12.2 Q31.5 15.6 27 13.4 Q22 16 18.6 12.4 Q12.6 13.4 9 19z`;
+  const brows = o.sad ? `<path d="M15.6 17.8 L21.6 16 M28.4 16 L34.4 17.8" ${O(1.6)}/>` : `<path d="M15.8 17.4 q3 -2.2 6 -.6 M28.2 16.8 q3 -1.6 6 .6" ${O(1.5)} fill="none"/>`;
+  const smile = o.sad ? `<path d="M21 31.4 q4 -3 8 0" ${O(1.5)} fill="none"/>` : `<path d="M20 29.6 q5 4.4 10 0 q-5 1.4 -10 0z" fill="#7a3a4a" ${O(1.5)}/>`;
+  const mouthY = o.man ? 31 : 29.8;
+  return shadow(25, 80, 20) + `
+    ${r1_arm('r-arm2', 13, 41, 9.2, 56.5, 8.4, 60, sh, { cuff: o.man ? '#e8d8b8' : '' })}
+    ${leg('r-leg2', 18, false)}${leg('r-leg1', 32, true)}
+    <g class="r-body"><path d="M10 64 L13 38 Q25 32.6 37 38 L40 64 Q25 66.4 10 64z" fill="${sh}" ${O()}/>${r1_SHADE('M30.6 37.4 Q36 38.4 37 40 L40 63.4 Q36 64.6 31.6 64.8z', .15)}${r1_SHINE('M15 41 q4 -3 8 -3.2 l-1 6 q-4 0 -7.2 2.2z', .25)}
+      <path d="M19.6 36 L25 41.6 L30.4 36 Q25 34.4 19.6 36z" fill="${SKIN}" ${O(1.4)}/>
+      <path d="M18.4 36.4 L25 42.6 L22 44.6z M31.6 36.4 L25 42.6 L28 44.6z" fill="#fff" opacity=".45" ${O(1.1)}/>
+      <path d="M11 55.4 h28 v4.2 h-28z" fill="#6a4030" ${O(1.3)}/><rect x="22.4" y="55" width="5.2" height="5" rx="1.2" fill="#ffd34d" ${O(1.1)}/>
+      ${o.patch ? `<rect x="15" y="44" width="7" height="7" rx="1.5" fill="#c9a26a" ${O(1.2)}/><path d="M16 45 l1.4 1.4 M21 45 l-1.4 1.4 M16 50 l1.4 -1.4" stroke="${INK}" stroke-width=".7" opacity=".6"/><rect x="29" y="47.4" width="6" height="6" rx="1.5" fill="#8fae5c" ${O(1.2)}/><path d="M30 48.4 l1.2 1.2 M34 48.4 l-1.2 1.2" stroke="${INK}" stroke-width=".7" opacity=".6"/>`
+        : `<path d="M25 43 v12" stroke="${INK}" stroke-width="1.1" opacity=".3"/><circle cx="26.6" cy="46" r=".9" fill="${INK}" opacity=".5"/><circle cx="26.6" cy="51" r=".9" fill="${INK}" opacity=".5"/>`}
+      <path d="M13.6 63.4 q2 -2 4 -.6 M33 63 q2 -1.6 4 .4" stroke="#2a1840" stroke-width="1" fill="none" opacity=".25"/></g>
+    <g class="r-head" ${r1_org(headBox, 25, 36)}>
+      <ellipse cx="9.5" cy="24" rx="3" ry="4" fill="${SKIN}" ${O(1.6)}/><path d="M9.2 22 q1.6 2 .2 4" stroke="#d99a78" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="40.5" cy="24" rx="3" ry="4" fill="${SKIN}" ${O(1.6)}/><path d="M40.8 22 q-1.6 2 -.2 4" stroke="#d99a78" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <circle cx="25" cy="22" r="16" fill="${SKIN}" ${O()}/>${r1_SHADE('M33 9 q10 8 7 20 q-4 8 -12 9 q9 -12 5 -29z', .1)}
+      ${o.hat ? `<path d="M9.4 15 q-1 4 .4 7 q1.4 -3 3.6 -4.6z M40.6 15 q1 4 -.4 7 q-1.4 -3 -3.6 -4.6z" fill="${hair}" ${O(1.3)}/>
+        <path d="M7 18 Q8 0 25 0 Q42 0 43 18 Q25 12 7 18z" fill="${o.hat}" ${O()}/>${r1_SHADE('M33 2 Q42 5 43 18 Q38 15.6 34 15z', .16)}${r1_SHINE('M13 10 q6 -7 14 -7 q-8 3 -11 9z', .32)}
+        <path d="M7.6 17.6 Q25 11.4 42.4 17.6" stroke="#2a1840" stroke-width="2.6" fill="none" opacity=".22"/>`
+        : `<path d="${hairD}" fill="${hair}" ${O()}/>${r1_SHINE('M13.6 9.4 q4 -3.6 9.4 -3.6 q-5 1.4 -8 4.6z', .28)}${r1_SHADE('M33 6 Q41 8 41 19 Q39 14 35 12.6z', .2)}`}
+      ${brows}
+      ${eye(19, 23, o.closed, 3.8)}${eye(31, 23, o.closed, 3.8)}${blush(14, 29, 3)}${blush(36, 29, 3)}
+      ${o.patch ? `<g fill="#c98a64" opacity=".7"><circle cx="12.6" cy="27" r=".7"/><circle cx="14.6" cy="26.2" r=".7"/><circle cx="35.4" cy="26.2" r=".7"/><circle cx="37.4" cy="27" r=".7"/></g>` : ''}
+      <ellipse cx="25.6" cy="26.8" rx="2.1" ry="1.6" fill="#e8a882" ${O(1.1)}/><circle cx="25" cy="26.3" r=".6" fill="#fff" opacity=".6"/>
+      ${o.man ? `<path d="M19.4 29.4 q2.6 -3 5.6 -1.4 q3 -1.6 5.6 1.4 q-3 1.8 -5.6 .6 q-2.6 1.2 -5.6 -.6z" fill="#4a3220" ${O(1.3)}/>` : ''}
+      ${o.whistle ? `<circle cx="25" cy="31" r="2.6" fill="#7a3a4a" ${O(1.3)}/>` : r1_mouth(25, mouthY, 9, o.man ? smile.replace(/29\.6/g, '31').replace(/31\.4/g, '32.6') : smile, 6)}
+      ${o.ash ? '<circle cx="13" cy="17" r="1.8" fill="#8a8a96" opacity=".85"/><circle cx="35" cy="33" r="1.5" fill="#8a8a96" opacity=".85"/><circle cx="21" cy="9" r="1.3" fill="#8a8a96"/><circle cx="33.4" cy="15.4" r="1" fill="#8a8a96" opacity=".8"/>' : ''}</g>
+    ${r1_arm('r-arm1', 37, 41, 41.6, 56.5, 43, 59.6, sh, { hold: o.hold, cuff: o.man ? '#e8d8b8' : '' })}`;
+};
+C.natsar = o => C.boy({ ...o, patch: 1, ash: 1 });
+C.brother = o => C.boy({ ...o, ...BRO1 });
+C.man = o => C.boy({ ...o, hat: '#6a4030', shirt: '#8a6a4a', man: 1 });
+
+// ===================================================================== the ladies: mom, princess, girl, red hood, granny, witch
+// kind: 'mom' | 'princess' | 'girl' | 'granny' | 'witch'
+const r1_lady = (o, kind) => {
+  const prin = kind === 'princess', girl = kind === 'girl', old = kind === 'granny' || kind === 'witch', witch = kind === 'witch', hood = girl && o.hood;
+  const dress = o.dress || (old ? (witch ? '#5a4a8a' : '#8a7ab0') : '#c2577a');
+  const scarf = old ? (witch ? '#4a3e6a' : '#d8d8e4') : '#f4ecdc';
+  const hairC = prin ? '#e8b04a' : (o.hair || '#7a4a2a'), red = '#e2445c';
+  const shoe = witch ? '#2a2440' : prin ? '#ffd34d' : girl ? '#a83a4a' : '#6a4030';
+  const sad = o.sad || o.frown;
+  const leg = (cls, x) => `<g class="${cls}" ${r1_org([x - 4, 64, x + 6.6, 82], x, 65.5)}>
+      <rect x="${x - 2.6}" y="64" width="5.2" height="15" rx="2.4" fill="${girl ? '#fff7ee' : witch ? '#3a3050' : '#e8d8c8'}" ${O(1.6)}/>
+      <path d="M${x - 4} 79.4 q0 -3.4 4 -3.4 q5.4 0 6.6 3.4 q0 2.6 -2.6 2.6 h-6.2 q-1.8 0 -1.8 -2.6z" fill="${shoe}" ${O(1.5)}/>${r1_SHINE(`M${x - 1.8} 78 q2.4 -1.2 4.4 -.2 q-2 0 -4.4 1.2z`, .45)}</g>`;
+  // ---- body
+  const skirt = `M7.4 76 L14 38 Q25 33 36 38 L42.6 76 Q25 79.6 7.4 76z`;
+  let front = '';
+  if (prin) front = `<path d="M18.6 42 Q25 39.4 31.4 42 L30 52 Q25 54 20 52z" fill="#fff" opacity=".35" ${O(1.2)}/><path d="M20 52 Q25 54 30 52 L38.6 76.4 Q25 79.6 11.4 76.4z" fill="#fff" opacity=".22"/>
+      <path d="M11.6 74.6 q3.2 -3 6.4 0 q3.2 -3 6.4 0 q3.2 -3 6.4 0 q3.2 -3 6.4 0" stroke="#fff" stroke-width="1.6" fill="none" opacity=".7" stroke-linecap="round"/>
+      <path d="M19.4 37.2 Q25 42.4 30.6 37.2" stroke="#ffd34d" stroke-width="1.6" fill="none"/><circle cx="25" cy="41.6" r="2" fill="#7ab8f0" ${O(1.1)}/><circle cx="24.4" cy="41" r=".6" fill="#fff"/>
+      <path d="M17.6 52.6 Q25 55.6 32.4 52.6" stroke="#ffd34d" stroke-width="2.2" fill="none" stroke-linecap="round"/>`;
+  else if (hood) front = `<path d="M16 50 h18 l3 25 q-12 2.4 -24 0z" fill="#fff7ee" ${O(1.5)}/><path d="M18 57 h14" stroke="#f4a9bb" stroke-width="1.8"/><path d="M25 67 q-3.6 -2.6 -2.2 -4.8 q1.4 -1.4 2.2 .4 q.8 -1.8 2.2 -.4 q1.4 2.2 -2.2 4.8z" fill="#e2445c" ${O(1)}/>`;
+  else if (girl) front = `<path d="M16.4 49 h17.2 l2.8 26 q-11.4 2.4 -22.8 0z" fill="#fff7ee" ${O(1.5)}/><path d="M16.4 49 h17.2" stroke="#f4a9bb" stroke-width="2"/>
+      <g transform="translate(25 63)"><circle cx="-2.2" cy="-1.6" r="1.8" fill="#ff8fa8"/><circle cx="2.2" cy="-1.6" r="1.8" fill="#ff8fa8"/><circle cx="-2.2" cy="1.8" r="1.8" fill="#ff8fa8"/><circle cx="2.2" cy="1.8" r="1.8" fill="#ff8fa8"/><circle r="1.4" fill="#ffd34d"/></g>
+      <path d="M19.6 37 L25 42 L30.4 37 Q25 39 19.6 37z" fill="#fff" ${O(1.2)}/>`;
+  else front = `<path d="M16 48 h18 l3 28 q-12 2.4 -24 0z" fill="${witch ? '#3a3050' : '#fff7ee'}" ${O(1.5)}/><path d="M18 60 h14" stroke="${witch ? '#c59cff' : '#f4a9bb'}" stroke-width="2"/>
+      <path d="M20 66 h6 v5 h-6z" fill="none" ${O(1.1)} opacity=".45"/>
+      ${old ? `<path d="M13.6 39 Q25 50 36.4 39 L34.6 37 Q25 44 15.4 37z" fill="${witch ? '#3a3050' : '#b8a8d8'}" ${O(1.4)}/><path d="M24 46.6 l1 4 l1 -4" ${O(1.1)} fill="none"/>` : ''}`;
+  const body = `<g class="r-body"><path d="${skirt}" fill="${dress}" ${O()}/>${r1_SHADE('M30.8 37 Q35 37.4 36 38 L42.6 75.8 Q38 77.4 33.4 78z', .15)}${r1_SHINE('M15.4 42 q3.6 -3.6 8 -4 l-1.6 6 q-3.6 .4 -6.8 2.4z', .25)}
+      <path d="M13 70 q2 4 1.6 7.4 M36.6 70 q-1.6 4 -1.2 7.6" stroke="#2a1840" stroke-width="1.1" fill="none" opacity=".22"/>
+      ${front}</g>`;
+  // ---- head
+  let back = '', top = '', box;
+  if (prin || (girl && !hood)) {
+    // long hair: back locks behind the face, a fringe in front; the princess adds a crown
+    back = girl ? `<path d="M9.6 22 q-6 22 2 32 l6 -10 q-4 -10 -2 -20z M40.4 22 q6 22 -2 32 l-6 -10 q4 -10 2 -20z" fill="${hairC}" ${O(1.5)}/>
+        <path d="M11.4 53.6 q1 2 3 .6 M38.6 53.6 q-1 2 -3 .6" stroke="${red}" stroke-width="2.6" stroke-linecap="round" fill="none"/>`
+      : `<path d="M9 22 q-6.6 22 1.6 34 q3.6 -2 6.4 -10 z M41 22 q6.6 22 -1.6 34 q-3.6 -2 -6.4 -10z" fill="${hairC}" ${O(1.5)}/><path d="M7.6 34 q1 8 3.4 14 M42.4 34 q-1 8 -3.4 14" stroke="#c98a2a" stroke-width="1.2" fill="none" opacity=".6"/>`;
+    top = `<path d="M9 22 Q8 4 25 4.6 Q42 4 41 22 Q38.4 13 32 11.6 Q29 15 25 13 Q20.4 15.4 17.4 11.6 Q11.4 13.4 9 22z" fill="${hairC}" ${O()}/>${r1_SHINE('M14 10.6 q5 -4.6 11 -4.6 q-6 1.6 -9 5.6z', .32)}${r1_SHADE('M33 7 Q41 9 41 22 Q39 15 34.4 12.4z', .18)}
+      ${prin ? `<path d="M14 8 L16 -2 L21 5 L25 -4 L29 5 L34 -2 L36 8 Q25 5.4 14 8z" fill="#ffd34d" ${O(1.6)}/><circle cx="25" cy="3.6" r="1.6" fill="#e2445c" ${O(1)}/><circle cx="16" cy="-2" r="1.1" fill="#fff6c0"/><circle cx="25" cy="-4" r="1.1" fill="#fff6c0"/><circle cx="34" cy="-2" r="1.1" fill="#fff6c0"/>${r1_SHINE('M16.4 6.4 l1 -4 l1.6 2z', .5)}`
+        : `<path d="M33 9 q4 -3 6 0 q-2 3 -6 0z M33 9 q2 -4.6 5.6 -3.4" fill="${red}" ${O(1.2)}/>`}`;
+    box = prin ? [3.4, -4, 46.6, 56] : [4, 4.6, 46, 56];
+  } else if (hood) {
+    back = `<path d="M7 26 Q4 2 25 1.6 Q46 2 43 26 Q46 38 40 44 L10 44 Q4 38 7 26z" fill="${red}" ${O()}/>${r1_SHADE('M34 4 Q45 8 43 26 Q45 36 40 43 L36 43 Q42 22 34 4z', .16)}`;
+    top = `<path d="M9.4 22 Q9 6 25 6.6 Q41 6 40.6 22 Q37 13 25 13.4 Q13 13 9.4 22z" fill="${hairC}" ${O(1.6)}/>
+      <path d="M8 27 Q6 4 25 4 Q44 4 42 27 Q41 8 25 7.6 Q9 8 8 27z" fill="${red}" ${O(1.6)}/>${r1_SHINE('M12 10 q5 -5 12 -5.4 q-7 2 -10 6.4z', .32)}`;
+    box = [4, 1.6, 46, 44];
+  } else {
+    // headscarf (mom, granny); the witch gets wild grey hair under a pointed hat
+    if (witch) {
+      back = `<path d="M8.4 20 q-5 10 -2 22 q3 -2 3.4 -6 q1 4 3.6 5 l1 -14z M41.6 20 q5 10 2 22 q-3 -2 -3.4 -6 q-1 4 -3.6 5 l-1 -14z" fill="#c8c8d8" ${O(1.5)}/>`;
+      top = `<path d="M9.6 22 Q9 9 25 9 Q41 9 40.4 22 Q37 15 31 14.4 Q28 17 25 15 Q22 17 19 14.4 Q13 15 9.6 22z" fill="#c8c8d8" ${O(1.6)}/>
+        <path d="M16 10 L24 -24 Q26.4 -28 29 -24 L34 -20 Q30 -22 28.6 -18 L35 10z" fill="#3a3050" ${O(1.6)}/>${r1_SHINE('M19.6 6 L25 -20 L24 4z', .18)}
+        <path d="M5 12.4 Q25 3 45 12.4 Q46 15 43 14.6 Q25 8 7 14.6 Q4 15 5 12.4z" fill="#3a3050" ${O(1.6)}/>
+        <path d="M17 7.4 Q25 4.4 33.6 7.4 L33.8 4 Q25 1 16.6 4z" fill="#c59cff" ${O(1.2)}/><path d="M25 2 l1 1.8 l2 .3 l-1.5 1.3 l.4 2 l-1.9 -1 l-1.9 1 l.4 -2 l-1.5 -1.3 l2 -.3z" fill="#ffd34d" ${O(.8)}/>`;
+      box = [5, -27, 45, 42];
+    } else {
+      back = `<path d="M9 30 q-4.4 14 2 24 l5.4 -6.4z M41 30 q4.4 14 -2 24 l-5.4 -6.4z" fill="${scarf}" ${O(1.5)}/>${r1_SHADE('M41 30 q4.4 14 -2 24 l-2 -2.4 q4 -9 4 -21.6z', .14)}`;
+      top = `<path d="M8 28 Q5 2 25 3 Q45 2 42 28 Q40 13 25 12 Q10 13 8 28z" fill="${scarf}" ${O()}/>${r1_SHADE('M34 4.6 Q44 8 42 28 Q41 17 36 13.4z', .15)}${r1_SHINE('M12.4 12 q4.6 -6.6 12 -7 q-7 2.4 -10 8z', .35)}
+        <path d="M13 15 Q25 9 37 15" stroke="${old ? '#e8e8f0' : '#3a2a1a'}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+        ${old ? '' : `<g fill="#e2445c" opacity=".55"><circle cx="16" cy="7.6" r="1.3"/><circle cx="25" cy="5.4" r="1.3"/><circle cx="34" cy="7.6" r="1.3"/></g>`}
+        <path d="M21.6 40 l3.4 -4 l3.4 4 l-3.4 2.4z" fill="${scarf}" ${O(1.3)}/>`;
+      box = [5.6, 2.4, 44.4, 54];
+    }
+  }
+  const brows = o.frown ? `<path d="M15 16.4 l7 2.6 M35 16.4 l-7 2.6" stroke="#3a2a1a" stroke-width="2.2" stroke-linecap="round"/>`
+    : o.sad ? `<path d="M15.4 18.6 L21.4 16.8 M28.6 16.8 L34.6 18.6" ${O(1.4)}/>` : '';
+  const closedMouth = sad ? `<path d="M21 31.4 q4 -3 8 0" ${O(1.5)} fill="none"/>` : `<path d="M21 29 q4 3.6 8 0" ${O(1.5)} fill="${old || girl || prin ? '#7a3a4a' : 'none'}"/>`;
+  const lips = !old && !girl && !sad ? `<path d="M22.4 29.6 q2.6 1.4 5.2 0" stroke="#e2445c" stroke-width="1.2" fill="none" opacity=".5"/>` : '';
+  const face = `${back}
+      <circle cx="25" cy="22" r="15" fill="${SKIN}" ${O()}/>${r1_SHADE('M32 9.4 q9.4 7.6 6.4 19 q-3.6 7.4 -11 8.4 q8.4 -11.4 4.6 -27.4z', .1)}
+      ${top}
+      ${brows}
+      ${eye(19, 23, o.closed, 3.6)}${eye(31, 23, o.closed, 3.6)}${old ? '' : r1_lashes(19, 23, 3.6, -1)(o.closed) + r1_lashes(31, 23, 3.6, 1)(o.closed)}
+      ${blush(14, 28, 3)}${blush(36, 28, 3)}
+      ${old ? `<path d="M13.6 21.6 q-1.4 1.2 -1 2.6 M36.4 21.6 q1.4 1.2 1 2.6 M15.4 31.6 q1 1.4 2.4 1.6 M34.6 31.6 q-1 1.4 -2.4 1.6" ${O(1)} fill="none" opacity=".45"/>` : ''}
+      ${witch ? `<path d="M24.6 24 q5 1.4 6.4 5.6 q-3 .8 -5.6 -1z" fill="#e8b48a" ${O(1.2)}/><circle cx="29" cy="27.4" r=".9" fill="#8fae5c"/>` : `<ellipse cx="25.4" cy="26.3" rx="1.6" ry="1.2" fill="#e8a882" ${O(1)}/>`}
+      ${r1_mouth(25, 29.4, 8, closedMouth + lips, 5.4)}
+      ${old ? `<g fill="none" ${O(1.4)}><circle cx="19" cy="23" r="5"/><circle cx="31" cy="23" r="5"/><path d="M24 23 h2 M14 22.4 l-3.4 -1 M36 22.4 l3.4 -1"/></g><path d="M15.6 20.4 q1.4 -2 3.4 -2.2 M27.6 20.4 q1.4 -2 3.4 -2.2" stroke="#fff" stroke-width="1.1" fill="none" opacity=".7" stroke-linecap="round"/>` : ''}`;
+  const sleeve = prin ? dress : dress;
+  const armOpt = { puff: prin, cuff: prin ? '#fff' : old ? '#e8e8f0' : girl ? '#fff7ee' : '', rs: 4.4, rw: 3.6, hold: o.hold };
+  const cape = hood ? `<path d="M11.4 34 Q3 54 5.6 72 Q25 76 44.4 72 Q47 54 38.6 34z" fill="${red}" ${O()}/>${r1_SHADE('M34 35 Q44 52 44.4 72 Q41 73 37.6 73.6 Q38 52 31 35z', .16)}` : '';
+  return shadow(25, 82, 22) + `
+    ${cape}
+    ${r1_arm('r-arm2', 13.6, 41, 9, 56.6, 7.6, 60, dress, { ...armOpt, hold: '' })}
+    ${leg('r-leg2', 19.4)}${leg('r-leg1', 30.6)}
+    ${body}
+    ${hood ? `<path d="M12 36 Q25 30 38 36 Q40 42 36 44 Q25 48 14 44 Q10 42 12 36z" fill="${red}" ${O(1.8)}/>${r1_SHINE('M15 37.6 q4 -3 9 -3.4 q-5 2 -7 4.6z', .3)}<circle cx="25" cy="44.4" r="1.6" fill="#ffd34d" ${O(1)}/>` : ''}
+    <g class="r-head" ${r1_org(box, 25, 36)}>${face}</g>
+    ${r1_arm('r-arm1', 36.4, 41, 41.2, 56.6, 42.8, 60, sleeve, armOpt)}`;
+};
+C.mom = o => r1_lady(o, o.princess ? 'princess' : 'mom');
+C.girl = o => r1_lady(o, 'girl');
+C.redhood = o => C.girl({ ...o, hood: 1 });
+C.granny = o => r1_lady(o, 'granny');
+C.witch = o => r1_lady({ ...o, dress: '#5a4a8a' }, 'witch');
+
+// --- part 2 ---
+// R2 rig: grandpa, king, prince, fairy, devi (with o.cap), snowman.
+// Back parts first, front parts last; every moving part is its own top-level group with an explicit pivot
+// (transform-box:view-box + transform-origin in the character's own coordinates, so a held item never moves the pivot).
+const r2_SH = (d, op = .15) => `<path d="${d}" fill="#2a1840" opacity="${op}"/>`;
+const r2_SN = (d, op = .32) => `<path d="${d}" fill="#fff" opacity="${op}"/>`;
+const r2_piv = (x, y) => `style="transform-box:view-box;transform-origin:${x}px ${y}px"`;
+// open mouth: a dark half-moon with a pink tongue; its top edge is the hinge (m-open scales from the top)
+const r2_open = (cx, y, w, col = '#7a3a4a', sw = 1.3) => `<g class="m-open"><path d="M${cx - w} ${y} Q${cx} ${y - w * .25} ${cx + w} ${y} Q${cx + w * .95} ${y + w * 1.3} ${cx} ${y + w * 1.4} Q${cx - w * .95} ${y + w * 1.3} ${cx - w} ${y}z" fill="${col}" ${O(sw)}/><ellipse cx="${cx}" cy="${y + w * 1.02}" rx="${w * .52}" ry="${w * .3}" fill="#ff8fa8"/></g>`;
+// a small closed smile (or a sad arc) + its open mouth
+const r2_mouth = (cx, y, w, sad, col = '#7a3a4a') => `<g class="r-mouth"><path d="M${cx - w} ${y} q${w} ${sad ? -w * .45 : w * .75} ${w * 2} 0" ${O(1.5)} fill="${sad ? 'none' : col}"/>${r2_open(cx, y, w * .95, col)}</g>`;
+// a sleeve hanging from the shoulder (x,y), cuff and hand; the hand is at (x, y+len+3.6)
+const r2_arm = (cls, x, y, len, col, cuff, extra = '') => `<g class="${cls}" ${r2_piv(x, y + 1.5)}>
+    <path d="M${x - 4.2} ${y} Q${x - 5.6} ${y + len * .6} ${x - 5.2} ${y + len} L${x + 5.2} ${y + len} Q${x + 5.4} ${y + len * .5} ${x + 4.2} ${y} Q${x} ${y - 2.4} ${x - 4.2} ${y}z" fill="${col}" ${O()}/>
+    ${r2_SH(`M${x + 1} ${y + 1} Q${x + 4} ${y + 2} ${x + 4.3} ${y + 6} L${x + 4.6} ${y + len - .5} L${x + 1.5} ${y + len - .5}z`, .15)}
+    ${cuff ? `<rect x="${x - 5.6}" y="${y + len - 2.4}" width="11.2" height="4.4" rx="2.2" fill="${cuff}" ${O(1.4)}/>` : ''}
+    ${extra}<circle cx="${x}" cy="${y + len + 3.6}" r="4.2" fill="${SKIN}" ${O(1.6)}/>${r2_SN(`M${x - 2.6} ${y + len + 2.4} q1 -2 3 -2.2`, .45)}</g>`;
+// a leg hidden under a robe / dress or in trousers; the boot's toe points forward (+x); sole at y=bot
+const r2_leg = (cls, x, top, bot, pant, shoe) => `<g class="${cls}" ${r2_piv(x, top + 2)}>
+    <rect x="${x - 4}" y="${top}" width="8" height="${bot - top - 2}" rx="3.6" fill="${pant}" ${O()}/>${r2_SH(`M${x + 1} ${top + 2} h2.6 v${bot - top - 7} h-2.6z`, .18)}
+    <path d="M${x - 4.6} ${bot - 1.6} q0 -4.4 4.6 -4.4 q6.6 0 8.4 3.6 q.6 2.8 -2.4 2.8 h-8.6 q-2 0 -2 -2z" fill="${shoe}" ${O(1.6)}/>${r2_SN(`M${x - 1.6} ${bot - 4.6} q3 -1 5.4 .2`, .4)}</g>`;
+const r2_hold = o => o.hold && HOLD[o.hold] ? HOLD[o.hold] : '';
+
+// ---------------- the king (and, with crown:false, any bearded old man in a coat) ----------------
+C.king = o => {
+  const robe = o.robe || '#c2483a', royal = o.crown !== false, beard = o.beard || '#f0f0f6', hair = royal ? beard : (o.beard || '#5a4030');
+  const spots = xs => xs.map(([x, y]) => `<path d="M${x} ${y} l-.9 2.4 h1.8z" fill="#2a1f3a"/>`).join('');
+  const body = royal ? `
+      <path d="M7.4 74.4 L13 40 Q25 34 37 40 L42.6 74.4 Q25 78.6 7.4 74.4z" fill="${robe}" ${O()}/>
+      ${r2_SH('M31 39 Q37 39.5 37.4 41.5 L42.6 74.4 Q38 76 32.5 76.6z', .15)}${r2_SN('M15 45 q2 -3.5 6 -5 l-2.6 30 q-3 -.2 -5.6 -1.2z', .18)}
+      <path d="M25 42 V77" stroke="#ffd34d" stroke-width="3.2"/><path d="M25 42 V77" stroke="#e0a832" stroke-width="1" opacity=".7"/>
+      <path d="M12.6 57.5 Q25 60.5 37.4 57.5 l.5 4 Q25 64.5 12.1 61.5z" fill="#ffd34d" ${O(1.4)}/><rect x="22" y="57.6" width="6" height="5.4" rx="1.4" fill="#e2445c" ${O(1.2)}/>
+      <path d="M7.2 71.4 Q25 75.8 42.8 71.4 L43 74.6 Q25 79 7 74.6z" fill="#fff" ${O(1.4)}/>${spots([[12, 72.8], [19, 74.2], [31, 74.2], [38, 72.8]])}
+      <path d="M10.4 44.5 Q11.5 37 25 36 Q38.5 37 39.6 44.5 Q32 49.5 25 47.4 Q18 49.5 10.4 44.5z" fill="#fff" ${O(1.6)}/>${spots([[15, 42.4], [21, 44.2], [29, 44.2], [35, 42.4]])}
+      ${r2_SH('M32 38 Q38.6 39 39.6 44.5 Q36 46.8 32 47.4z', .1)}` : `
+      <path d="M7.4 74.4 L13 40 Q25 34 37 40 L42.6 74.4 Q25 78.6 7.4 74.4z" fill="${robe}" ${O()}/>
+      ${r2_SH('M31 39 Q37 39.5 37.4 41.5 L42.6 74.4 Q38 76 32.5 76.6z', .16)}${r2_SN('M15 45 q2 -3.5 6 -5 l-2.6 30 q-3 -.2 -5.6 -1.2z', .18)}
+      <path d="M7.8 71 Q25 75.4 42.2 71" fill="none" stroke="#2a1840" stroke-width="2.4" opacity=".22"/>
+      <path d="M20 37 L25 45 L30 37 Q25 35.6 20 37z" fill="#f4ecdc" ${O(1.3)}/>
+      <path d="M25 45 V76" stroke="${INK}" stroke-width="1.3" opacity=".4"/>
+      <path d="M12.4 56.5 Q25 59.6 37.6 56.5 l.5 4.6 Q25 64.4 11.9 61.1z" fill="#5a3a2a" ${O(1.4)}/><path d="M33 61 l2.4 7 l2.6 -1 l-1.6 -6.6z" fill="#5a3a2a" ${O(1.2)}/>
+      ${[50, 66, 71].map(y => `<circle cx="27.2" cy="${y}" r="1.3" fill="#2a1f3a" opacity=".55"/>`).join('')}`;
+  const top = royal ? `
+      <path d="M9.6 16 q-3.4 6 -.6 12 q3 -.8 4.4 -4.6z M40.4 16 q3.4 6 .6 12 q-3 -.8 -4.4 -4.6z" fill="${hair}" ${O(1.5)}/>
+      <path d="M10 13.4 L11.6 -1 L18 6 L25 -3.6 L32 6 L38.4 -1 L40 13.4 Q25 9.4 10 13.4z" fill="#ffd34d" ${O(1.8)}/>
+      <path d="M10.4 10 Q25 6 39.6 10 L40 13.4 Q25 9.4 10 13.4z" fill="#f0b030" ${O(1.2)}/>
+      <circle cx="11.6" cy="-1.4" r="1.7" fill="#ffd34d" ${O(1.1)}/><circle cx="25" cy="-4" r="1.9" fill="#ffd34d" ${O(1.1)}/><circle cx="38.4" cy="-1.4" r="1.7" fill="#ffd34d" ${O(1.1)}/>
+      <ellipse cx="25" cy="6.4" rx="2.3" ry="2.6" fill="#e2445c" ${O(1.1)}/><circle cx="17" cy="9.6" r="1.4" fill="#4ab0e2"/><circle cx="33" cy="9.6" r="1.4" fill="#5ac46a"/>
+      ${r2_SN('M14 7 L13 1.4 L17 6z', .45)}${r2_SN('M24.2 5.6 q.4 -1.2 1.4 -1.4', .7)}` : `
+      <path d="M9 18 Q8.4 4.6 25 4.4 Q41.6 4.6 41 18 Q39 13.6 36 12.4 Q34 15 31 12.6 Q28 15.2 25 12.6 Q22 15.2 19 12.6 Q16 15 14 12.4 Q11 13.6 9 18z" fill="${hair}" ${O()}/>
+      ${r2_SN('M15 9 q5 -3.4 11 -3.2', .3)}`;
+  return shadow(25, 82, 22) + `
+    ${r2_arm('r-arm2', 10.5, 40.5, 17, robe, royal ? '#fff' : '', '')}
+    ${r2_leg('r-leg2', 19, 63, 81.6, '#4a3a5a', '#6a4030')}${r2_leg('r-leg1', 31, 63, 81.6, '#4a3a5a', '#6a4030')}
+    <g class="r-body">${body}</g>
+    <g class="r-head" ${r2_piv(25, 37)}>
+      <ellipse cx="10" cy="23.5" rx="3" ry="4" fill="${SKIN}" ${O(1.6)}/><ellipse cx="40" cy="23.5" rx="3" ry="4" fill="${SKIN}" ${O(1.6)}/>
+      <circle cx="25" cy="22" r="15" fill="${SKIN}" ${O()}/>${r2_SH('M32 10 q10 7 7.6 18 q-3 4 -8 5 q7 -10 .4 -23z', .1)}
+      <path d="M10.6 23.4 Q9.6 45 25 46.6 Q40.4 45 39.4 23.4 Q37.4 30.4 32 31.6 Q25 29.6 18 31.6 Q12.6 30.4 10.6 23.4z" fill="${beard}" ${O(1.8)}/>
+      ${r2_SH('M33 31 Q38.6 29 39.4 24 Q40 40 31 45.6 Q36 38 33 31z', .12)}
+      <path d="M17 38 q2 3 5 4 M27 40.6 q3 -1 5 -4 M22.6 43.6 q2.4 .8 4.8 0" ${O(1.1)} fill="none" opacity=".3"/>
+      ${r2_mouth(25, 32.2, 3.4, o.sad)}
+      ${blush(14.4, 26, 2.6)}${blush(35.6, 26, 2.6)}
+      <ellipse cx="25.6" cy="26.4" rx="3.2" ry="2.6" fill="#eaa985" ${O(1.4)}/>${r2_SN('M24 25.4 q1 -1 2.2 -.8', .6)}
+      <path d="M25 29.8 Q21.6 27.4 17.4 29 Q15.4 30.6 16.8 32 Q21.4 32.6 25 30.6z M25 29.8 Q28.4 27.4 32.6 29 Q34.6 30.6 33.2 32 Q28.6 32.6 25 30.6z" fill="${beard}" ${O(1.4)}/>
+      ${eye(19, 20.6, o.closed, 3.4)}${eye(31, 20.6, o.closed, 3.4)}
+      <path d="M15 15.6 q4 -2.6 7.6 -.4 M27.4 15.2 q3.6 -2.2 7.6 .4" stroke="${INK}" stroke-width="3.6" stroke-linecap="round" fill="none"/><path d="M15 15.6 q4 -2.6 7.6 -.4 M27.4 15.2 q3.6 -2.2 7.6 .4" stroke="${hair}" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      ${top}</g>
+    ${r2_arm('r-arm1', 40, 40.5, 17, robe, royal ? '#fff' : '', r2_hold(o))}`;
+};
+C.grandpa = o => C.king({ ...o, crown: false, robe: o.robe || '#6a7ab0', beard: '#f0f0f6' });
+
+// ---------------- the prince: golden hair, a little crown, blue tunic, red cape ----------------
+C.prince = o => {
+  const sh = '#4a7ab0', gold = '#ffd34d', hair = '#f2bf4a';
+  return shadow(25, 81, 20) + `
+    <path d="M14 38 Q7 52 5 72 Q11 75 18 72 Q20 56 22 40z" fill="#c2483a" ${O()}/>${r2_SH('M14 40 Q9 54 7.4 71 Q10 72 12 71.6 Q12 54 16 41z', .15)}
+    ${r2_arm('r-arm2', 10.5, 40, 17, sh, gold, '')}
+    ${r2_leg('r-leg2', 19, 58, 81, '#f4ecdc', '#8a5a34')}${r2_leg('r-leg1', 31, 58, 81, '#f4ecdc', '#8a5a34')}
+    <g class="r-body">
+      <path d="M10 64 L13 38.5 Q25 32.6 37 38.5 L40 64 Q25 67.6 10 64z" fill="${sh}" ${O()}/>
+      ${r2_SH('M30 37.6 Q36.6 38 37 40 L40 64 Q35.4 65.4 31 65.6z', .16)}${r2_SN('M15 42 q4 -3.4 8 -3.6 l-1 6.4 q-4 .2 -7 2.2z', .22)}
+      <path d="M10.4 61 Q25 64.6 39.6 61 L40 64 Q25 67.6 10 64z" fill="${gold}" ${O(1.3)}/>
+      <path d="M11.4 53 Q25 56 38.6 53 l.4 4 Q25 60 11 57z" fill="#6a4030" ${O(1.3)}/><rect x="22.2" y="53.4" width="5.6" height="5" rx="1.2" fill="${gold}" ${O(1.1)}/>
+      <path d="M19 37 L25 43 L31 37 Q25 35.4 19 37z" fill="#fff" ${O(1.3)}/>
+      ${[46, 50].map(y => `<circle cx="25" cy="${y}" r="1.4" fill="${gold}" ${O(.8)}/>`).join('')}</g>
+    <g class="r-head" ${r2_piv(25, 37)}>
+      <ellipse cx="9.5" cy="24" rx="3" ry="4" fill="${SKIN}" ${O(1.6)}/><ellipse cx="40.5" cy="24" rx="3" ry="4" fill="${SKIN}" ${O(1.6)}/>
+      <circle cx="25" cy="22" r="16" fill="${SKIN}" ${O()}/>${r2_SH('M33 9 q10 8 7 20 q-4 8 -12 9 q9 -12 5 -29z', .1)}
+      <path d="M8.4 22 Q6.6 4.6 25 4.4 Q43.4 4.6 41.6 22 Q39.6 14 35 12 Q33 16.4 28 13.4 Q25 17 21 13.2 Q16 16.6 14.4 12.4 Q10 15 8.4 22z" fill="${hair}" ${O()}/>
+      ${r2_SH('M33 7 Q41.6 9 41.6 22 Q39.6 14 35 12z', .12)}${r2_SN('M13 11 q5 -4.6 12 -4.8', .35)}
+      <path d="M11.6 8.4 L13 -2.6 L19 3.4 L25 -5 L31 3.4 L37 -2.6 L38.4 8.4 Q25 5.2 11.6 8.4z" fill="${gold}" ${O(1.6)}/>
+      <circle cx="25" cy="3.4" r="1.9" fill="#e2445c" ${O(1)}/><circle cx="17.4" cy="5.4" r="1.1" fill="#4ab0e2"/><circle cx="32.6" cy="5.4" r="1.1" fill="#5ac46a"/>${r2_SN('M14.4 5 L14 .4 L17.4 4.2z', .45)}
+      ${eye(19, 23, o.closed, 3.8)}${eye(31, 23, o.closed, 3.8)}${blush(14, 29, 3)}${blush(36, 29, 3)}
+      <path d="M17 17.4 q2.6 -1.6 4.8 -.4 M28.2 17 q2.4 -1.2 4.8 .4" ${O(1.4)} fill="none" opacity=".7"/>
+      <path d="M23.6 26 q1.4 1.6 2.8 0" ${O(1.2)} fill="none" opacity=".6"/>
+      ${r2_mouth(25, 30, 4.6, o.sad)}</g>
+    ${r2_arm('r-arm1', 40, 40, 17, sh, gold, r2_hold(o))}`;
+};
+
+// ---------------- the fairy: lilac dress, butterfly wings that flutter, a star wand ----------------
+C.fairy = o => {
+  const dr = o.dress || '#c59cff', hair = '#f4e4bc', wing = '#d6ecff';
+  const star = (x, y, s) => `<path d="M${x} ${y - s} L${x + s * .3} ${y - s * .3} L${x + s} ${y - s * .2} L${x + s * .45} ${y + s * .25} L${x + s * .62} ${y + s} L${x} ${y + s * .55} L${x - s * .62} ${y + s} L${x - s * .45} ${y + s * .25} L${x - s} ${y - s * .2} L${x - s * .3} ${y - s * .3}z" fill="#ffd34d" ${O(1.2)}/>`;
+  const wings = (dx, dy, op) => `<g class="r-tail" ${r2_piv(18 + dx, 45 + dy)} opacity="${op}">
+      <path d="M${18 + dx} ${44 + dy} C${10 + dx} ${20 + dy} ${-7 + dx} ${13 + dy} ${-5 + dx} ${28 + dy} C${-4 + dx} ${38 + dy} ${7 + dx} ${45 + dy} ${18 + dx} ${44 + dy}z" fill="${wing}" ${O(1.4)}/>
+      <path d="M${18 + dx} ${46 + dy} C${8 + dx} ${48 + dy} ${-3 + dx} ${58 + dy} ${2 + dx} ${65 + dy} C${8 + dx} ${70 + dy} ${16 + dx} ${57 + dy} ${18 + dx} ${46 + dy}z" fill="${wing}" ${O(1.4)}/>
+      <path d="M${17 + dx} ${43 + dy} Q${6 + dx} ${32 + dy} ${-1 + dx} ${25 + dy} M${17 + dx} ${43 + dy} Q${8 + dx} ${38 + dy} ${2 + dx} ${36 + dy} M${17 + dx} ${47 + dy} Q${9 + dx} ${54 + dy} ${4 + dx} ${62 + dy}" stroke="#fff" stroke-width="1.3" fill="none" opacity=".9"/>
+      <circle cx="${1 + dx}" cy="${27 + dy}" r="1.6" fill="#ffb3e6"/><circle cx="${4.4 + dx}" cy="${61 + dy}" r="1.3" fill="#ffb3e6"/></g>`;
+  const wand = `<path d="M40.6 61.4 L53.4 68.8" stroke="${INK}" stroke-width="3.4" stroke-linecap="round"/><path d="M40.6 61.4 L53.4 68.8" stroke="#fff3c4" stroke-width="1.6" stroke-linecap="round"/>${star(54.6, 69.4, 5.4)}${r2_SN('M53 66.4 l1.4 -1.6', .7)}`;
+  const leg = (cls, x) => `<g class="${cls}" ${r2_piv(x, 64)}><rect x="${x - 3}" y="62" width="6" height="17" rx="3" fill="${SKIN}" ${O(1.8)}/>
+      <path d="M${x - 4} ${80.4} q0 -4 4 -4 q6 0 7.6 3 q.4 2.4 -2.2 2.4 h-7.6 q-1.8 0 -1.8 -1.4z" fill="#9a6ae0" ${O(1.5)}/><circle cx="${x + 5.4}" cy="${78}" r="1.2" fill="#ffd34d"/></g>`;
+  return shadow(25, 82, 21) + `
+    ${wings(4, -3, .75)}${wings(0, 0, .95)}
+    ${r2_arm('r-arm2', 11, 40.5, 16.6, dr, '#e8d6ff', '')}
+    ${leg('r-leg2', 20)}${leg('r-leg1', 30)}
+    <g class="r-body">
+      <path d="M13 40 Q25 34 37 40 L38 55 Q45 63 46 76 q-3.5 3.6 -7 0 q-3.5 3.6 -7 0 q-3.5 3.6 -7 0 q-3.5 3.6 -7 0 q-3.5 3.6 -7 0 q-3.5 3.6 -7 0 Q5 63 12 55z" fill="${dr}" ${O()}/>
+      ${r2_SH('M30 39 Q36.6 39.6 37 41 L38 55 Q45 63 46 76 q-3.5 3.6 -7 0 q-1.4 1.6 -3.4 1.4 Q36 64 31 56z', .14)}${r2_SN('M15 43 q3 -3 7 -3.6 l-1.6 12 q-3 .6 -5.6 2z', .26)}
+      <path d="M11 64 Q25 70 39 64 Q43 69 44 74 q-3.4 2.6 -6.4 0 q-3.2 2.6 -6.4 0 q-3.2 2.6 -6.4 0 q-3.2 2.6 -6.4 0 q-3.2 2.6 -6.4 0 q-3.2 2.6 -6.4 0 Q8 69 11 64z" fill="#e8d6ff" opacity=".5"/>
+      <path d="M12.2 53 Q25 57 37.8 53 l.4 3.6 Q25 61 11.8 56.6z" fill="#fff0fb" ${O(1.3)}/><path d="M25 57 q-5 -4 -6 1 q2 3 6 -1 q5 -4 6 1 q-2 3 -6 -1z" fill="#ff9fd0" ${O(1.1)}/>
+      <path d="M18.6 37.4 Q25 43 31.4 37.4" ${O(1.3)} fill="none"/>
+      ${[[16, 66], [24, 70], [33, 67], [20, 62], [37, 72], [12, 73]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="#fff" opacity=".85"/>`).join('')}</g>
+    <g class="r-head" ${r2_piv(25, 37)}>
+      <path d="M10 18 Q6 36 9 48 Q14 50 18 46 Q12 34 13 22z M40 18 Q43 34 41 46 Q37 48.6 34 45 Q38 34 37 22z" fill="${hair}" ${O(1.6)}/>${r2_SH('M37 22 Q39 34 34 45 Q37 48.6 41 46 Q41.4 34 40 20z', .12)}
+      <circle cx="25" cy="22" r="15" fill="${SKIN}" ${O()}/>${r2_SH('M32 10 q10 7 7.6 18 q-3 6 -9 7.6 q8 -10 1.4 -25.6z', .1)}
+      <path d="M9.4 22 Q8 4.4 25 4.6 Q42 4.4 40.6 22 Q38 13 33 11.6 Q29 15 24 12.6 Q19 15.4 16 11.8 Q11 14 9.4 22z" fill="${hair}" ${O()}/>${r2_SN('M14 10 q5 -4.2 12 -4.4', .45)}
+      <path d="M13.4 9 Q25 3.4 36.6 9" stroke="#ffd34d" stroke-width="2.6" fill="none" stroke-linecap="round"/>${star(25, 3.6, 4.2)}
+      ${eye(19, 22.6, o.closed, 3.7)}${eye(31, 22.6, o.closed, 3.7)}
+      ${o.closed || MOOD === 'sleep' ? '' : `<path d="M15 19.4 l-1.8 -1.4 M15.6 18 l-1 -1.8 M34.8 18.8 l1.8 -1.4 M34 17.6 l1 -1.8" ${O(1.1)}/>`}
+      ${blush(14, 28, 3)}${blush(36, 28, 3)}<path d="M23.8 25.6 q1.2 1.4 2.4 0" ${O(1.1)} fill="none" opacity=".55"/>
+      ${r2_mouth(25, 29.4, 3.8, o.sad)}</g>
+    ${r2_arm('r-arm1', 40, 40.5, 16.6, dr, '#e8d6ff', wand + r2_hold(o))}`;
+};
+
+// ---------------- the devi: a big, soft, slightly silly giant ----------------
+C.devi = o => {
+  const sk = '#8e7cc3', dk = '#6a5aa0', bl = '#b9acdf', ears = o.ears;
+  // an arm: big soft limb + a round fist. side -1 = far (left), +1 = near (right)
+  const arm = (cls, side) => {
+    const sx = side < 0 ? 20 : 90, piv = r2_piv(sx, 64);
+    const m = (x) => side < 0 ? x : 110 - x;           // mirror x for the near side
+    if (ears) {
+      const hx = m(22), hy = 40;
+      return `<g><path d="M${m(14)} 72 Q${m(-6)} 62 ${m(2)} 47 Q${m(8)} 37 ${m(19)} 35 L${m(27)} 46 Q${m(15)} 54 ${m(30)} 70z" fill="${sk}" ${O()}/>${r2_SH(`M${m(12)} 50 Q${m(8)} 60 ${m(20)} 70 L${m(30)} 70 Q${m(15)} 56 ${m(24)} 45z`, .14)}
+        <circle cx="${hx}" cy="${hy}" r="9.5" fill="${sk}" ${O()}/><path d="M${m(17)} 34.6 q4 -1.4 6 1 M${m(16)} 39.6 q4 -1.4 6 1" ${O(1.3)} fill="none" opacity=".55"/></g>`;
+    }
+    return `<g class="${cls}" ${piv}>
+      <path d="M${m(15)} 62 Q${m(2)} 76 ${m(2.6)} 98 L${m(18)} 100 Q${m(18)} 82 ${m(28)} 70z" fill="${sk}" ${O()}/>
+      ${r2_SH(`M${m(19)} 66 Q${m(12)} 80 ${m(13)} 99 L${m(18)} 100 Q${m(18)} 82 ${m(26)} 70z`, .14)}
+      ${side > 0 && o.hold === 'stone' ? `<circle cx="${m(8)}" cy="91" r="10" fill="#a0a4b8" ${O(1.8)}/><path d="M${m(10)} 88 l3 2 M${m(4)} 93 l2.4 -1" ${O(1.1)} opacity=".4"/>${r2_SN(`M${m(4)} 88 q2 -4 6 -4.4`, .45)}` : ''}
+      <circle cx="${m(9)}" cy="104" r="9.6" fill="${sk}" ${O()}/><path d="M${m(4)} 101 q3 2 6 1 M${m(4.4)} 105.6 q3 2 6 1" ${O(1.3)} fill="none" opacity=".5"/>
+      ${r2_SN(`M${m(5)} 99 q2 -2.6 5 -2.6`, .35)}</g>`;
+  };
+  const leg = (cls, x) => `<g class="${cls}" ${r2_piv(x, 106)}>
+      <rect x="${x - 10}" y="102" width="20" height="26" rx="9" fill="#7a68b0" ${O()}/>${r2_SH(`M${x + 3} 104 h5 q2 4 2 10 v8 h-7z`, .16)}
+      <path d="M${x - 13} 131.6 q-1 -7 8 -7.6 h10 q9 .4 9.6 5.6 q.4 2.6 -3 2.6 h-21.6 q-3 0 -3 -.6z" fill="#5a4a8a" ${O()}/>
+      <path d="M${x + 7} 128 v3.4 M${x + 11} 127.6 v3.6" ${O(1.2)} opacity=".5"/>${r2_SN(`M${x - 8} 127 q4 -2 9 -1.6`, .3)}</g>`;
+  const mouth = o.mouth === 'o' || o.whistle
+    ? `<ellipse cx="57" cy="57" rx="${o.whistle ? 3.6 : 6}" ry="${o.whistle ? 3.6 : 7}" fill="#5a2a4a" ${O(1.8)}/>${o.whistle ? '' : '<ellipse cx="57" cy="60.6" rx="3.4" ry="2" fill="#ff8fa8"/>'}`
+    : `<path d="M39 52 Q57 69 74 52 Q57 58.6 39 52z" fill="#5a2a4a" ${O(1.8)}/><path d="M45 54.4 l3 6 l3 -5z M62 55.4 l3 5 l3 -6z" fill="#fff" ${O(1)}/>`;
+  const openM = `<g class="m-open"><path d="M40 52.6 Q57 50 74 52.6 Q73 70 57 71 Q41 70 40 52.6z" fill="#5a2a4a" ${O(1.8)}/>
+      <ellipse cx="57" cy="65" rx="8" ry="3.6" fill="#ff8fa8"/><path d="M45 53 l2.6 4.6 l2.6 -4.8z M63.6 52.8 l2.6 4.8 l2.6 -4.6z" fill="#fff" ${O(1)}/></g>`;
+  return shadow(55, 132, 48) + `
+    ${arm('r-arm2', -1)}
+    ${leg('r-leg2', 37)}${leg('r-leg1', 73)}
+    <g class="r-body">
+      <ellipse cx="55" cy="82" rx="42" ry="36" fill="${sk}" ${O()}/>${r2_SH('M72 50 Q97 62 97 84 Q96 108 72 117 Q90 96 86 74 Q83 60 72 50z', .14)}
+      ${r2_SN('M24 64 q8 -12 22 -16 q-14 8 -18 22z', .22)}
+      <ellipse cx="55" cy="90" rx="26" ry="21" fill="${bl}"/><path d="M38 80 q6 -4 12 -3 M60 77 q6 -1 12 3" stroke="${dk}" stroke-width="1.3" fill="none" opacity=".35"/>
+      <path d="M53.6 88 q1.4 1.6 2.8 0" ${O(1.3)} fill="none" opacity=".55"/>
+      <path d="M28 95 Q55 101 82 95 L79 107 l-4 -2.6 l-4 3.8 l-4.4 -3 l-4 3.6 l-4.6 -3 l-4 3.6 l-4.6 -3 l-4 3.6 l-4.4 -3 l-4 3.8 l-4 -2.6z" fill="#a8743f" ${O(1.8)}/>
+      <path d="M38 99.4 l3 5 M50 100.6 l2.4 5 M62 100.4 l2.4 5 M73 98.6 l2.4 4.6" stroke="#7a5232" stroke-width="2" stroke-linecap="round"/>${r2_SN('M33 97.6 Q48 101 62 100', .25)}</g>
+    <g class="r-head" ${r2_piv(55, 66)}>
+      <path d="M31 24 Q17 7 24 -6 Q32 7 42 13z" fill="#ffd34d" ${O()}/><path d="M79 24 Q93 7 86 -6 Q78 7 68 13z" fill="#ffd34d" ${O()}/>
+      <path d="M26 10 q5 2 8 -1 M24.6 2 q4 1.6 6 -1 M84 10 q-5 2 -8 -1 M85.4 2 q-4 1.6 -6 -1" ${O(1.3)} fill="none" opacity=".45"/>
+      ${ears ? '' : `<g class="r-ear" ${r2_piv(28, 40)}><path d="M28 34 Q14 30 13 40 Q20 46 29 45z" fill="${sk}" ${O()}/><path d="M25 37 Q18 36.4 17.6 40 Q21 42.4 26 42z" fill="${bl}"/></g>
+      <g class="r-ear" ${r2_piv(82, 40)}><path d="M82 34 Q96 30 97 40 Q90 46 81 45z" fill="${sk}" ${O()}/><path d="M85 37 Q92 36.4 92.4 40 Q89 42.4 84 42z" fill="${bl}"/></g>`}
+      <circle cx="55" cy="38" r="31" fill="${sk}" ${O()}/>${r2_SH('M66 9 Q88 18 86 42 Q83 62 62 69 Q80 54 78 34 Q76 18 66 9z', .13)}${r2_SN('M32 22 q8 -14 22 -15 q-14 6 -18 18z', .25)}
+      <path d="M38 12 q5 -11 12 -3 q4 -10 10 0 q6 -9 11 2.4" fill="${dk}" ${O(1.8)}/>
+      <path d="M37 ${o.angry ? 18.6 : 22} Q46 ${o.angry ? 19.6 : 16.4} 53 ${o.angry ? 27 : 24} M60 ${o.angry ? 27 : 24} Q67 ${o.angry ? 19.6 : 16.4} 76 ${o.angry ? 18.6 : 22}" stroke="#4a3a6a" stroke-width="5" stroke-linecap="round" fill="none"/>
+      ${eye(46, 33, o.closed, 6)}${eye(66, 33, o.closed, 6)}
+      <ellipse cx="57" cy="45" rx="7" ry="5.2" fill="${dk}" ${O(1.6)}/><circle cx="54.6" cy="45.6" r="1.3" fill="#3b2a4a"/><circle cx="59.4" cy="45.6" r="1.3" fill="#3b2a4a"/>${r2_SN('M53 43 q2 -1.6 5 -1.4', .45)}
+      ${blush(35, 48, 5)}${blush(78, 48, 5)}
+      <g class="r-mouth">${mouth}${openM}</g>
+      ${o.cap ? `<path d="M28 17 Q29 -10 55 -10.4 Q81 -10 82 17 Q55 6 28 17z" fill="#e2445c" ${O()}/>${r2_SH('M66 -8 Q81 -4 82 17 Q76 12.6 70 11z', .15)}${r2_SN('M35 4 q6 -10 16 -11', .35)}
+        <path d="M27.4 17.6 Q55 5 82.6 17.6 L82 12 Q55 0 28 12z" fill="#fff" ${O(1.6)}/><circle cx="55" cy="-12" r="6" fill="#fff" ${O(1.6)}/>` : ''}</g>
+    ${arm('r-arm1', 1)}`;
+};
+
+// ---------------- the snowman (თოვლის ბაბუა): three snowballs, stick arms, scarf that flutters ----------------
+C.snowman = o => {
+  const coal = '#3a3550';
+  const stick = (cls, x, y, dir) => {   // dir -1 = left (far), +1 = right (near); hangs down-and-out at ~40deg
+    const ex = x + dir * 23, ey = y + 27;
+    return `<g class="${cls}" ${r2_piv(x, y)}>
+      <path d="M${x} ${y} L${ex} ${ey}" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><path d="M${x} ${y} L${ex} ${ey}" stroke="#8a5a34" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M${ex - dir * 1} ${ey - 1} l${dir * 7} 1 M${ex - dir * 1} ${ey - 1} l${dir * 2} 7 M${x + dir * 13} ${y + 15} l${dir * 6} -2" stroke="${INK}" stroke-width="3.6" stroke-linecap="round"/>
+      <path d="M${ex - dir * 1} ${ey - 1} l${dir * 7} 1 M${ex - dir * 1} ${ey - 1} l${dir * 2} 7 M${x + dir * 13} ${y + 15} l${dir * 6} -2" stroke="#8a5a34" stroke-width="1.6" stroke-linecap="round"/></g>`;
+  };
+  return shadow(40, 142.6, 32) + `
+    ${stick('r-arm2', 19, 57, -1)}
+    <circle cx="40" cy="110" r="34" fill="#fff" ${O()}/>${r2_SH('M56 80 Q76 92 73 116 Q68 138 44 143.6 Q66 128 66 108 Q66 92 56 80z', .1)}${r2_SN('M16 98 q4 -14 18 -19 q-12 8 -14 21z', .9)}
+    <path d="M14 126 q10 6 18 3 M52 131 q8 -1 12 -6" stroke="#cfdcf0" stroke-width="2" fill="none" stroke-linecap="round"/>
+    ${[98, 114].map(y => `<circle cx="43" cy="${y}" r="3" fill="${coal}"/>`).join('')}
+    <g class="r-body">
+      <circle cx="40" cy="56" r="24" fill="#fff" ${O()}/>${r2_SH('M50 35 Q65 44 63 62 Q60 76 44 80 Q58 68 57 54 Q56 42 50 35z', .1)}
+      ${[52, 64].map(y => `<circle cx="43" cy="${y}" r="3" fill="${coal}"/>`).join('')}${r2_SN('M42.6 50.4 l1 -1', .7)}</g>
+    <g class="r-head" ${r2_piv(40, 36)}>
+      <circle cx="40" cy="18" r="18" fill="#fff" ${O()}/>${r2_SH('M48 3 Q59 9 58 21 Q56 32 45 36 Q53 26 52 16 Q51 8 48 3z', .1)}
+      ${blush(31, 23, 2.8)}${blush(51, 23, 2.8)}
+      ${eye(35, 14.4, o.closed, 3.4)}${eye(47, 14.4, o.closed, 3.4)}
+      <g class="r-mouth"><g fill="${coal}">${[[34.4, 26.6], [37.6, 28.4], [41.4, 28.8], [45, 27.6]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.35"/>`).join('')}</g>${r2_open(40, 27.6, 4.4, '#3a3550')}</g>
+      <path d="M42 18.6 L60 22 Q61 23 60 23.8 L42 24.6 Q40.6 21.6 42 18.6z" fill="#ff9f43" ${O(1.3)}/><path d="M47 20 l1 2.4 M52 21 l.8 2" stroke="#d8742a" stroke-width="1" stroke-linecap="round"/>
+      <path d="M26 2.4 L28 -17 Q40 -19.6 52 -17 L54 2.4z" fill="${coal}" ${O()}/><path d="M27 -3 Q40 -5 53 -3 L53.6 1.6 Q40 -.4 26.4 1.6z" fill="#e2445c"/>
+      ${r2_SN('M31 -14 q1 6 0 12', .25)}<path d="M20 4 Q40 -1 60 4" stroke="${INK}" stroke-width="4.6" stroke-linecap="round" fill="none"/><path d="M20 4 Q40 -1 60 4" stroke="${coal}" stroke-width="2.4" stroke-linecap="round" fill="none"/></g>
+    <g class="r-tail" ${r2_piv(52, 42)}><path d="M48.6 40 L54 42 Q57 52 58 62 L51.4 63 Q51 51 48.6 40z" fill="#e2445c" ${O(1.6)}/><path d="M51.6 58 l6.2 -.8 M51.4 62.6 l-.6 3 M54 62.4 v3 M56.6 62 l.8 3" ${O(1.2)} fill="none"/><path d="M50 47 l6 -.6" stroke="#fff" stroke-width="1.6" opacity=".7"/></g>
+    <path d="M21.6 37 Q40 47 58.4 37 L61 44 Q40 55 19 44z" fill="#e2445c" ${O(1.6)}/><path d="M26 41.6 l2.4 6 M34 44 l1.4 6 M46 44 l-1.4 6" stroke="#fff" stroke-width="1.8" opacity=".7"/>
+    ${stick('r-arm1', 61.6, 57, 1)}`;
+};
+
+// --- part 3 ---
+// R3 rig: fox (+wolf), hare, bear, deer, lion, squirrel, hedgehog.
+// Back parts first, front parts last; every moving part is its own top-level group.
+const r3_SH = (d, op = .14) => `<path d="${d}" fill="#2a1840" opacity="${op}"/>`;
+const r3_SN = (d, op = .32) => `<path d="${d}" fill="#fff" opacity="${op}"/>`;
+// a talking mouth: closed drawing + an open half-moon (top edge at y) that the voice scales open
+const r3_mouth = (closed, x, y, w, h, col = '#7a3a4a') => `<g class="r-mouth">${closed}<g class="m-open"><path d="M${x - w} ${y} q${w} ${h * .12} ${w * 2} 0 q-.4 ${h} -${w} ${h} q-${w * .6} 0 -${w} -${h}z" fill="${col}" ${O(1.3)}/><ellipse cx="${x}" cy="${y + h * .7}" rx="${w * .5}" ry="${h * .22}" fill="#ff8fa8"/></g></g>`;
+
+// ---------------------------------------------------------------- fox (the wolf is the fox recoloured)
+C.fox = o => {
+  const F = '#f08a3c', W = '#fff7ee', D = '#5a3a3a';
+  const leg = (cls, x, far) => { const d = `M${x - 4} 54 v14 q0 4 4 4 h3 q4 0 4 -2.6 q0 -2.2 -3 -2.4 v-13z`;
+    return `<g class="${cls}"><path d="${d}" fill="${F}" ${O(1.8)}/><path d="M${x - 3.1} 63 v5 q0 3.1 3.1 3.1 h3 q3.1 0 3.1 -1.8 q0 -1.4 -2.4 -1.6 h-.7 v-4.7z" fill="${D}"/>${far ? r3_SH(d, .22) : `<path d="M${x - 2} 57 v4" stroke="#fff" stroke-width="1.4" opacity=".35" stroke-linecap="round"/>`}</g>`; };
+  const mouthClosed = o.mouth === 'o' ? `<ellipse cx="84" cy="47.5" rx="2.6" ry="3" fill="#7a3a4a" ${O(1.3)}/>` : `<path d="M79 45.6 q5 2.4 11 -.6" ${O(1.4)} fill="none"/>`;
+  return shadow(42, 72, 32) + `
+    <g class="r-tail" style="transform-origin:90% 92%"><g class="tail" style="animation:none">
+      <path d="M26 57 C8 60 -8 46 -4 28 C-2 20 4 15 9 14 C10 24 16 34 30 46z" fill="${F}" ${O()}/>
+      ${r3_SH('M26 57 C10 59 -4 49 -4 32 C2 44 12 50 28 50z', .14)}
+      <path d="M9 14 C2 16 -4 24 -4 30 C1 30 4 28 6 25 C6 29 8 30 10 29 C10 24 10 18 9 14z" fill="${W}" ${O(1.6)}/>
+      <path d="M8 34 q4 6 10 9 M4 40 q5 6 12 8" stroke="${INK}" stroke-width="1.1" opacity=".3" fill="none" stroke-linecap="round"/></g></g>
+    ${leg('r-leg1', 34, 1)}${leg('r-leg2', 58, 1)}
+    <g class="r-body"><ellipse cx="41" cy="54" rx="23" ry="14.5" fill="${F}" ${O()}/>
+      ${r3_SH('M20 58 Q30 70 48 68 Q60 66 63 56 Q58 64 44 65 Q28 66 20 58z', .16)}
+      <path d="M52 42 q12 6 10 18 q-3 7 -12 6 q4 -12 2 -24z" fill="${W}"/>
+      <path d="M50 64 l2 -3 l2 3 l2 -3 l2 3" stroke="${INK}" stroke-width="1" opacity=".25" fill="none"/>
+      ${r3_SN('M24 46 Q34 40 46 41 Q36 43 27 49z', .3)}</g>
+    ${leg('r-leg2', 26, 0)}${leg('r-leg1', 50, 0)}
+    <g class="r-head" style="transform-origin:18% 86%">
+      <g class="r-ear"><path d="M55 26 Q51 12 55 3 Q64 8 69 19z" fill="${F}" ${O()}/><path d="M57 21 Q55 13 57 8 Q62 12 64 18z" fill="${D}"/></g>
+      <g class="r-ear" style="animation-delay:-1.3s"><path d="M70 19 Q75 6 83 1 Q86 13 83 26z" fill="${F}" ${O()}/><path d="M73 18 Q77 10 81 7 Q82 14 81 21z" fill="${D}"/></g>
+      <path d="M50 38 C46 24 58 15 68 15 C80 15 86 24 86 32 L94 38 Q98 43 93 46 C87 49 81 48 76 48 L70 50 l-3.5 -3 l-3.5 3 l-3.5 -3 l-3.5 2.4 C53 47 50 43 50 38z" fill="${F}" ${O()}/>
+      ${r3_SH('M80 18 Q87 24 86 32 L80 30 Q82 24 80 18z', .12)}
+      <path d="M70 41 C78 37 87 38 94 39 Q98 43 93 46 C87 49 79 49 73 47 C69 46 68 43 70 41z" fill="${W}"/>
+      <path d="M52 40 q3 6 8 8 l3.5 -2.4 l3.5 3 l3 -2.6 q-6 -2 -9 -8z" fill="${W}" opacity=".9"/>
+      ${r3_SN('M56 24 Q62 18 70 18 Q62 21 58 28z', .35)}
+      <ellipse cx="94.5" cy="39.6" rx="3.3" ry="2.7" fill="#2a1f3a"/><circle cx="95.4" cy="38.6" r=".95" fill="#fff"/>
+      <path d="M64 24 q4 -3 9 -1" ${O(1.4)} fill="none" opacity=".55"/>
+      ${eye(69, 31, o.closed, 4.4)}${blush(62, 40, 3.2)}
+      <path d="M86 43 l2 .3 M85.6 44.6 l2 .8" stroke="${INK}" stroke-width=".8" opacity=".4"/>
+      ${r3_mouth(mouthClosed, 84.5, 45.8, 5.6, 6)}</g>`;
+};
+const r3_fox = C.fox;
+C.wolf = o => r3_fox(o).replace(/#f08a3c/g, '#8a8fa8').replace(/#fff7ee/g, '#e6e8f0').replace(/#5a3a3a/g, '#4a4a5e');
+
+// ---------------------------------------------------------------- hare: crouching, long ears, cotton tail
+C.hare = o => {
+  const B = '#f5eee6', P = '#ece3d8', E = '#ffb3c3';
+  const hind = (cls, x, far) => { const d = `M${x + 4} 54 q-9 4 -10 12 q0 5 6 5 h15 q4 0 4 -3 q0 -3 -5 -3.4 h-4 q1.6 -5 -1 -10.6z`;
+    return `<g class="${cls}" style="transform-origin:45% 10%"><path d="${d}" fill="${P}" ${O()}/>${far ? r3_SH(d, .2) : `<path d="M${x + 6} 70.6 v-2.4 M${x + 10} 70.6 v-2.4" stroke="${INK}" stroke-width="1" opacity=".35"/>` + r3_SN(`M${x - 3} 64 q2 -6 7 -8 q-3 4 -4 9z`, .4)}</g>`; };
+  const front = (cls, x, far) => { const d = `M${x - 3.6} 56 v10.6 q0 4.4 4.4 4.4 h4 q4 0 4 -2.8 q0 -2.6 -3.4 -2.6 h-1.6 v-9.6z`;
+    return `<g class="${cls}"><path d="${d}" fill="${P}" ${O(1.9)}/>${far ? r3_SH(d, .2) : `<path d="M${x + 3} 70.8 v-2 M${x + 5.6} 70.6 v-2" stroke="${INK}" stroke-width=".9" opacity=".35"/>`}</g>`; };
+  return shadow(34, 71, 30) + `
+    <g class="r-tail" style="transform-origin:95% 55%"><path d="M10 40 q-5 -1 -6 3 q-4 1 -3 5 q-2 4 2 6 q2 4 7 2 q4 2 6 -2 q3 -5 0 -9 q-1 -5 -6 -5z" fill="#fff" ${O()}/>${r3_SH('M3 50 q2 4 7 2 q4 2 6 -2 q-6 2 -13 0z', .12)}</g>
+    ${hind('r-leg1', 20, 1)}${front('r-leg2', 50, 1)}
+    <g class="r-body"><ellipse cx="31" cy="51" rx="23" ry="16" fill="${B}" ${O()}/>
+      <path d="M12 56 q4 -12 16 -10" stroke="${INK}" stroke-width="1.3" opacity=".3" fill="none" stroke-linecap="round"/>
+      ${r3_SH('M10 58 Q22 70 38 67 Q50 65 54 55 Q48 63 36 63 Q20 64 10 58z', .13)}
+      <path d="M38 64 q8 2 14 -6 q-6 2 -14 3z" fill="#fff" opacity=".8"/>
+      ${r3_SN('M14 44 Q22 36 34 36 Q24 39 17 47z', .45)}</g>
+    ${hind('r-leg2', 16, 0)}${front('r-leg1', 46, 0)}
+    <g class="r-head" style="transform-origin:28% 92%">
+      <g class="r-ear" style="transform-origin:50% 100%"><path d="M44 24 C38 2 42 -8 47 -6 C53 -4 52 10 50 24z" fill="${B}" ${O()}/><path d="M46 20 C43 6 45 -2 47 -1 C50 0 49 10 48.5 20z" fill="${E}"/>${r3_SH('M44 24 C40 10 40 0 43 -4 C43 6 45 16 47 24z', .1)}</g>
+      <g class="r-ear" style="transform-origin:20% 100%;animation-delay:-2.2s"><path d="M55 24 C60 2 66 -6 70 -3 C74 1 66 14 60 25z" fill="${B}" ${O()}/><path d="M57 21 C61 8 65 1 67 2 C69 5 63 14 59 22z" fill="${E}"/><path d="M66 -1 q2 0 2 2" stroke="#fff" stroke-width="1.4" opacity=".6" fill="none" stroke-linecap="round"/></g>
+      <path d="M38.5 38 C37 24 46 20 53 20.5 C63 21 68.5 28 68 36 C70 40 68 46 62 49 C56 52 48 51 44 48 l-2 1 l-.4 -3 l-2.2 .4 l.6 -3 C39 42 38.6 40 38.5 38z" fill="${B}" ${O()}/>
+      ${r3_SH('M60 23 Q68 28 68 36 C69 40 67 44 64 46 Q66 34 60 23z', .1)}
+      ${r3_SN('M43 31 Q46 24 54 23 Q47 27 45 33z', .5)}
+      <ellipse cx="61" cy="44" rx="7" ry="5" fill="#fff"/>
+      <path d="M50 26 q3 -2.6 7 -1.6" ${O(1.3)} fill="none" opacity=".5"/>
+      ${eye(57, 32, o.closed, 4.4)}${blush(51, 41)}
+      <path d="M64.5 39.4 q1.6 -.8 3.2 0 q0 1.6 -1.6 2.4 q-1.6 -.8 -1.6 -2.4z" fill="#ff7f9a" ${O(1.1)}/>
+      <path d="M69.5 41 l8 -1.6 M69.5 43.6 l8 1.6 M69 46 l6 3" stroke="${INK}" stroke-width=".9" opacity=".55"/>
+      ${r3_mouth(`<path d="M66 42 q-1.5 3 -4 2 M66 42 q1.5 3 4 2" ${O(1.3)} fill="none"/><rect x="64.7" y="44.2" width="2.6" height="2.6" rx=".6" fill="#fff" ${O(.9)}/>`, 66, 44.4, 3.6, 4.6)}</g>`;
+};
+
+// ---------------------------------------------------------------- bear: round, upright, honey-brown (o.fur, o.belly)
+C.bear = o => {
+  const f = o.fur || '#a8743f', b = o.belly || '#e2b989';
+  const arm = (cls, x, front) => { const d = `M${x - 5.2} 47.6 q0 -5.6 5.2 -5.6 q5.2 0 5.2 5.6 q.8 7 -.2 13 q-5 4.6 -10 0 q-1 -6 -.2 -13z`;
+    return `<g class="${cls}"><path d="${d}" fill="${f}" ${O()}/>${r3_SH(`M${x + 1.6} 43 q3.6 2 3.6 5 q.8 7 -.2 12.6 q-1.6 1.6 -3.4 1.8 q2 -9 0 -19.4z`, front ? .12 : .26)}
+      <ellipse cx="${x}" cy="60" rx="3.6" ry="2.4" fill="${b}"/>${front ? r3_SN(`M${x - 3.4} 48 q.4 -3 2.4 -4`, .45) : ''}</g>`; };
+  const leg = (cls, x, far) => `<g class="${cls}"><path d="M${x - 6} 62 v6 h12 v-6z" fill="${f}" ${O()}/>
+      <ellipse cx="${x}" cy="72" rx="8" ry="5" fill="${f}" ${O()}/><ellipse cx="${x}" cy="73" rx="4.4" ry="2.6" fill="${b}"/>
+      <circle cx="${x - 3.8}" cy="69.6" r="1.1" fill="${b}"/><circle cx="${x}" cy="68.8" r="1.1" fill="${b}"/><circle cx="${x + 3.8}" cy="69.6" r="1.1" fill="${b}"/>${far ? r3_SH(`M${x - 8} 72 a8 5 0 0 0 16 0z`, .14) : ''}</g>`;
+  return shadow(24, 75, 22) + `
+    ${arm('r-arm2', 5, false)}
+    ${leg('r-leg2', 13, 1)}${leg('r-leg1', 35, 0)}
+    <g class="r-body"><ellipse cx="24" cy="57" rx="19" ry="17" fill="${f}" ${O()}/><ellipse cx="24" cy="60" rx="11.5" ry="10.5" fill="${b}"/>
+      ${r3_SH('M34 43 Q44 52 42 62 Q38 72 26 74 Q38 64 34 43z', .14)}${r3_SN('M11 48 q4 -6 10 -7 q-5 3 -7 8z', .3)}
+      <path d="M19 56 q2 1.4 4 0 M25 61 q2 1.4 4 0 M19 65 q2 1.4 4 0" stroke="${INK}" stroke-width="1" opacity=".22" fill="none" stroke-linecap="round"/></g>
+    <g class="r-head">
+      <g class="r-ear"><circle cx="9" cy="14" r="8" fill="${f}" ${O()}/><circle cx="9" cy="14.6" r="4.2" fill="${b}"/></g>
+      <g class="r-ear" style="animation-delay:-2.4s"><circle cx="39" cy="14" r="8" fill="${f}" ${O()}/><circle cx="39" cy="14.6" r="4.2" fill="${b}"/></g>
+      <circle cx="24" cy="30" r="18" fill="${f}" ${O()}/>
+      ${r3_SH('M33 15 q10 8 8 20 q-3 10 -14 13 q12 -10 6 -33z', .12)}
+      <path d="M12 19 q6 -6 12 -5" stroke="#fff" stroke-width="2.6" opacity=".35" fill="none" stroke-linecap="round"/>
+      <path d="M21 12.6 l1.4 -3 l1.6 3 l1.4 -2.6 l1.2 3" ${O(1.4)} fill="${f}"/>
+      <ellipse cx="24" cy="38" rx="9.8" ry="7.4" fill="${b}" ${O(1.6)}/>
+      <path d="M21 33.2 q3 -2 6 0 q.6 2.4 -3 3.6 q-3.6 -1.2 -3 -3.6z" fill="#2a1f3a"/><circle cx="25.4" cy="33.6" r=".9" fill="#fff"/>
+      <path d="M13 22.6 q3 -2 6 -.6 M29 22 q3 -1.4 6 .6" ${O(1.4)} fill="none" opacity=".55"/>
+      ${eye(16, 27, o.closed, 4)}${eye(32, 27, o.closed, 4)}${blush(12, 35, 3)}${blush(36, 35, 3)}
+      ${r3_mouth(`<path d="M24 37 v2.5 M24 39.5 q-3 2.5 -5 0 M24 39.5 q3 2.5 5 0" ${O(1.3)} fill="none"/>`, 24, 40.4, 4.4, 5.2)}</g>
+    ${arm('r-arm1', 43, true)}`;
+};
+
+// ---------------------------------------------------------------- lion: golden body, big scalloped mane
+const r3_mane = (cx, cy, r, n, bump) => { let d = ''; for (let i = 0; i <= n; i++) { const a = i / n * Math.PI * 2, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+  if (!i) d += `M${x.toFixed(1)} ${y.toFixed(1)}`; else { const m = (i - .5) / n * Math.PI * 2; d += ` Q${(cx + Math.cos(m) * (r + bump)).toFixed(1)} ${(cy + Math.sin(m) * (r + bump)).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}`; } } return d + 'z'; };
+C.lion = o => {
+  const Y = '#f0b64a', Yd = '#e0a43a', M = '#c9782a', Fc = '#f6c45a', Mz = '#fff0d0';
+  const leg = (cls, x, far) => { const d = `M${x - 5} 48 v18.6 q0 4.4 4.4 4.4 h4.4 q4.2 0 4.2 -3 q0 -2.6 -3 -2.8 v-17.2z`;
+    return `<g class="${cls}"><path d="${d}" fill="${far ? Yd : Y}" ${O()}/>${far ? r3_SH(d, .12) : `<path d="M${x - 2.6} 53 v9" stroke="#fff" stroke-width="1.6" opacity=".3" stroke-linecap="round"/>`}
+      <path d="M${x + 2} 71 v-2.2 M${x + 5} 71 v-2.2" stroke="${INK}" stroke-width="1" opacity=".4"/></g>`; };
+  const mouthClosed = o.mouth === 'o' ? `<ellipse cx="72" cy="41.6" rx="2.6" ry="3" fill="#7a3a4a" ${O(1.2)}/>` : `<path d="M72 36 v2 M72 38 q-2.5 2.5 -4.5 0 M72 38 q2.5 2.5 4.5 0" ${O(1.2)} fill="none"/>`;
+  return shadow(42, 71, 34) + `
+    <g class="r-tail" style="transform-origin:96% 94%"><path d="M11 41 Q-6 36 -2 19" stroke="${INK}" stroke-width="5.4" fill="none" stroke-linecap="round"/><path d="M11 41 Q-6 36 -2 19" stroke="${Y}" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M-2 10 q4 1 5 5 q2 3 -1 6 q-2 3 -5 1 q-4 0 -3.6 -4 q-2 -4 1.6 -6 q1 -2 3 -2z" fill="${M}" ${O(1.5)}/>${r3_SN('M-4 14 q1 -2 3 -2', .4)}</g>
+    ${leg('r-leg1', 21, 1)}${leg('r-leg2', 55, 1)}
+    <g class="r-body"><ellipse cx="38" cy="44" rx="30" ry="18" fill="${Y}" ${O()}/>
+      ${r3_SH('M10 50 Q22 64 42 62 Q60 61 67 48 Q60 58 42 58 Q22 58 10 50z', .14)}
+      <path d="M24 59 q16 5 34 -1" stroke="#fff0d0" stroke-width="4" opacity=".7" fill="none" stroke-linecap="round"/>
+      ${r3_SN('M16 34 Q28 26 44 27 Q30 30 20 38z', .35)}</g>
+    ${leg('r-leg2', 33, 0)}${leg('r-leg1', 65, 0)}
+    <g class="r-head" style="transform-origin:30% 82%">
+      <path d="${r3_mane(70, 29, 18.5, 13, 9)}" fill="${M}" ${O(1.8)}/>
+      ${r3_SH(r3_mane(73, 32, 15, 11, 6), .14)}
+      <path d="M54 22 q-4 -3 -5 -7 M62 10 q-1 -3 0 -5 M80 9 q2 -2 4 -2 M89 24 q3 -1 5 0 M52 38 q-3 1 -5 4" stroke="#e8964a" stroke-width="1.8" opacity=".9" fill="none" stroke-linecap="round"/>
+      <circle cx="59" cy="17" r="4.2" fill="${Fc}" ${O(1.5)}/><circle cx="59" cy="17.4" r="2" fill="${M}" opacity=".6"/>
+      <circle cx="81" cy="17" r="4.2" fill="${Fc}" ${O(1.5)}/><circle cx="81" cy="17.4" r="2" fill="${M}" opacity=".6"/>
+      <circle cx="70" cy="30" r="15" fill="${Fc}" ${O()}/>
+      ${r3_SH('M78 18 q8 6 7 14 q-2 9 -11 12 q9 -10 4 -26z', .1)}${r3_SN('M59 24 q3 -6 10 -8 q-6 4 -8 9z', .4)}
+      <ellipse cx="72" cy="37" rx="7.4" ry="5.4" fill="${Mz}"/>
+      <path d="M68.6 32.6 h6.8 q0 2.6 -3.4 3.8 q-3.4 -1.2 -3.4 -3.8z" fill="#7a3a2a" ${O(1)}/><circle cx="73.6" cy="33.4" r=".7" fill="#fff"/>
+      <g fill="${INK}" opacity=".45"><circle cx="67" cy="38" r=".55"/><circle cx="68.4" cy="39.6" r=".55"/><circle cx="77" cy="38" r=".55"/><circle cx="75.6" cy="39.6" r=".55"/></g>
+      <path d="M61.4 21.4 q3 -1.6 6 0 M74 21.4 q3 -1.6 6 0" ${O(1.4)} fill="none" opacity=".6"/>
+      ${eye(65, 27, o.closed, 3.6)}${eye(77, 27, o.closed, 3.6)}${blush(61, 35, 2.6)}${blush(83, 35, 2.6)}
+      ${r3_mouth(mouthClosed, 72, 39.2, 3.8, 5.4)}</g>`;
+};
+
+// ---------------------------------------------------------------- deer: slim fawn with white spots (o.antlers)
+C.deer = o => {
+  const T = '#c98a4a', S = '#fff6dc', H = '#e8c9a0', K = '#5a3a2a';
+  const leg = (cls, x, far) => { const d = `M${x - 3.4} 34 q-.6 12 .2 22 l-.4 4.6 q0 2 2 2 h3.4 q2 0 2 -2 l-.4 -4.6 q1 -10 .6 -22z`;
+    return `<g class="${cls}"><path d="${d}" fill="${T}" ${O(1.7)}/><path d="M${x - 3.6} 58.4 h6.8 l.4 2.2 q0 2 -2 2 h-3.6 q-2 0 -2 -2z" fill="${K}"/>${far ? r3_SH(d, .22) : `<path d="M${x - 1.6} 38 v12" stroke="#fff" stroke-width="1.2" opacity=".3" stroke-linecap="round"/>`}</g>`; };
+  return shadow(34, 63, 26) + `
+    <g class="r-tail" style="transform-origin:90% 95%"><path d="M9 27 q-6 -4 -5 -10 q4 -1 7 3 q2 3 1 7z" fill="${T}" ${O(1.6)}/><path d="M7.4 25 q-3 -3 -2.6 -6.4 q2.4 .4 3.6 2.6z" fill="#fff"/></g>
+    ${leg('r-leg1', 19, 1)}${leg('r-leg2', 45, 1)}
+    <g class="r-body"><ellipse cx="30" cy="32" rx="24" ry="12" fill="${T}" ${O()}/>
+      <path d="M14 39 Q30 46 46 39 Q38 43 30 43 Q20 43 14 39z" fill="${S}" opacity=".9"/>
+      ${r3_SH('M8 36 Q20 46 34 44 Q48 43 53 34 Q48 41 36 41 Q20 42 8 36z', .14)}
+      <g fill="${S}"><circle cx="18" cy="27" r="1.9"/><circle cx="25" cy="24.4" r="1.6"/><circle cx="31" cy="27.4" r="1.9"/><circle cx="38" cy="25" r="1.5"/><circle cx="23" cy="31" r="1.4"/><circle cx="36" cy="31" r="1.6"/></g>
+      ${r3_SN('M14 26 Q22 21 32 21 Q22 23 16 29z', .3)}</g>
+    ${leg('r-leg2', 15, 0)}${leg('r-leg1', 41, 0)}
+    <g class="r-head" style="transform-origin:16% 92%">
+      <path d="M40 33 Q46 18 52 9 L61 13 Q56 22 55 35z" fill="${T}"/><path d="M40 33 Q46 18 52 9 M61 13 Q56 22 55 35" fill="none" ${O()}/><path d="M53.4 33 Q54.6 22 59.4 14.6 L60.6 15 Q56.4 23 55.4 34z" fill="${S}" opacity=".85"/>${r3_SH('M41 32 Q46 20 51 12 L53 13 Q48 22 45 34z', .12)}
+      ${o.antlers ? `<path d="M54 3 q-2 -5 -6 -6 M51.6 -.6 q-1 -4 0 -7 M62 3 q2 -5 6 -6 M64.4 -.6 q1 -4 0 -7" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M54 3 q-2 -5 -6 -6 M51.6 -.6 q-1 -4 0 -7 M62 3 q2 -5 6 -6 M64.4 -.6 q1 -4 0 -7" stroke="#e8d0a8" stroke-width="1.8" fill="none" stroke-linecap="round"/>` : ''}
+      <g class="r-ear" style="transform-origin:90% 90%"><path d="M53 5 Q46 -1 44 3 Q46 9 53 9z" fill="${T}" ${O(1.4)}/><path d="M51.6 6.4 Q47.6 3 46.4 4 Q47.4 7 51.6 7.8z" fill="#ffb3c3"/></g>
+      <path d="M49.4 10.4 C49.4 4 54 1 58.4 1 C64 1 67 5 67 8.6 Q72 9.6 73 13 Q73 17.4 68 18 Q62 19 58 18 C52.6 17.6 49.4 15 49.4 10.4z" fill="${T}" ${O()}/>
+      ${r3_SN('M52 8 q1 -4.6 6 -5.4 q-4 2.4 -4.4 6z', .4)}
+      <path d="M63.6 11 Q68 9.6 73 13 Q73 17.4 68 18 Q63.6 18.4 62.6 15 Q62.4 12.4 63.6 11z" fill="${H}"/>
+      <ellipse cx="71.4" cy="12.2" rx="2" ry="1.6" fill="#2a1f3a"/><circle cx="72" cy="11.6" r=".6" fill="#fff"/>
+      <g class="r-ear" style="transform-origin:15% 90%;animation-delay:-1.7s"><path d="M60 3 Q64 -5 69 -4 Q68 2 62 6z" fill="${T}" ${O(1.4)}/><path d="M61.4 3.4 Q64.4 -2 67.4 -2.4 Q66.4 1.4 62.4 4.6z" fill="#ffb3c3"/></g>
+      ${eye(58.4, 8.4, o.closed, 3.4)}<path d="M55 5.4 l-1.6 -1.2 M56.6 4.6 l-.8 -1.6" ${O(1)} opacity=".7"/>${blush(56.6, 14.4, 2.4)}
+      ${r3_mouth(`<path d="M66 16 q2.4 1.4 4.6 -.2" ${O(1.2)} fill="none"/>`, 68.2, 16.2, 2.6, 3.6)}</g>`;
+};
+
+// ---------------------------------------------------------------- squirrel: sits up, huge curly tail, tiny paws
+C.squirrel = o => {
+  const R = '#d97a3a', B = '#e08a4a', L = '#f4dcb0';
+  const leg = (cls, x, far) => `<g class="${cls}"><path d="M${x - 3} 29 v4 q-1 4 2 4 h5.6 q2.4 0 2.4 -1.6 q0 -1.6 -2.4 -1.8 h-1.4 v-4.6z" fill="${B}" ${O(1.4)}/>${far ? r3_SH(`M${x - 3} 29 v4 q-1 4 2 4 h5.6 q2.4 0 2.4 -1.6 q0 -1.6 -2.4 -1.8 h-1.4 v-4.6z`, .22) : ''}</g>`;
+  const arm = (cls, x, front) => `<g class="${cls}"><path d="M${x - 2.2} 19 q-.8 4 0 7.6 q2.2 2 4.4 0 q.6 -3.6 0 -7.6z" fill="${B}" ${O(1.4)}/>${front ? '' : r3_SH(`M${x - 2.2} 19 q-.8 4 0 7.6 q2.2 2 4.4 0 q.6 -3.6 0 -7.6z`, .25)}<ellipse cx="${x}" cy="27" rx="1.8" ry="1.3" fill="${L}"/></g>`;
+  return shadow(20, 37, 16) + `
+    <g class="r-tail" style="transform-origin:90% 94%"><g transform="translate(17 0) scale(.82 1) translate(-17 0)"><path d="M17 35 C2 36 -6 26 -4 14 C-2 4 8 -1 14 3 C18 6 16 12 12 11 C8 10 6 14 8 20 C10 26 14 28 19 29z" fill="${R}" ${O(1.8)}/>
+      ${r3_SH('M17 35 C4 35 -4 27 -4 16 C0 26 8 31 18 31z', .16)}
+      <path d="M0 10 q3 -6 9 -7 M-1 18 q2 6 8 10" stroke="#f0a060" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".9"/>
+      <path d="M3 22 q1 3 3 5 M8 3 q2 -1 4 0" stroke="${INK}" stroke-width=".9" opacity=".3" fill="none" stroke-linecap="round"/></g></g>
+    ${arm('r-arm2', 23, false)}${leg('r-leg2', 21, 1)}
+    <g class="r-body"><ellipse cx="24" cy="26" rx="10" ry="11" fill="${B}" ${O(1.8)}/><ellipse cx="26.4" cy="28.4" rx="5.4" ry="7" fill="${L}"/>
+      ${r3_SH('M16 30 Q20 37 28 36.6 Q33 35 34 28 Q30 34 24 34 Q19 34 16 30z', .14)}${r3_SN('M17 21 q2 -5 7 -6 q-4 3 -5 7z', .35)}</g>
+    ${leg('r-leg1', 27, 0)}
+    <g class="r-head" style="transform-origin:35% 92%">
+      <g class="r-ear"><path d="M24.6 7 l1 -6.4 l1.4 -2 l.8 2.2 l2.4 5.8z" fill="${B}" ${O(1.3)}/><path d="M26.2 5.4 l.6 -3.8 l1.8 4z" fill="#ffb3c3"/></g>
+      <path d="M22.4 13 C22 6.6 26.4 3.6 30.6 3.8 C35 4 37.4 7.4 37.6 10.6 Q40 12 39.6 14.4 Q39 17.4 35.4 18 Q30 19.6 26.6 18.6 Q22.6 17 22.4 13z" fill="${B}" ${O(1.8)}/>
+      <path d="M31 14 Q35 12.4 39.6 14.4 Q39 17.4 35.4 18 Q31.6 18.6 30.4 16.6z" fill="${L}"/>
+      ${r3_SN('M25 9 q1.6 -3.6 5 -4 q-3 1.8 -3.6 4.6z', .4)}
+      <ellipse cx="39" cy="13.2" rx="1.4" ry="1.1" fill="#2a1f3a"/>
+      ${eye(31.4, 10.4, o.closed, 2.8)}${blush(28.6, 15.4, 1.9)}
+      ${r3_mouth(`<path d="M35 16.6 q1.6 1 3 -.2" ${O(1)} fill="none"/><rect x="36" y="17.2" width="1.6" height="1.6" rx=".3" fill="#fff" ${O(.6)}/>`, 36.6, 16.8, 1.9, 2.8)}</g>
+    ${arm('r-arm1', 30, true)}`;
+};
+
+// ---------------------------------------------------------------- hedgehog: spiky back, pointy cream snout (o.shrooms)
+C.hedgehog = o => {
+  const Bk = '#8a6a4a', Sp = '#6a4a3a', Fc = '#e8c9a0';
+  let back = 'M3 30';
+  for (let i = 0; i <= 16; i++) { const a = Math.PI - i / 16 * Math.PI * .78, r = i % 2 ? 1.14 : 1;
+    back += ` L${(24 + Math.cos(a) * 21 * r).toFixed(1)} ${(29 - Math.sin(a) * 24 * r).toFixed(1)}`; }
+  back += ' L44 30z';
+  const foot = (cls, x, far) => `<g class="${cls}"><path d="M${x - 3} 27 v4.6 q0 2.4 2.4 2.4 h3.6 q2 0 2 -1.6 q0 -1.4 -2 -1.6 v-3.8z" fill="${Fc}" ${O(1.2)}/>${far ? r3_SH(`M${x - 3} 27 v4.6 q0 2.4 2.4 2.4 h3.6 q2 0 2 -1.6 q0 -1.4 -2 -1.6 v-3.8z`, .25) : ''}</g>`;
+  return shadow(24, 33, 20) + `
+    ${foot('r-leg1', 16, 1)}${foot('r-leg2', 34, 1)}
+    <g class="r-body"><path d="${back}" fill="${Bk}" ${O(1.8)}/>
+      <path d="M8 22 l3 -5 M14 15 l3 -5 M22 12 l3 -6 M30 13 l3 -5 M36 18 l3 -4 M12 25 l3 -5 M20 20 l3 -5 M28 19 l3 -5" stroke="${Sp}" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M11 15 l2 -3 M19 9 l2 -3 M27 8 l2 -3" stroke="#c8a888" stroke-width="1.2" stroke-linecap="round" opacity=".8"/>
+      ${r3_SH('M3 30 Q6 20 10 16 Q8 26 14 30z', .16)}
+      <path d="M6 30 Q22 34 42 30" stroke="${Fc}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"/>
+      ${o.shrooms ? [8, 20, 32].map(x => `<g transform="translate(${x} 2)"><rect x="-1.6" y="-2" width="3.2" height="5" fill="#fff" ${O(.8)}/><path d="M-6 -2 Q0 -10 6 -2z" fill="#e2445c" ${O(1)}/><circle cx="-2" cy="-4.4" r=".9" fill="#fff"/><circle cx="2" cy="-3.6" r=".8" fill="#fff"/></g>`).join('') : ''}</g>
+    ${foot('r-leg2', 12, 0)}${foot('r-leg1', 30, 0)}
+    <g class="r-head" style="transform-origin:20% 90%">
+      <path d="M30 29 Q30 17 38 15 Q45 13.6 49 19 L55.6 23.4 Q58 25.6 55.6 27.6 Q50 31 42 30.6 Q34 30.6 30 29z" fill="${Fc}" ${O(1.8)}/>
+      ${r3_SN('M34 21 q2 -4 6 -4.6 q-3 2 -4 5z', .45)}${r3_SH('M32 28 Q40 31 52 29 Q44 30 32 26z', .14)}
+      <g class="r-ear"><path d="M36.6 15.6 q-1 -4 1.6 -5 q2.6 1.4 2 5z" fill="${Fc}" ${O(1.2)}/><path d="M37.8 14.6 q-.4 -2 .6 -2.6 q1 .8 .8 2.6z" fill="#ffb3c3"/></g>
+      <circle cx="56.4" cy="24.6" r="2.6" fill="#2a1f3a"/><circle cx="57.2" cy="23.8" r=".8" fill="#fff"/>
+      ${eye(44, 20.6, o.closed, 2.8)}${blush(45, 26.4, 2.2)}
+      ${r3_mouth(`<path d="M49.6 28 q2 1.2 3.8 -.2" ${O(1)} fill="none"/>`, 51.4, 28.1, 2.2, 3)}</g>`;
+};
+
+// --- part 4 ---
+// R4 rig: dog, cat, mouse, sheep, goat, cow, bull, horse (+donkey, unicorn), pig (+kitten picture).
+// Back parts first, front parts last; every moving part is its own top-level group (legs, tail, body, head).
+// Four legs: near-front + far-back = r-leg1, far-front + near-back = r-leg2. Legs start inside the body (hip pivot hidden).
+const r4_SH = (d, op = .14) => `<path d="${d}" fill="#2a1840" opacity="${op}"/>`;
+const r4_SN = (d, op = .32) => `<path d="${d}" fill="#fff" opacity="${op}"/>`;
+// one leg: rounded column from y0 (hidden in the body) to y1 (ground), with a paw or a hoof
+const r4_leg = (cls, x, y0, y1, w, fill, foot, kind = 'paw', far = false) => {
+  const h = y1 - y0, l = x - w / 2;
+  let ft;
+  if (kind === 'paw') {
+    const ry = Math.max(1.5, w * .28), rx = w / 2 + w * .12;
+    ft = `<ellipse cx="${x + w * .12}" cy="${y1 - ry}" rx="${rx}" ry="${ry}" fill="${foot}" ${O(Math.min(1.5, w * .26))}/>` +
+      (w > 5 ? `<path d="M${x + w * .02} ${y1 - ry * 1.4} v${ry * .8} M${x + w * .34} ${y1 - ry * 1.4} v${ry * .8}" ${O(.9)} opacity=".55"/>` : '');
+  } else {
+    const hh = w * .45;
+    ft = `<path d="M${l - .3} ${y1 - hh} h${w + .6} v${hh - 1.2} q0 1.2 -1.2 1.2 h${-(w - 1.8)} q-1.2 0 -1.2 -1.2z" fill="${foot}" ${O(1.5)}/>` + r4_SN(`M${l + 1} ${y1 - hh + .9} h${w * .45} v${hh * .35} h${-w * .45}z`, .3);
+  }
+  return `<g class="${cls}"><rect x="${l}" y="${y0}" width="${w}" height="${h - 1}" rx="${w / 2}" fill="${fill}" ${O(w > 5 ? 1.8 : 1.3)}/>` +
+    r4_SH(`M${x + w * .12} ${y0 + 3} h${w * .3} v${h - 7} q${-w * .15} 1.2 ${-w * .3} .6z`, .16) +
+    (far ? `<rect x="${l}" y="${y0}" width="${w}" height="${h - 1}" rx="${w / 2}" fill="#2a1840" opacity=".12"/>` : '') + ft + `</g>`;
+};
+// talking mouth: closed drawing + open mouth (scales down from its top edge)
+const r4_mouth = (closed, x, y, w, d, fill = '#7a3a4a') => `<g class="r-mouth">${closed}<g class="m-open"><path d="M${x - w / 2} ${y} q${w / 2} -1 ${w} 0 q0 ${d} ${-w / 2} ${d + .4} q${-w / 2} -.4 ${-w / 2} ${-d}z" fill="${fill}" ${O(Math.min(1.3, w * .22))}/><ellipse cx="${x}" cy="${y + d * .7}" rx="${w * .27}" ry="${d * .2}" fill="#ff8fa8"/></g></g>`;
+
+// ---------------- dog ----------------
+C.dog = o => {
+  const fur = '#c9a26a', dk = '#8a5a34', lt = '#e8d0a0', far = '#b08a52';
+  return shadow(28, 41, 24) + `
+    <g class="r-tail" style="transform-origin:90% 95%"><path d="M11.5 19 Q2.5 14 3 4 Q3.6 1 6 2.6 Q6.6 12 12.5 15.5z" fill="${fur}" ${O(1.8)}/>${r4_SN('M4.6 5 q.6 6 4 9.6 q-4.4 -2 -4 -9.6z', .35)}</g>
+    ${r4_leg('r-leg1', 19.5, 26, 40.5, 7, far, lt, 'paw', true)}${r4_leg('r-leg2', 40.5, 26, 40.5, 7, far, lt, 'paw', true)}
+    ${r4_leg('r-leg2', 13.5, 27, 41, 7.4, fur, lt)}${r4_leg('r-leg1', 34.5, 27, 41, 7.4, fur, lt)}
+    <g class="r-body"><ellipse cx="26" cy="24" rx="20" ry="11" fill="${fur}" ${O()}/>
+      <path d="M13 30.5 q13 6 27 -.5 q-2 4 -13.5 5 q-11.5 -.5 -13.5 -4.5z" fill="${lt}"/>
+      <path d="M17 15.2 q8 -4 15 -.4 q-1.5 5.6 -8 5.6 q-6 -.4 -7 -5.2z" fill="${dk}" opacity=".85"/>
+      ${r4_SH('M7.5 27 q18 11 37 -.5 q-3 7.5 -18.5 8.5 q-15 -1 -18.5 -8z', .12)}${r4_SN('M12 17 q7 -5.4 17 -4.6 q-9 1.6 -15 6.4z', .38)}
+      <path d="M37.6 15 q4.6 6 3.4 14.4" stroke="#e2445c" stroke-width="3.2" fill="none" stroke-linecap="round"/><circle cx="41" cy="30" r="2.2" fill="#ffd34d" ${O(1.1)}/></g>
+    <g class="r-head">
+      <path d="M47 4.5 q5 -5.5 9.5 -1.5 q-1.6 4.4 -5.4 6.4z" fill="${dk}" ${O(1.5)}/>${r4_SH('M47 4.5 q5 -5.5 9.5 -1.5 q-1.6 4.4 -5.4 6.4z', .2)}
+      <circle cx="46" cy="14" r="11" fill="${fur}" ${O()}/>${r4_SH('M52 5 q7 5 4 14 q-3 5 -9 6.5 q8 -8 5 -20.5z', .1)}${r4_SN('M38 9 q3 -5 8 -5.6 q-5 2.4 -6.6 7z', .35)}
+      <path d="M43.4 3.4 q2 -3 4 -1 q1.6 -2.2 3.4 .2" ${O(1.3)} fill="none"/>
+      <ellipse cx="54" cy="18.4" rx="6.6" ry="5" fill="${lt}" ${O(1.4)}/>
+      <ellipse cx="59" cy="15.6" rx="2.7" ry="2.1" fill="${INK}"/><ellipse cx="58.4" cy="14.8" rx="1" ry=".6" fill="#fff" opacity=".7"/>
+      ${eye(47.5, 11, o.closed, 3.4)}${blush(47, 19, 2.4)}
+      ${r4_mouth(`<path d="M51 21.6 q2.8 2.2 5.8 -.4" ${O(1.3)} fill="none"/>${o.bark ? `<path d="M52.4 22.4 q2.4 4.6 5.4 .2z" fill="#ff7f9a" ${O(1.1)}/>` : ''}`, 54.4, 21.8, 6, 4.4)}
+      <g class="r-ear" style="transform-origin:70% 6%"><path d="M39.5 4.6 q-8.6 2.6 -7.6 13 q.8 4.6 4.4 3.2 q5 -3.4 6.4 -13.2z" fill="${dk}" ${O(1.6)}/>${r4_SN('M37.6 6.6 q-3.4 2.6 -3.4 8', .25)}<path d="M36.6 7 q-3 3 -2.6 9" stroke="#fff" stroke-width="1.2" opacity=".25" fill="none" stroke-linecap="round"/></g></g>`;
+};
+
+// ---------------- cat ----------------
+C.cat = o => {
+  const c = '#ffb347', d = '#e08a2a', lt = '#fff1dc';
+  return shadow(26, 45, 20) + `
+    <g class="r-tail" style="transform-origin:96% 96%"><path d="M9 36 Q-6 30 -2 12" stroke="${INK}" stroke-width="6.6" fill="none" stroke-linecap="round"/><path d="M9 36 Q-6 30 -2 12" stroke="${c}" stroke-width="3.9" fill="none" stroke-linecap="round"/>
+      <path d="M-4.8 17 l3.6 .8 M-5 22.4 l3.8 -.2 M-3.6 28 l3.4 -1" stroke="${d}" stroke-width="1.7" stroke-linecap="round"/></g>
+    ${r4_leg('r-leg1', 19, 35, 45.6, 6.4, c, c, 'paw', true)}${r4_leg('r-leg2', 37, 35, 45.6, 6.4, c, c, 'paw', true)}
+    ${r4_leg('r-leg2', 13, 36, 46, 6.8, c, lt)}${r4_leg('r-leg1', 31, 36, 46, 6.8, c, lt)}
+    <g class="r-body"><ellipse cx="24" cy="33.4" rx="18" ry="10" fill="${c}" ${O()}/>
+      <path d="M32 30.6 q8 1 9 6.6 q-3 4.6 -9 4 q-3 -5 0 -10.6z" fill="${lt}"/>
+      <path d="M13 25.6 q2.4 3.6 .4 8 M19.4 23.6 q2.4 4 .6 8.4 M25.6 23.4 q1.8 3 .2 6.4" stroke="${d}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      ${r4_SH('M7 36 q16 9.4 34 0 q-4 6.6 -17 7.4 q-13 -1 -17 -7.4z', .13)}${r4_SN('M11 29 q5 -5 12 -5.6 q-6 2 -10 6.6z', .38)}</g>
+    <g class="r-head">
+      <g class="r-ear"><path d="M45 7.4 L51.6 -2.6 L53.2 10.4z" fill="${c}" ${O(1.6)}/><path d="M47.6 6.6 l3.4 -5 l.8 6z" fill="#ff9fb4"/></g>
+      <g class="r-ear"><path d="M29.4 10.6 L31.4 -2.6 L38.6 5.6z" fill="${c}" ${O(1.6)}/><path d="M31.4 7.6 l.8 -6 l3.8 4z" fill="#ff9fb4"/></g>
+      <path d="M30.4 16.4 l-4 3.4 l5 .6z M51.6 16.4 l4 3.4 l-5 .6z" fill="${c}" ${O(1.4)}/>
+      <circle cx="41" cy="14" r="12" fill="${c}" ${O()}/>${r4_SH('M47 3.6 q8 5 6 13.6 q-2 6 -8 8.4 q7 -9 2 -22z', .1)}${r4_SN('M32.4 9 q3 -5 8.6 -6 q-5.6 2.6 -7.4 7.6z', .35)}
+      <path d="M37.4 3.8 q1 2.6 .2 5 M41 3 v5 M44.6 3.8 q-1 2.6 -.2 5" stroke="${d}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="41" cy="20.4" rx="6.4" ry="4.4" fill="${lt}"/>
+      ${eye(36.4, 13, o.closed, 3.2)}${eye(45.6, 13, o.closed, 3.2)}${blush(33, 19, 2.3)}${blush(49, 19, 2.3)}
+      ${r4_mouth(`<path d="M41 19.6 q-1.8 2.6 -3.8 .8 M41 19.6 q1.8 2.6 3.8 .8" ${O(1.1)} fill="none"/>`, 41, 20.6, 5, 3.8)}
+      <path d="M39.2 17.4 h3.6 l-1.8 2.2z" fill="#ff7f9a" ${O(1)}/>
+      <path d="M31 18 h-8.4 M31 20.2 l-7.4 2.2 M51 18 h8.4 M51 20.2 l7.4 2.2" stroke="${INK}" stroke-width=".8" opacity=".6"/>
+      ${o.bell ? `<path d="M32.6 24 q8.4 4.8 16.8 0" stroke="#e2445c" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cx="41" cy="27.6" r="3.3" fill="#ffd34d" ${O(1.2)}/><path d="M39.6 28.6 h2.8" ${O(.9)}/>${r4_SN('M39.4 26.4 q.8 -1.2 2 -1.2', .6)}` : ''}
+      ${o.r4bow ? `<path d="M48 0 l-6 -6 v12z M56 0 l6 -6 v12z" fill="#ff7f9a" ${O(1.4)}/><circle cx="52" cy="0" r="2.2" fill="#ff7f9a" ${O(1.2)}/>` : ''}</g>`;
+};
+
+// ---------------- mouse ----------------
+C.mouse = o => {
+  const g = '#b8b4c8', pk = '#ffb3c3';
+  return shadow(16, 21, 14) + `
+    <g class="r-tail" style="transform-origin:100% 85%"><path d="M4 16 Q-9 19 -12 8 q-.4 -2.6 1.6 -2.4" stroke="#ff9fb4" stroke-width="1.9" fill="none" stroke-linecap="round"/></g>
+    ${r4_leg('r-leg1', 10.5, 15, 21, 3.6, g, '#ff9fb4', 'paw', true)}${r4_leg('r-leg2', 22, 15, 21, 3.6, g, '#ff9fb4', 'paw', true)}
+    ${r4_leg('r-leg2', 6.5, 15, 21.4, 3.8, g, pk)}${r4_leg('r-leg1', 18.5, 15, 21.4, 3.8, g, pk)}
+    <g class="r-body"><ellipse cx="14" cy="13.4" rx="12" ry="7.2" fill="${g}" ${O(1.6)}/>
+      <path d="M7 17.6 q7 3 14 0 q-2 2.4 -7 2.6 q-5 -.2 -7 -2.6z" fill="#dcd8e6"/>
+      ${r4_SH('M3.4 15.4 q10 7 21 0 q-2 4.4 -10.5 4.8 q-8.5 -.4 -10.5 -4.8z', .12)}${r4_SN('M6 10.4 q4 -3.6 10 -3.6 q-5 1.4 -8 4.4z', .4)}</g>
+    <g class="r-head">
+      <circle cx="28.4" cy="3.6" r="4.4" fill="${g}" ${O(1.4)}/><circle cx="28.4" cy="3.8" r="2.4" fill="${pk}"/>${r4_SH('M24 3.6 a4.4 4.4 0 0 0 8.8 0z', .14)}
+      <g class="r-ear"><circle cx="22" cy="5.6" r="6" fill="${g}" ${O(1.6)}/><circle cx="22.2" cy="5.8" r="3.6" fill="${pk}"/>${r4_SN('M18.4 3.4 q1.4 -2.6 4 -2.8', .4)}</g>
+      <path d="M20 12 Q20 4.6 27 4.8 Q31.6 5.4 33.4 11 Q34 14.4 30.6 16 Q25 18 21.6 15.6 Q20 14.4 20 12z" fill="${g}" ${O(1.6)}/>${r4_SH('M27.6 15.8 q4.4 -.6 5.4 -3.6 q.6 3.4 -2.2 4.2 q-2 .6 -3.2 -.6z', .14)}
+      <circle cx="33.4" cy="12" r="1.9" fill="#ff7f9a" ${O(1)}/><circle cx="33" cy="11.4" r=".6" fill="#fff" opacity=".8"/>
+      ${eye(27.6, 9.6, o.closed, 2.4)}${blush(25.4, 13.6, 1.6)}
+      ${r4_mouth(`<path d="M29.6 15 q1.4 1.1 2.8 -.1" ${O(.9)} fill="none"/>`, 30.8, 15.2, 3, 2.4)}
+      <path d="M31.6 13.2 l4.6 -1.2 M31.6 14.2 l4.6 1.2" stroke="${INK}" stroke-width=".6" opacity=".55"/></g>`;
+};
+
+// ---------------- sheep ----------------
+C.sheep = o => {
+  const fc = '#3a3550', hoof = '#211c32';
+  const puffs = [[8, 17, 7], [12, 10, 7], [20, 7.4, 7.6], [28, 9.6, 7], [32.6, 16, 7], [29.4, 22, 7], [20, 23.4, 7.6], [10.4, 22.2, 7]];
+  return shadow(22, 35, 18) + `
+    <g class="r-tail" style="transform-origin:100% 70%"><circle cx="2.4" cy="12" r="3.6" fill="#fff" ${O(1.4)}/><circle cx="1" cy="13" r="2" fill="#fff" ${O(1.2)}/></g>
+    ${r4_leg('r-leg1', 13, 21, 34.6, 4.6, fc, hoof, 'hoof', true)}${r4_leg('r-leg2', 31, 21, 34.6, 4.6, fc, hoof, 'hoof', true)}
+    ${r4_leg('r-leg2', 9, 22, 35, 4.8, fc, hoof, 'hoof')}${r4_leg('r-leg1', 27, 22, 35, 4.8, fc, hoof, 'hoof')}
+    <g class="r-body"><g fill="#fff" ${O(1.6)}>${puffs.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>
+      <g fill="#fff">${puffs.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r - 1.3}"/>`).join('')}<ellipse cx="20" cy="16" rx="13" ry="9"/></g>
+      ${r4_SH('M4 21 q4 6 10 7 q6 2.4 12 0 q6 -1 9.6 -7 q-1 6 -6 8.6 q-9 3.4 -18 0 q-5 -2.6 -7.6 -8.6z', .1)}
+      <path d="M11 13 q2 -2.4 4 0 M19 10 q2 -2.4 4 0 M24 17 q2 -2.4 4 0 M14 20 q2 -2.4 4 0 M27 12.4 q1.6 -2 3.4 0" stroke="#c9c4dc" stroke-width="1.2" fill="none" stroke-linecap="round"/></g>
+    <g class="r-head">
+      <ellipse cx="43.6" cy="9.4" rx="4" ry="2" fill="${fc}" transform="rotate(24 43.6 9.4)"/>
+      <ellipse cx="38.6" cy="15.6" rx="7" ry="8.2" fill="${fc}" ${O(1.6)}/>${r4_SN('M33.6 13 q.6 -4.6 4 -5.8 q-2 3 -2.4 6.6z', .2)}
+      <g class="r-ear" style="transform-origin:95% 50%"><ellipse cx="31.6" cy="11" rx="4.8" ry="2.3" fill="${fc}" ${O(1.2)} transform="rotate(-20 31.6 11)"/><ellipse cx="31" cy="11.2" rx="2.8" ry="1" fill="#ff9fb4" opacity=".7" transform="rotate(-20 31 11.2)"/></g>
+      <g fill="#fff" ${O(1.2)}><circle cx="34.6" cy="7.6" r="3"/><circle cx="38.2" cy="6.2" r="3.2"/><circle cx="41.6" cy="7.8" r="2.6"/></g><g fill="#fff"><circle cx="34.6" cy="7.6" r="2.3"/><circle cx="38.2" cy="6.2" r="2.5"/><circle cx="41.6" cy="7.8" r="1.9"/><ellipse cx="38" cy="8.4" rx="4" ry="1.6"/></g>
+      ${eye(40.2, 13.4, o.closed, 2.6)}${blush(41.6, 18.2, 1.7)}
+      <path d="M43.6 17.4 l-1.2 .9" stroke="#c9c4dc" stroke-width="1" stroke-linecap="round"/>
+      ${r4_mouth(`<path d="M40.4 20.4 q1.6 1.2 3.2 0" stroke="#c9c4dc" stroke-width="1" fill="none" stroke-linecap="round"/>`, 42, 20.6, 3.6, 2.6, '#7a3a4a')}</g>`;
+};
+
+// ---------------- goat ----------------
+C.goat = o => {
+  const fur = o.dark ? '#6a6a80' : '#fff', leg = o.dark ? '#5a5a6e' : '#f4f4fa', horn = '#d8c8a0', beard = '#d8d4e0', hoof = '#4a4458';
+  return shadow(36, 59, 26) + `
+    <g class="r-tail" style="transform-origin:100% 75%"><path d="M9.6 26.6 l-7.4 -7.6 q-1.4 5 2.4 9.6z" fill="${fur}" ${O(1.4)}/></g>
+    ${r4_leg('r-leg1', 22.5, 35, 58, 6.4, leg, hoof, 'hoof', true)}${r4_leg('r-leg2', 51.5, 35, 58, 6.4, leg, hoof, 'hoof', true)}
+    ${r4_leg('r-leg2', 17.5, 36, 58.6, 7, leg, hoof, 'hoof')}${r4_leg('r-leg1', 46.5, 36, 58.6, 7, leg, hoof, 'hoof')}
+    <g class="r-body"><ellipse cx="32" cy="30" rx="24" ry="13" fill="${fur}" ${O()}/>
+      ${r4_SH('M10 34 q22 13 44 0 q-4 8 -22 9 q-18 -1 -22 -9z', .12)}${r4_SN('M15 22 q8 -5 20 -5 q-11 2.4 -17 7z', .4)}
+      <path d="M50 38 l1.6 3 l1.2 -3.2 l1.6 2.4" ${O(1.2)} fill="none" opacity=".6"/></g>
+    <g class="r-head" style="transform-origin:25% 92%">
+      <path d="M45.4 31 Q49 12 56.4 1.6 L67 6 Q62.4 16 61.6 33z" fill="${fur}"/>
+      <path d="M46.8 24 Q50 12 56.4 1.6 M66.6 7.6 Q62.4 16 61.2 27.6" ${O()} fill="none"/>${r4_SH('M66 8 Q61 16 60.2 30 L57 30 Q58 16 63 7z', .1)}
+      <path d="M60.4 -1.6 q-7.4 -8.6 -3.6 -16 q2.2 5.2 6.4 9.4z" fill="${horn}" ${O(1.6)}/>
+      <path d="M65.6 -2.4 q1 -10 8.2 -13.4 q-.8 6.4 -4 14.4z" fill="${horn}" ${O(1.6)}/><path d="M67.4 -6 l3.4 .8 M68.4 -10 l3 .4" ${O(1)} opacity=".5"/><path d="M58.6 -6.4 l2.6 -1.6 M57.4 -10.6 l2.6 -1.2" ${O(1)} opacity=".5"/>
+      <ellipse cx="66" cy="6" rx="9.4" ry="8" fill="${fur}" ${O()}/>${r4_SN('M59 3 q2 -4 6.6 -4.6 q-4 2 -5 5z', .4)}${r4_SH('M70 0 q5 4 4.4 9 q-2 3 -5 3.6 q4 -5 .6 -12.6z', .1)}
+      <ellipse cx="72" cy="9.6" rx="4.4" ry="3.8" fill="${o.dark ? '#7a7a92' : '#f4eef4'}"/>
+      <circle cx="74.2" cy="8.2" r="1.2" fill="${INK}"/>
+      ${eye(65.6, 4, o.closed, 2.9)}${blush(67.6, 9.6, 1.8)}
+      ${r4_mouth(`<path d="M70.4 12.8 q1.8 1.2 3.6 -.4" ${O(1.1)} fill="none"/>`, 72.2, 13, 3.8, 3)}
+      <path d="M67 13.4 q3.6 7 -.6 11 q-3.2 -5 -2.4 -10.4z" fill="${beard}" ${O(1)}/>
+      <g class="r-ear" style="transform-origin:100% 50%"><ellipse cx="55.6" cy="4.4" rx="5.4" ry="2.4" fill="${fur}" ${O(1.2)} transform="rotate(-20 55.6 4.4)"/><ellipse cx="55" cy="4.6" rx="3.2" ry="1" fill="#ff9fb4" opacity=".7" transform="rotate(-20 55 4.6)"/></g></g>`;
+};
+
+// ---------------- cow ----------------
+C.cow = o => {
+  const w = '#fff', sp = '#3a3550', pk = '#ffb3c3', horn = '#f2e2b8', hoof = '#5a4a6a';
+  return shadow(46, 59, 36) + `
+    <g class="r-tail" style="transform-origin:90% 3%"><path d="M8 24 Q1 32 3 46" stroke="${INK}" stroke-width="4.4" fill="none" stroke-linecap="round"/><path d="M8 24 Q1 32 3 46" stroke="${w}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path d="M3 44 q-4 3 -2.6 7 q2 -1.6 2.6 -.6 q.8 -1.4 2.6 .4 q1 -4 -2.6 -6.8z" fill="${sp}" ${O(1.3)}/></g>
+    ${r4_leg('r-leg1', 17, 36, 58, 8.6, w, hoof, 'hoof', true)}${r4_leg('r-leg2', 60.5, 36, 58, 8.6, w, hoof, 'hoof', true)}
+    ${r4_leg('r-leg2', 26.5, 38, 59, 9, w, hoof, 'hoof')}${r4_leg('r-leg1', 66.5, 38, 59, 9, w, hoof, 'hoof')}
+    <g class="r-body"><ellipse cx="38" cy="30" rx="32" ry="17" fill="${w}" ${O()}/>
+      <path d="M22 18 q8 -4 10 6 q-6 6 -12 0z M44 30 q10 -6 14 4 q-6 8 -14 0z M8.6 28 q5 -2 6.4 3 q-2 5 -6 3.4z" fill="${sp}"/>
+      ${r4_SH('M8 36 q30 16 60 0 q-4 10 -30 11 q-26 -1 -30 -11z', .1)}${r4_SN('M16 20 q12 -7 30 -6 q-16 2 -26 9z', .5)}
+      <path d="M40 45.4 q6 -2 12 0 q0 4 -6 4.6 q-6 -.6 -6 -4.6z" fill="${pk}" ${O(1.4)}/><path d="M42.6 49.4 v2 M46 50 v2 M49.4 49.4 v2" ${O(1.6)}/></g>
+    <g class="r-head" style="transform-origin:25% 90%">
+      <path d="M69.4 10 q-6.4 -4 -7.6 -11.4 q4.4 3.4 9.4 5z" fill="${horn}" ${O(1.6)}/><path d="M86.6 10 q6.4 -4 7.6 -11.4 q-4.4 3.4 -9.4 5z" fill="${horn}" ${O(1.6)}/>
+      <g class="r-ear" style="transform-origin:0% 50%"><ellipse cx="92.6" cy="14.6" rx="6" ry="2.8" fill="${w}" ${O(1.4)} transform="rotate(-18 92.6 14.6)"/><ellipse cx="93" cy="14.6" rx="3.6" ry="1.2" fill="${pk}" transform="rotate(-18 93 14.6)"/></g>
+      <g class="r-ear" style="transform-origin:100% 50%"><ellipse cx="63.4" cy="14.6" rx="6" ry="2.8" fill="${w}" ${O(1.4)} transform="rotate(18 63.4 14.6)"/><ellipse cx="63" cy="14.6" rx="3.6" ry="1.2" fill="${pk}" transform="rotate(18 63 14.6)"/></g>
+      <circle cx="78" cy="20" r="13" fill="${w}" ${O()}/>${r4_SH('M85 9.6 q7 6 4.4 14.4 q-3 5 -7.4 6 q7 -8.6 3 -20.4z', .1)}
+      <path d="M68 13 q3 -6 9.4 -5.6 q2.4 4 -.4 8.6 q-5 2.2 -9 -3z" fill="${sp}"/>
+      <path d="M74.6 7.6 q1.8 -3.6 3.6 -.6 q1.6 -3 3.4 .4" ${O(1.3)} fill="none"/>
+      ${eye(76.6, 15.6, o.closed, 3.4)}${eye(84.6, 15.6, o.closed, 3)}${blush(71, 22.6, 2.4)}
+      <ellipse cx="80" cy="28.4" rx="10.4" ry="7" fill="${pk}" ${O(1.6)}/>${r4_SN('M72.6 26 q2.4 -3.4 7 -3.6 q-4.6 1.4 -6 4.4z', .45)}
+      <ellipse cx="76.4" cy="27.4" rx="1.3" ry="1.7" fill="${INK}"/><ellipse cx="83.6" cy="27.4" rx="1.3" ry="1.7" fill="${INK}"/>
+      ${r4_mouth(`<path d="M76.6 32 q3.4 2.2 6.8 0" ${O(1.3)} fill="none"/>`, 80, 32.2, 6, 3.8)}</g>`;
+};
+
+// ---------------- bull ----------------
+C.bull = o => {
+  const c = '#c9653c', far = '#b0502e', bel = '#e08a5a', horn = '#ffd34d', mz = '#f2b8a0', hoof = '#5a2a1a';
+  return shadow(50, 71, 40) + `
+    <g class="r-tail" style="transform-origin:100% 2%"><path d="M10 34 Q-2 40 2 54" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M10 34 Q-2 40 2 54" stroke="${far}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M2 51.6 q-5 3 -3.4 8.4 q2 -1.8 3 -.6 q1 -1.6 3.2 .4 q1.4 -5.2 -2.8 -8.2z" fill="${hoof}" ${O(1.4)}/></g>
+    ${r4_leg('r-leg1', 21, 46, 70, 10, far, hoof, 'hoof', true)}${r4_leg('r-leg2', 65, 46, 70, 10, far, hoof, 'hoof', true)}
+    ${r4_leg('r-leg2', 33, 48, 71, 10.4, c, hoof, 'hoof')}${r4_leg('r-leg1', 75, 48, 71, 10.4, c, hoof, 'hoof')}
+    <g class="r-body"><ellipse cx="44" cy="40" rx="36" ry="22" fill="${c}" ${O()}/><ellipse cx="46" cy="51" rx="22" ry="9.4" fill="${bel}"/>
+      ${r4_SH('M9 46 q35 20 70 0 q-6 14 -35 16 q-29 -2 -35 -16z', .12)}${r4_SN('M20 26 q14 -9 34 -8 q-18 3 -30 11z', .32)}
+      <path d="M24 30 q3 -2 6 0 M34 26 q3 -2 6 0" stroke="#a0442a" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".7"/></g>
+    <g class="r-head" style="transform-origin:24% 92%">
+      <path d="M78 18 C70 4 76 -6 84 -8 C80 0 82 8 86 14z" fill="${horn}" ${O(1.8)}/><path d="M96 18 C104 4 98 -6 90 -8 C94 0 92 8 88 14z" fill="${horn}" ${O(1.8)}/>
+      <path d="M77.4 6 l4.2 1 M78 1 l4 1.4 M97 6 l-4.2 1 M96.4 1 l-4 1.4" ${O(1.1)} opacity=".45"/>${r4_SN('M80 0 q1 -5 3.4 -7 q-1.4 4 -2 8z', .5)}
+      <ellipse cx="101" cy="23" rx="6" ry="3" fill="${far}" ${O(1.4)} transform="rotate(-24 101 23)"/>
+      <circle cx="86" cy="30" r="16" fill="${c}" ${O()}/>${r4_SH('M94 16.6 q8 7 5.6 17 q-3 6 -8 7.6 q8 -10 2.4 -24.6z', .12)}${r4_SN('M74 24 q2.6 -7 9 -9 q-6 4 -7.4 10z', .32)}
+      <path d="M79 15.4 q2.6 -4.4 5.6 -1.4 q2.6 -3.6 5.6 0 q2.6 -2.4 4.2 1.6 q-7.6 -2.6 -15.4 -.2z" fill="#a0442a" ${O(1.3)}/>
+      ${eye(82.6, 26, o.closed, 4.2)}${eye(93, 26, o.closed, 3.6)}${blush(76.6, 35, 3)}
+      <ellipse cx="92" cy="40" rx="11.4" ry="8" fill="${mz}" ${O(1.6)}/>${r4_SN('M83 37 q3 -4 9 -4.4 q-6 1.6 -8 5z', .45)}
+      <ellipse cx="88.4" cy="39" rx="1.6" ry="2.1" fill="${INK}"/><ellipse cx="95.6" cy="39" rx="1.6" ry="2.1" fill="${INK}"/>
+      ${r4_mouth(`<path d="M87.4 44.4 q4.6 2.6 9.2 0" ${O(1.4)} fill="none"/>`, 92, 44.6, 8, 4.4)}
+      <g class="r-ear" style="transform-origin:100% 50%"><ellipse cx="71" cy="23" rx="7.4" ry="3.6" fill="${c}" ${O(1.6)} transform="rotate(-24 71 23)"/><ellipse cx="70.4" cy="23.2" rx="4.4" ry="1.5" fill="${mz}" transform="rotate(-24 70.4 23.2)"/></g></g>`;
+};
+
+// ---------------- horse (o.coat, o.mane; o.donkey long ears; o.horn = unicorn) ----------------
+C.horse = o => {
+  const c = o.coat || '#f4f4fa', m = o.mane || '#fff6dc', hoof = '#6a5a70', dn = o.donkey;
+  const tail = dn
+    ? `<path d="M10 31 Q3 38 3 52" stroke="${INK}" stroke-width="4.2" fill="none" stroke-linecap="round"/><path d="M10 31 Q3 38 3 52" stroke="${c}" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M3 49 q-4.6 3.6 -2.6 9 q1.8 -1.6 2.6 -.6 q1 -1.4 3 .6 q1 -5 -3 -9z" fill="${m}" ${O(1.4)}/>`
+    : `<path d="M10.6 29 Q-3.6 29 -4 43.6 Q-3.6 51.6 -1 57.4 Q3.6 50.6 3.6 43 Q4.4 36.4 11.4 34z" fill="${m}" ${O(1.8)}/><path d="M6 33 Q-.6 36 -.6 44 M2.4 36 Q.6 42 1 50" stroke="${INK}" stroke-width="1" fill="none" opacity=".35" stroke-linecap="round"/>`;
+  return shadow(48, 71, 38) + `
+    <g class="r-tail" style="transform-origin:95% 6%">${tail}</g>
+    ${r4_leg('r-leg1', 18.5, 42, 70, 8.6, c, hoof, 'hoof', true)}${r4_leg('r-leg2', 60.5, 42, 70, 8.6, c, hoof, 'hoof', true)}
+    ${r4_leg('r-leg2', 28.5, 44, 71, 9, c, hoof, 'hoof')}${r4_leg('r-leg1', 68.5, 44, 71, 9, c, hoof, 'hoof')}
+    <g class="r-body"><ellipse cx="40" cy="36" rx="32" ry="17" fill="${c}" ${O()}/>
+      ${r4_SH('M9 41 q31 17 62 0 q-4 11 -31 12 q-27 -1 -31 -12z', .12)}${r4_SN('M17 26 q12 -7 30 -7 q-16 2.4 -26 9z', .42)}</g>
+    <g class="r-head" style="transform-origin:20% 92%">
+      <path d="M59.6 36 Q63 8 76 2.6 L83 9 Q74 20 72.4 39z" fill="${c}"/>
+      <path d="M61 27 Q64 8 76 2.6 M81 11 Q74 20 72 32" ${O()} fill="none"/>${r4_SH('M80 11.6 Q74 20 72.4 34 L68 34 Q69 20 77 10z', .1)}
+      <path d="M60 31 Q57.4 10 69.6 2 Q74 -.4 77.4 2 Q68 7 66 31z" fill="${m}" ${O(1.6)}/><path d="M62.6 24 q0 -9 4 -15 M65 26 q.6 -10 5 -17" stroke="${INK}" stroke-width="1" fill="none" opacity=".3" stroke-linecap="round"/>
+      ${dn
+        ? `<g class="r-ear" style="transform-origin:50% 100%"><ellipse cx="82" cy="-6" rx="4" ry="12" fill="${c}" ${O(1.4)} transform="rotate(12 82 -6)"/><ellipse cx="82" cy="-5" rx="1.8" ry="8" fill="#5a5a6e" opacity=".6" transform="rotate(12 82 -5)"/></g>`
+        : `<path d="M80 3.6 l3 -8 l3.4 8.4z" fill="${c}" ${O(1.4)}/>${r4_SH('M80 3.6 l3 -8 l3.4 8.4z', .2)}`}
+      <path d="M74 5 Q81 -2.4 88 5.6 L95 14.6 Q98.6 22 93 26 Q88 28.4 84 24.4 L78.4 19.6 Q72.4 14 74 5z" fill="${c}" ${O()}/>${r4_SN('M77 6 q3 -4 7.6 -3 q-4.4 .6 -6.4 4.4z', .45)}${r4_SH('M92 14 q5 5.6 2.6 10.4 q-2 2.4 -5 2 q4.4 -4 2.4 -12.4z', .12)}
+      <ellipse cx="91.4" cy="21.4" rx="5.2" ry="4.6" fill="${dn ? '#d8d8e4' : '#fff'}" opacity="${dn ? 1 : .4}"/>
+      <ellipse cx="93.6" cy="19.6" rx="1.2" ry="1.7" fill="${INK}" transform="rotate(-20 93.6 19.6)"/>
+      ${eye(81.4, 11.4, o.closed, 3.3)}${blush(85.4, 18.4, 2.4)}
+      ${r4_mouth(`<path d="M88 24.6 q3 1.6 5.6 -.4" ${O(1.2)} fill="none"/>`, 90.8, 25, 5.4, 3.6)}
+      <path d="M76 2.6 q4.6 -3 7.6 1 q-3.6 -.4 -4.6 3.4 q-1.6 -3.4 -3 -4.4z" fill="${m}" ${O(1.3)}/>
+      ${dn
+        ? `<g class="r-ear" style="transform-origin:50% 100%"><ellipse cx="74" cy="-6" rx="4" ry="12" fill="${c}" ${O(1.4)} transform="rotate(-14 74 -6)"/><ellipse cx="74" cy="-5" rx="1.8" ry="8" fill="#5a5a6e" opacity=".6" transform="rotate(-14 74 -5)"/></g>`
+        : `<g class="r-ear"><path d="M75.6 4.6 l1.8 -9.4 l5 7.8z" fill="${c}" ${O(1.4)}/><path d="M77 2.4 l.8 -4.4 l2.4 3.6z" fill="#ff9fb4" opacity=".8"/></g>`}
+      ${o.horn ? `<path d="M80 2 L88 -22 L84 4z" fill="#ffd34d" ${O(1.6)}/><path d="M82 -4 l4 -2 M83 -12 l3 -1.4" ${O(1.2)}/>` : ''}</g>`;
+};
+C.donkey = o => C.horse({ ...o, coat: '#a0a0b4', mane: '#5a5a6e', donkey: 1 });
+if (typeof ART !== 'undefined') {
+  ART.unicorn = () => C.horse({ coat: '#fff', mane: '#ff9fd0', horn: 1 }) + `${sparkle(100, -10, 0, '#ffd34d', 6)}`;
+  ART.kitten = () => C.cat({ bell: 1, r4bow: 1 });
+}
+
+// ---------------- pig (o.bow) ----------------
+C.pig = o => {
+  const c = '#ffb8c6', d = '#ff9fb4', sn = '#ff8fa8', tr = '#e8869c';
+  return shadow(26, 43, 22) + `
+    <g class="r-tail" style="transform-origin:100% 100%"><path d="M5.4 22 q-6.4 -1.6 -4.4 -7.6 q3.6 1.6 1 5.4 q-2.4 -2.6 .6 -5.6" stroke="${INK}" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.4 22 q-6.4 -1.6 -4.4 -7.6 q3.6 1.6 1 5.4 q-2.4 -2.6 .6 -5.6" stroke="${c}" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+    ${r4_leg('r-leg1', 18, 29, 42, 6.6, d, tr, 'hoof', true)}${r4_leg('r-leg2', 37.6, 29, 42, 6.6, d, tr, 'hoof', true)}
+    ${r4_leg('r-leg2', 13, 30, 42.6, 7, c, tr, 'hoof')}${r4_leg('r-leg1', 32.6, 30, 42.6, 7, c, tr, 'hoof')}
+    <g class="r-body"><ellipse cx="24" cy="25.4" rx="21" ry="14" fill="${c}" ${O()}/>
+      ${r4_SH('M4 29 q20 15 40 0 q-4 9.4 -20 10.4 q-16 -1 -20 -10.4z', .1)}${r4_SN('M9 18 q7 -6.6 17 -7 q-9 2.4 -14 8.6z', .45)}
+      <path d="M12 32.4 q12 5 22 0" stroke="${d}" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
+    <g class="r-head">
+      <g class="r-ear"><path d="M45 9 L50 0 L52.4 11z" fill="${c}" ${O(1.6)}/><path d="M47 8.4 l2.6 -5 l1.2 5.6z" fill="${d}"/></g>
+      <circle cx="42" cy="18" r="13" fill="${c}" ${O()}/>${r4_SH('M48 6.6 q8 5 6.6 14 q-2 6 -8 9 q7.4 -9.6 1.4 -23z', .1)}${r4_SN('M32 13 q2.6 -6 9 -7.6 q-6 3 -7.6 8.6z', .42)}
+      <path d="M40.2 4.6 q1.4 -2.4 3 -.6 q1.4 -2 2.8 .4" ${O(1.2)} fill="none"/>
+      ${eye(42.6, 14, o.closed, 3.6)}${blush(37, 22, 2.8)}
+      <ellipse cx="52" cy="21" rx="6.2" ry="5" fill="${sn}" ${O(1.6)}/>${r4_SN('M47.6 19.4 q1.4 -2.4 4.4 -2.6 q-3 1.2 -3.6 3.2z', .5)}
+      <ellipse cx="50.5" cy="21.2" rx="1.1" ry="1.6" fill="${INK}"/><ellipse cx="53.8" cy="21.2" rx="1.1" ry="1.6" fill="${INK}"/>
+      ${r4_mouth(`<path d="M45.6 27.2 q3.2 2.2 6.4 -.4" ${O(1.3)} fill="none"/>`, 48.8, 27.4, 5.6, 3.8)}
+      <g class="r-ear" style="transform-origin:30% 100%"><path d="M33 8.6 L35.8 -2 L42.4 7.4z" fill="${c}" ${O(1.6)}/><path d="M35.4 6.4 l1.2 -5 l3.6 4.6z" fill="${d}"/></g>
+      ${o.bow ? `<path d="M30 4 l6 4 l-6 4z M42 4 l-6 4 l6 4z" fill="${o.bow}" ${O(1.2)}/><circle cx="36" cy="8" r="2" fill="${o.bow}" ${O(1.2)}/>` : ''}</g>`;
+};
+
+// --- part 5 ---
+// R5: rigged birds — bird (+ goldbird, dove, quail), crow, eagle, owl, gull, crane.
+// Each moving part is its own top-level group; wings/legs/tail/head carry their exact pivot (computed from the part's outline).
+const r5_SH = (d, op = .16) => `<path d="${d}" fill="#2a1840" opacity="${op}"/>`;
+const r5_SN = (d, op = .32) => `<path d="${d}" fill="#fff" opacity="${op}"/>`;
+// bounding box of absolute paths (M L Q C Z) and [cx, cy, rx, ry] ellipses
+const r5_bb = shapes => {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  const add = (x, y) => { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); };
+  for (const s of shapes) {
+    if (typeof s !== 'string') { const [cx, cy, rx, ry = rx] = s; add(cx - rx, cy - ry); add(cx + rx, cy + ry); continue; }
+    const t = s.match(/[MLQCZ]|-?\d*\.?\d+/g); let i = 0, cmd = 'M', px = 0, py = 0, sx = 0, sy = 0;
+    const n = () => +t[i++];
+    while (i < t.length) {
+      if (/[MLQCZ]/.test(t[i])) cmd = t[i++];
+      if (cmd === 'Z') { px = sx; py = sy; continue; }
+      if (cmd === 'M' || cmd === 'L') { px = n(); py = n(); add(px, py); if (cmd === 'M') { sx = px; sy = py; cmd = 'L'; } }
+      else if (cmd === 'Q') { const a = n(), b = n(), x = n(), y = n(); for (let k = 1; k <= 24; k++) { const u = k / 24, v = 1 - u; add(v * v * px + 2 * u * v * a + u * u * x, v * v * py + 2 * u * v * b + u * u * y); } px = x; py = y; }
+      else if (cmd === 'C') { const a = n(), b = n(), c = n(), d = n(), x = n(), y = n(); for (let k = 1; k <= 32; k++) { const u = k / 32, v = 1 - u; add(v * v * v * px + 3 * v * v * u * a + 3 * v * u * u * c + u * u * u * x, v * v * v * py + 3 * v * v * u * b + 3 * v * u * u * d + u * u * u * y); } px = x; py = y; }
+      else i++;
+    }
+  }
+  return [x0, y0, x1, y1];
+};
+// a part group whose pivot is the absolute point (px, py)
+const r5_g = (cls, shapes, px, py, inner) => {
+  const [x0, y0, x1, y1] = r5_bb(shapes);
+  return `<g class="${cls}" style="transform-origin:${((px - x0) / (x1 - x0) * 100).toFixed(1)}% ${((py - y0) / (y1 - y0) * 100).toFixed(1)}%">${inner}</g>`;
+};
+// a bird leg: shank from (x, top) to the foot at y = bot, toes forward; col = leg colour, w = thickness
+const r5_leg = (cls, x, top, bot, col, w = 1.2, s = 1) => {
+  const d = `M${x} ${top} L${x} ${bot - .4 * s} M${x - 2 * s} ${bot} L${x} ${bot - .9 * s} L${x + 3.2 * s} ${bot} M${x} ${bot - .9 * s} L${x + 1.4 * s} ${bot + .1}`;
+  return r5_g(cls, [`M${x - 2 * s} ${top} L${x + 3.2 * s} ${bot + .1}`], x, top,
+    `<path d="${d}" stroke="${INK}" stroke-width="${w + 1.5}" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`);
+};
+
+// ---------- small songbird (blue); goldbird, dove and quail are recoloured copies ----------
+const r5_bird = (o, x = {}) => {
+  const B = '#7ab8f0', W = '#5a98d8', bk = '#ffb347', lb = '#f0963a';
+  const farW = 'M14.5 4.2 C17.5 6 16 9.5 11 10.5 L4.5 10 C7 8 10 5 14.5 4.2Z';
+  const nearW = 'M14.5 8 C18.4 9.8 16.8 14.6 11 15.2 L4 14.4 C7 12.6 10 8.8 14.5 8Z';
+  const tail = 'M5.5 7.5 L1.2 4.2 Q0.4 6.6 1.6 8.2 L0.6 10.6 Q2.5 12 6 11.5Z';
+  const spots = x.quail ? `<g fill="#fff" opacity=".75"><circle cx="8" cy="7" r=".7"/><circle cx="11" cy="5.4" r=".7"/><circle cx="6.4" cy="10.6" r=".7"/><circle cx="10" cy="13.4" r=".6"/></g><g fill="#6a4030" opacity=".55"><circle cx="13.6" cy="13.8" r=".6"/><circle cx="16.4" cy="14.2" r=".6"/><circle cx="7.6" cy="13.2" r=".6"/></g>` : '';
+  return shadow(15, 17.4, 8) + `
+    ${r5_g('r-arm2', [farW], 14.5, 4.6, `<path d="${farW}" fill="${W}" ${O(1.2)}/><path d="${farW}" fill="#2a1840" opacity=".22"/>`)}
+    ${r5_leg('r-leg2', 11.5, 12.5, 17.4, '#f29a4a', 1, .8)}${r5_leg('r-leg1', 15.5, 12.5, 17.4, '#f29a4a', 1, .8)}
+    ${r5_g('r-tail', [tail], 5.4, 9.6, `<path d="${tail}" fill="${W}" ${O(1.2)}/><path d="M1.6 8.2 L5 9.4" ${O(.8)} opacity=".5"/>`)}
+    <g class="r-body"><ellipse cx="13" cy="9.6" rx="10" ry="6.2" fill="${B}" ${O(1.5)}/>
+      <path d="M11 14.6 Q17.5 16.6 21.6 12 Q23 9 21.6 6.8 Q19 12.8 11 14.6Z" fill="#fff" opacity=".42"/>
+      ${r5_SH('M3.6 10.6 Q6 15.4 13 15.8 Q7 13.6 3.6 10.6Z', .18)}${r5_SN('M7 5.4 Q11 3.4 16 3.8 Q11.4 4.8 8.4 6.8Z', .4)}${spots}</g>
+    ${r5_g('r-arm1', [nearW], 14.5, 8.4, `<path d="${nearW}" fill="${W}" ${O(1.3)}/><path d="M11.4 15 L9 12.8 M14 13.4 L11.8 11.6" ${O(.8)} opacity=".55"/>${r5_SN('M14.3 8.8 Q11 9.2 8.6 11.8 Q11.6 10.6 14.6 10Z', .35)}${x.quail ? '<circle cx="12" cy="11" r=".6" fill="#fff" opacity=".8"/><circle cx="9.4" cy="12.8" r=".6" fill="#fff" opacity=".8"/>' : ''}`)}
+    ${r5_g('r-head', [[22.5, 5.2, 5.8], 'M27.4 3.4 L32.4 5.8 L27.8 10.6'], 20.6, 10, `
+      <circle cx="22.5" cy="5.2" r="5.8" fill="${B}" ${O(1.5)}/>${r5_SN('M18.4 2.4 Q20.6 0.2 23.6 0.4 Q20.6 1.6 19.4 3.6Z', .45)}
+      ${x.quail ? `<path d="M18 4.8 Q22 1.4 27.4 3.6" stroke="#fff" stroke-width="1" fill="none" opacity=".8"/>` : ''}
+      ${eye(23.4, 4.4, o.closed, 2.5)}${blush(24.6, 8.2, 1.5)}
+      <g class="r-mouth"><path d="M27.8 6.3 L31.6 6.1 Q29.6 7.8 28 7.8Z" fill="${lb}" ${O(1)}/>
+        <g class="m-open"><path d="M27.6 6.1 L32 6.1 Q30 9.2 27.8 10.4Z" fill="#7a3a4a" ${O(1)}/><ellipse cx="28.9" cy="8.3" rx="1.1" ry=".6" fill="#ff8fa8"/><path d="M27.8 9.2 L31.6 6.6 Q30.8 9.8 27.8 10.6Z" fill="${lb}" ${O(1)}/></g></g>
+      <path d="M27.4 3.4 Q30.4 3.8 32.4 5.8 L27.6 6.4Z" fill="${bk}" ${O(1.1)}/>`)}`;
+};
+C.bird = o => r5_bird(o);
+C.goldbird = o => r5_bird(o).replace(/#7ab8f0/g, '#ffd34d').replace(/#5a98d8/g, '#ffb347');
+C.dove = o => r5_bird(o).replace(/#7ab8f0/g, '#f6f6fc').replace(/#5a98d8/g, '#d6d8e8');
+C.quail = o => r5_bird(o, { quail: 1 }).replace(/#7ab8f0/g, '#c9a26a').replace(/#5a98d8/g, '#a8743f');
+
+// ---------- crow (o.cheese: a piece of cheese in the beak) ----------
+C.crow = o => {
+  const farW = 'M25 13.6 C31 16 29 24 20 27.5 L0.5 28 C6 24 14 15 25 13.6Z';
+  const nearW = 'M24 15.6 C31 18.5 28.5 27.5 19 30.6 L1 31 Q4 28.6 6.6 27 Q4 27 2.6 26.4 C9 21 15 16.2 24 15.6Z';
+  const tail = 'M5 18.5 L-9.5 16.5 Q-11 19.5 -9 21.5 L-10 24.5 Q-8.5 27.5 -5.5 27 L5 27Z';
+  const cheese = 'M41 14.5 L50 11.5 L52.2 18.9 L43.6 21.5Z';
+  return shadow(20, 41, 15) + `
+    ${r5_g('r-arm2', [farW], 24.5, 14.2, `<path d="${farW}" fill="#2f2a44" ${O()}/>${r5_SH(farW, .15)}`)}
+    ${r5_leg('r-leg2', 14, 30, 40, '#5a5470', 1.6, 1.3)}${r5_leg('r-leg1', 20.5, 30, 40, '#5a5470', 1.6, 1.3)}
+    ${r5_g('r-tail', [tail], 4.6, 22.6, `<path d="${tail}" fill="#2f2a44" ${O(1.6)}/><path d="M-9 21.4 L2 21.6 M-5.5 26.6 L3 24.6" ${O(1)} opacity=".6"/>`)}
+    <g class="r-body"><ellipse cx="17" cy="23" rx="15.5" ry="11.5" fill="#3a3550" ${O()}/>
+      <path d="M23 13 Q33 16 32 25 Q30 32.6 22 34.4 Q29 24 23 13Z" fill="#5a5480" opacity=".6"/>
+      <path d="M26 21 q2 1.6 4 0 M24.6 26 q2 1.6 4 0 M22.6 30.4 q2 1.4 4 0" ${O(1)} fill="none" opacity=".35"/>
+      ${r5_SH('M3 27 Q10 35 20 34.4 Q9 32 3 27Z', .25)}${r5_SN('M6 16 Q13 11.6 22 12.4 Q14 14 8.6 18.4Z', .2)}</g>
+    ${r5_g('r-arm1', [nearW], 23.6, 16.2, `<path d="${nearW}" fill="#4e4870" ${O()}/>
+      <path d="M19 30.4 L14 24 M23 26.6 L18.6 21.6 M12 30.8 L8.6 26.4" ${O(1)} opacity=".45"/>${r5_SN('M23.4 16.6 Q16 17.6 11 22 Q17 19.6 24.4 18.6Z', .25)}`)}
+    ${r5_g('r-head', [[31, 12, 10], 'M27 -0.4 L49 13 L40.4 20.8', ...(o.cheese ? [cheese] : [])], 28, 20.6, `
+      <path d="M26.4 3.6 Q26 -0.4 29.6 1.2 Q30 -1.4 33.4 1.8" fill="#3a3550" ${O(1.4)}/>
+      <circle cx="31" cy="12" r="10" fill="#3a3550" ${O()}/>${r5_SN('M24 7 Q27 2.6 32 2.6 Q27.6 4.6 25.6 8.6Z', .22)}${r5_SH('M23 16 Q27 22 34 21.6 Q27 19.6 23 16Z', .2)}
+      ${eye(32.6, 9.6, o.closed, 3.4)}${blush(35.4, 15.6, 2.2)}
+      <g class="r-mouth"><path d="M39.6 14.4 L47.6 13.6 Q44 16.6 40 16.4Z" fill="#6e6e88" ${O(1.3)}/>
+        <g class="m-open"><path d="M39.6 13.8 L48.6 13.4 Q45 18.5 40 20Z" fill="#7a3a4a" ${O(1.2)}/><ellipse cx="42.4" cy="16.6" rx="2" ry="1" fill="#ff8fa8"/><path d="M40 18.2 L48 14.6 Q46.5 19.5 40.4 20.8Z" fill="#6e6e88" ${O(1.3)}/></g></g>
+      <path d="M39 9 Q45 9.5 49 13 L39.6 14.6Z" fill="#8a8aa0" ${O(1.4)}/><circle cx="42" cy="11" r=".7" fill="${INK}"/>${r5_SN('M40 10 Q44 10 46.6 11.8', .5)}
+      ${o.cheese ? `<path d="${cheese}" fill="#ffe08a" ${O(1.2)}/><circle cx="46" cy="15" r="1.2" fill="#f0c25a"/><circle cx="49.4" cy="17.4" r=".9" fill="#f0c25a"/>` : ''}`)}`;
+};
+
+// ---------- eagle: big, brown, white head, hooked yellow beak ----------
+C.eagle = o => {
+  const farW = 'M56 22.5 C64 28 60 40 46 45 C34 49 14 50 -4 47 C8 42 20 34 30 28 C40 22 48 21 56 22.5Z';
+  const nearW = 'M51 25.5 C58 30 55 41 44 45 C34 48.6 22 48.4 12 47 L2 45 L10 43.6 L4 41.2 L13 40.4 L8 37.8 C18 35 26 30 34 27.6 C40 25.6 46 25 51 25.5Z';
+  const tail = 'M18 35 L-5 48 Q-6.5 52 -3 53.5 L1 55 Q4.5 56 7 53 L22 44Z';
+  const ruff = 'M57 21 Q55 30 60 35 L63 31 L65 36 L68 31 L71 34 Q76 28 76 22Z';
+  const beakU = 'M76 13 Q84 12 88 17 Q89.5 21 87 24 Q86 20.5 83 20 L76.5 21Z';
+  const leg = (cls, x) => r5_g(cls, [`M${x - 6} 44 L${x + 6.4} 58.4`], x, 44, `
+      <path d="M${x - 1.5} 51 L${x - 1.5} 56 M${x + 1.5} 51 L${x + 1.5} 56" stroke="${INK}" stroke-width="2.2"/><rect x="${x - 1.6}" y="50" width="3.2" height="6.4" fill="#ffc93c"/>
+      <path d="M${x - 4.6} 58.4 L${x} 56.2 L${x + 6} 58.4 M${x} 56.2 L${x + 2} 58.4" stroke="${INK}" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M${x - 4.6} 58.4 L${x} 56.2 L${x + 6} 58.4 M${x} 56.2 L${x + 2} 58.4" stroke="#ffc93c" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M${x - 6} 44 Q${x - 6.4} 51 ${x - 2.6} 53 L${x + 3} 53 Q${x + 6.4} 50 ${x + 4.4} 44Z" fill="#8a5a34" ${O(1.6)}/><path d="M${x - 3} 50 l1.2 2 M${x + 1} 50.4 l1 2" ${O(1)} opacity=".5"/>`);
+  return shadow(44, 58.6, 22) + `
+    ${r5_g('r-arm2', [farW], 55, 23.4, `<path d="${farW}" fill="#6a4030" ${O()}/>${r5_SH(farW, .15)}`)}
+    ${leg('r-leg2', 39)}${leg('r-leg1', 50)}
+    ${r5_g('r-tail', [tail], 19.4, 40, `<path d="${tail}" fill="#6a4030" ${O()}/><path d="M-3 53.4 L14 42 M3.6 54.8 L17.4 44" ${O(1.2)} opacity=".5"/>`)}
+    <g class="r-body"><path d="M18 40 C18 26 40 16 60 20 C72 22 74 36 66 46 C58 54 30 54 18 40Z" fill="#a8743f" ${O()}/>
+      <path d="M60 32 q3 2.4 6 0 M57 38 q3 2.4 6 0 M53 44 q3 2.4 6 0 M62 40 q2.6 2 5 0" ${O(1.1)} fill="none" opacity=".4"/>
+      ${r5_SH('M20 44 Q30 54 50 51 Q64 48 66 46 Q54 53 34 51 Q24 49 20 44Z', .2)}</g>
+    ${r5_g('r-arm1', [nearW], 50.4, 26, `<path d="${nearW}" fill="#8a5a34" ${O()}/>
+      <path d="M47 31 q-3 5 -8 4 M39 30.6 q-3 5 -8 4 M31 33.4 q-3 4 -7 4 M45 38 q-4 5 -10 4 M33 40.6 q-4 4 -9 3 M22 42.6 L12 45" ${O(1.1)} fill="none" opacity=".45"/>
+      ${r5_SN('M50 26.4 Q40 26.4 32 29.4 Q22 33.6 14 38 Q26 34 34 31 Q42 28.4 50.6 28Z', .22)}`)}
+    ${r5_g('r-head', [ruff, [68, 18, 11], beakU, 'M77.6 28.2'], 62, 32, `
+      <path d="${ruff}" fill="#fff" ${O(1.8)}/><circle cx="68" cy="18" r="11" fill="#fff" ${O()}/>${r5_SH('M58 22 Q62 30 72 29 Q63 27 58 22Z', .12)}
+      ${eye(70, 15.4, o.closed, 3.4)}${blush(72.6, 22.4, 2.2)}<path d="M65.4 11.4 Q70 9.6 74.6 11.6" ${O(1.4)} fill="none" opacity=".55"/>
+      <g class="r-mouth"><path d="M77 20.6 L83 20.2 Q81.6 23 77.6 23Z" fill="#f0a830" ${O(1.3)}/>
+        <g class="m-open"><path d="M77 20.4 L84 20.2 Q82 26 77.6 27.4Z" fill="#7a3a4a" ${O(1.2)}/><ellipse cx="79.4" cy="23.4" rx="1.8" ry="1" fill="#ff8fa8"/><path d="M77.6 25.6 L83.6 21.2 Q83 26.4 77.8 28.2Z" fill="#f0a830" ${O(1.3)}/></g></g>
+      <path d="${beakU}" fill="#ffc93c" ${O(1.6)}/><circle cx="80" cy="15.6" r=".8" fill="${INK}"/>${r5_SN('M78 14 Q83 13.4 86 16', .5)}`)}`;
+};
+
+// ---------- owl: round, brown, big amber eyes, ear tufts; wings hang like arms ----------
+C.owl = o => {
+  const farW = 'M8.5 21 C3.5 23 2 32 4 40 C6.6 38.6 9 35 10.5 30Z';
+  const nearW = 'M31.5 21 C37 23 38.5 32 36.4 40 C33.4 38.6 30.6 35 29.4 30Z';
+  const tail = 'M10 40 L4.6 46.6 Q7 47.6 9.5 46.6 L11 47.6 Q14 47 15 44Z';
+  const foot = (cls, x) => r5_g(cls, [`M${x - 3.2} 41 L${x + 3.2} 47.6`], x, 41, `
+      <path d="M${x - 2.2} 44.4 L${x - 2.6} 47.4 M${x} 44.6 L${x} 47.6 M${x + 2.2} 44.4 L${x + 2.8} 47.4" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/><path d="M${x - 2.2} 44.4 L${x - 2.6} 47.4 M${x} 44.6 L${x} 47.6 M${x + 2.2} 44.4 L${x + 2.8} 47.4" stroke="#ffb347" stroke-width="1.2" stroke-linecap="round"/>
+      <ellipse cx="${x}" cy="43.6" rx="3.2" ry="2.6" fill="#e8c9a0" ${O(1.3)}/>`);
+  return shadow(20, 47.6, 14) + `
+    ${r5_g('r-arm2', [farW], 8.4, 21.6, `<path d="${farW}" fill="#8a5a34" ${O(1.6)}/>${r5_SH(farW, .15)}`)}
+    ${r5_g('r-tail', [tail], 12, 41, `<path d="${tail}" fill="#8a5a34" ${O(1.4)}/>`)}
+    ${foot('r-leg2', 14)}${foot('r-leg1', 25.6)}
+    <g class="r-body"><ellipse cx="20" cy="33" rx="14.5" ry="14" fill="#a8743f" ${O()}/><ellipse cx="21.5" cy="36" rx="9" ry="10" fill="#e8c9a0"/>
+      <path d="M16.6 31 q1.6 1.6 3.2 0 M22.8 31 q1.6 1.6 3.2 0 M19.6 36 q1.6 1.6 3.2 0 M16 40.6 q1.6 1.6 3.2 0 M23.4 40.6 q1.6 1.6 3.2 0" ${O(1)} fill="none" opacity=".45"/>
+      ${r5_SH('M6.2 30 Q5.4 42 12.6 46 Q8.4 38 9.6 26Z', .2)}</g>
+    ${r5_g('r-head', [[20.5, 15, 16, 13], 'M5 0 L36 8'], 20.5, 26.4, `
+      <path d="M7.6 7.4 L5 0 L13.4 4.2Z M33.4 7.4 L36 0 L27.6 4.2Z" fill="#a8743f" ${O(1.4)}/>
+      <ellipse cx="20.5" cy="15" rx="16" ry="13" fill="#a8743f" ${O()}/>${r5_SN('M9 7 Q14 3 21 3 Q14 5 10.6 9Z', .3)}${r5_SH('M5.4 18 Q8 26 18 28 Q10 24 5.4 18Z', .14)}
+      <path d="M20.5 9 Q14 4 8 9 Q3.6 15 7 21 Q12 26.4 20.5 23.6 Q29 26.4 34 21 Q37.4 15 33 9 Q27 4 20.5 9Z" fill="#e8c9a0" ${O(1.4)}/>
+      <path d="M17 8.4 L20.5 11.2 L24 8.4" ${O(1.1)} fill="none" opacity=".5"/>
+      <circle cx="13.5" cy="15.5" r="5.6" fill="#ffc93c" ${O(1.2)}/><circle cx="27.5" cy="15.5" r="5.6" fill="#ffc93c" ${O(1.2)}/>
+      ${eye(13.5, 15.5, o.closed, 4.2)}${eye(27.5, 15.5, o.closed, 4.2)}${blush(9.4, 22, 2.2)}${blush(31.6, 22, 2.2)}
+      <g class="r-mouth"><path d="M19.3 22.2 L21.7 22.2 L20.5 23.8Z" fill="#f0963a" ${O(1)}/>
+        <g class="m-open"><path d="M18 22 Q20.5 21.4 23 22 Q22.8 26.6 20.5 26.8 Q18.2 26.6 18 22Z" fill="#7a3a4a" ${O(1.2)}/><ellipse cx="20.5" cy="25.3" rx="1.4" ry=".8" fill="#ff8fa8"/></g></g>
+      <path d="M18.4 19.2 Q20.5 18.2 22.6 19.2 L20.5 24.2Z" fill="#ffb347" ${O(1.2)}/>`)}
+    ${r5_g('r-arm1', [nearW], 32, 21.6, `<path d="${nearW}" fill="#a8743f" ${O(1.6)}/><path d="M33 30 l2.6 2 M32.4 34.4 l3 2" ${O(1)} opacity=".5"/>${r5_SN('M31.8 22.4 Q35 24.6 35.6 30 Q33.6 26 31.2 24.6Z', .35)}`)}`;
+};
+
+// ---------- gull: white, grey wings with black tips, yellow beak with a red spot ----------
+C.gull = o => {
+  const farW = 'M29 11 C33 13 30 18 22 18.5 L-4 14.5 C6 12.6 18 10.4 29 11Z';
+  const nearW = 'M29 11.4 C33.6 13.6 31 19.6 22 20.4 C16 20.8 10 19.6 4 17.6 L7 16.4 L2.6 15.2 C10 12.8 20 11 29 11.4Z';
+  const tail = 'M11 13 L2 14 Q1 16.5 2.6 18 L11 19Z';
+  return shadow(24, 23.6, 13) + `
+    ${r5_g('r-arm2', [farW], 28.6, 11.6, `<path d="${farW}" fill="#c8d0dc" ${O(1.4)}/><path d="M-4 14.5 L6 12.9 L7 16.2Z" fill="#2f2a44"/>${r5_SH(farW, .14)}`)}
+    ${r5_leg('r-leg2', 21, 18, 23.6, '#f0a050', 1.2, .9)}${r5_leg('r-leg1', 26, 18, 23.6, '#f0a050', 1.2, .9)}
+    ${r5_g('r-tail', [tail], 10.6, 16, `<path d="${tail}" fill="#fff" ${O(1.4)}/><path d="M2.6 15.6 L9 16" ${O(.8)} opacity=".4"/>`)}
+    <g class="r-body"><ellipse cx="22" cy="16" rx="14" ry="6.5" fill="#fff" ${O(1.6)}/>${r5_SH('M9 17.6 Q16 23.2 30 21.6 Q18 21 9 17.6Z', .14)}</g>
+    ${r5_g('r-arm1', [nearW], 28.6, 12, `<path d="${nearW}" fill="#d6dce8" ${O(1.5)}/><path d="M4 17.6 L7 16.4 L2.6 15.2 Q7 13.8 10.4 13.4 L11.6 18.8 Q7.6 18.6 4 17.6Z" fill="#2f2a44"/><circle cx="7.4" cy="15" r=".6" fill="#fff"/>
+      <path d="M22 19.8 L17.4 15.4 M17 19.8 L13.6 15.4" ${O(.9)} opacity=".45"/>${r5_SN('M28.6 12.2 Q20 12 12 13.6 Q20 13.4 29 14Z', .45)}`)}
+    ${r5_g('r-head', [[39, 9.5, 6.4], 'M44 7.6 L53.8 9.8 L45.2 16.2'], 36, 14.6, `
+      <circle cx="39" cy="9.5" r="6.4" fill="#fff" ${O(1.6)}/>${r5_SH('M33.4 12 Q36 16.4 41.6 15.6 Q36.4 14.6 33.4 12Z', .12)}
+      ${eye(40.6, 8.4, o.closed, 2.4)}${blush(42.2, 12.6, 1.5)}
+      <g class="r-mouth"><path d="M44.6 11.2 L52 10.6 Q48 13 45 12.8Z" fill="#ffb020" ${O(1.1)}/><circle cx="50" cy="11.4" r=".8" fill="#e2445c"/>
+        <g class="m-open"><path d="M44.6 10.8 L53 10.4 Q49 15 45 15.6Z" fill="#7a3a4a" ${O(1)}/><ellipse cx="46.8" cy="13" rx="1.4" ry=".7" fill="#ff8fa8"/><path d="M45 14.4 L52.6 11 Q50.6 15.2 45.2 16.2Z" fill="#ffb020" ${O(1.1)}/><circle cx="50.4" cy="13" r=".8" fill="#e2445c"/></g></g>
+      <path d="M44 7.6 Q50 8 53.8 9.8 L44.6 11.4Z" fill="#ffc93c" ${O(1.2)}/>`)}`;
+};
+
+// ---------- crane: tall, white, long grey beak and legs, red cap, black bustle ----------
+C.crane = o => {
+  const farW = 'M47 53 C54 57 50 66 40 69 L8 62 C18 56 32 52 47 53Z';
+  const nearW = 'M49 53.4 C57 58 52 70 40 72 C30 73.6 18 71 8 66 C18 63 22 58 28 56 C35 53.6 42 52.6 49 53.4Z';
+  const tail = 'M26 58 C16 60 4 56 2 46 C6 47 8 46 9 44 C12 49 16 50 18 50 C16 47 16 44 18 42 C22 48 26 52 30 56Z';
+  const neck = 'M53 60 Q63 32 48 10';
+  const beakU = 'M55.5 6 L86 11.6 L56 11.4Z';
+  const leg = (cls, x) => r5_g(cls, [`M${x - 6} 72 L${x + 7} 100.4`], x, 72, `
+      <path d="M${x} 72 L${x} 99.4 M${x - 6} 100.2 L${x} 99 L${x + 7} 100.2 M${x} 99 L${x + 3} 100.4" stroke="${INK}" stroke-width="3.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M${x} 72 L${x} 99.4 M${x - 6} 100.2 L${x} 99 L${x + 7} 100.2 M${x} 99 L${x + 3} 100.4" stroke="#6a6a80" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <ellipse cx="${x}" cy="86" rx="1.8" ry="2.2" fill="#6a6a80" ${O(1.2)}/>`);
+  return shadow(36, 101, 26) + `
+    ${r5_g('r-arm2', [farW], 46.6, 53.6, `<path d="${farW}" fill="#e6e8f2" ${O()}/>${r5_SH(farW, .14)}`)}
+    ${leg('r-leg2', 30)}${leg('r-leg1', 42)}
+    ${r5_g('r-tail', [tail], 27, 57, `<path d="${tail}" fill="#2f2a44" ${O()}/><path d="M24 57 Q12 56 5 49 M25 55 Q18 51 12 47 M27 54 Q22 49 19 44" stroke="#5a5470" stroke-width="1.2" fill="none" stroke-linecap="round"/>`)}
+    <g class="r-body"><ellipse cx="38" cy="64" rx="24" ry="13.5" fill="#fbfbff" ${O()}/>${r5_SH('M15 67 Q28 80 56 72 Q34 76 15 67Z', .12)}${r5_SN('M30 52 Q44 50 56 56 Q44 53 32 54Z', .5)}</g>
+    ${r5_g('r-arm1', [nearW], 48.6, 54, `<path d="${nearW}" fill="#eef0f8" ${O()}/><path d="M8 66 Q16 64.4 22 64.6 L26 70.8 Q16 70 8 66Z" fill="#2f2a44"/>
+      <path d="M44 58 q-3 4 -7 3 M36 57.4 q-3 4 -7 3 M42 64 q-4 4 -9 3 M32 63 q-3 4 -6 3" ${O(1.1)} fill="none" opacity=".35"/>${r5_SN('M48.4 54.6 Q38 54 28 57.6 Q38 56 48.6 56.4Z', .6)}`)}
+    ${r5_g('r-head', [neck, [48, 9.5, 9], 'M41.5 -0.3', beakU, 'M80.6 20.2'], 53, 60, `
+      <path d="${neck}" stroke="${INK}" stroke-width="10" fill="none" stroke-linecap="round"/><path d="${neck}" stroke="#fbfbff" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M55.6 52 Q59 36 53 22" stroke="#2a1840" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".12"/>
+      <circle cx="48" cy="9.5" r="9" fill="#fbfbff" ${O()}/>${r5_SH('M40 13 Q44 19 52 18 Q44 16.6 40 13Z', .12)}
+      <path d="M41.5 4 Q44 -0.3 48.5 -0.3 Q53 0 55 4 Q48.5 2.6 41.5 4Z" fill="#e2445c" ${O(1.4)}/>${r5_SN('M44 2.4 Q46.4 0.6 49 0.8', .5)}
+      ${eye(50.4, 8.2, o.closed, 3.4)}${blush(47, 13.8, 2.4)}
+      <g class="r-mouth"><path d="M56 11.2 L84 11.8 L56.4 13.6Z" fill="#74748c" ${O(1.3)}/>
+        <g class="m-open"><path d="M56 11.2 L84.4 11.6 L80 19.4 Q66 17.4 56.4 13.6Z" fill="#7a3a4a" ${O(1.2)}/><ellipse cx="62" cy="13.6" rx="4" ry=".9" fill="#ff8fa8"/><path d="M56.2 12.4 L81.4 18.4 L80.4 20.2 L56.6 14.4Z" fill="#74748c" ${O(1.3)}/></g></g>
+      <path d="${beakU}" fill="#8a8aa0" ${O(1.5)}/><circle cx="59.6" cy="9" r=".7" fill="${INK}"/>${r5_SN('M58 8.2 L78 10.4', .5)}`)}`;
+};
+
+// --- part 6 ---
+// R6 rig: hen, goose, rooster, duck, swan, tortoise, frog, snail — every moving part is its own group, back parts first.
+const r6_SH = (d, op = .14) => `<path d="${d}" fill="#2a1840" opacity="${op}"/>`;
+const r6_SN = (d, op = .32) => `<path d="${d}" fill="#fff" opacity="${op}"/>`;
+// a coloured line with an ink outline (legs, necks, toes)
+const r6_ln = (d, col, w) => `<path d="${d}" stroke="${INK}" stroke-width="${w + 2.2}" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" stroke="${col}" stroke-width="${w}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+// a bird leg with three toes; x = hip, top..bot
+const r6_bleg = (cls, x, top, bot, col) => `<g class="${cls}">${r6_ln(`M${x} ${top} V${bot - 1.6}`, col, 2.3)}${r6_ln(`M${x - 3.2} ${bot} L${x} ${bot - 1.8} L${x + 4.6} ${bot} M${x} ${bot - 1.8} L${x + 1.4} ${bot}`, col, 1.5)}</g>`;
+// a webbed foot (ducks, swans)
+const r6_wleg = (cls, x, top, bot, col) => `<g class="${cls}">${r6_ln(`M${x} ${top} V${bot - 2}`, col, 2.4)}<path d="M${x - 2} ${bot - 2.4} L${x + 5.5} ${bot - .4} Q${x + 5} ${bot + .6} ${x + 3} ${bot} L${x - 2.2} ${bot} Q${x - 3} ${bot - 1.2} ${x - 2} ${bot - 2.4}z" fill="${col}" ${O(1.3)}/></g>`;
+// beak mouth: closed lower beak + an open lower beak (dark gape, pink tongue) that drops from the beak line
+const r6_beak = (x, y, len, col) => `<g class="r-mouth"><path d="M${x} ${y} q${len * .55} ${len * .05} ${len} ${-len * .1} q${-len * .4} ${len * .4} ${-len} ${len * .35}z" fill="${col}" ${O(1.1)}/>
+  <g class="m-open"><path d="M${x - .6} ${y} L${x + len * .95} ${y} L${x + len * .6} ${y + len * .7} L${x - .6} ${y + len * .82}z" fill="#7a3a4a" ${O(1.1)}/><ellipse cx="${x + len * .28}" cy="${y + len * .55}" rx="${len * .24}" ry="${len * .14}" fill="#ff8fa8"/><path d="M${x - .6} ${y + len * .66} L${x + len * .9} ${y + len * .2} q-${len * .12} ${len * .62} -${len * .9} ${len * .8}z" fill="${col}" ${O(1.1)}/></g></g>`;
+
+// ---------- hen family (hen, goose, rooster) ----------
+const r6_fowl = (o, k) => {
+  const B = k.body, W = k.wing;
+  const hx = k.neck ? 34.4 : 32, hy = k.neck ? 4.4 : 10, hr = k.neck ? 7.4 : 8.6;
+  const wing = (cls, far) => `<g class="${cls}" style="transform-origin:58% 7%"><path d="M22.6 18.4 C27.6 18.6 29.4 23 27.8 27 C26 31.4 21 34.2 14.6 34.2 C13.4 32.4 13.8 30.4 15.4 29.4 C14 27.6 14.4 25.4 15.8 24.4 C16.2 21 18.8 18.2 22.6 18.4z" fill="${far ? k.wingFar : W}" ${O(1.6)}/>
+      ${far ? '' : `${r6_SH('M27.6 23.6 C28.6 26 27.6 28.6 25.6 30.6 C23 33 19 34.2 14.8 34.2 C20 32 25 28.6 27.6 23.6z', .16)}<path d="M15.8 29.4 q5.4 -.8 9.6 -5.4 M15.8 24.4 q4 .4 8 -2.4" ${O(1.1)} fill="none" opacity=".45"/>${r6_SN('M17.6 22.4 q1.6 -3 5 -2.6 q-2.6 1 -3.6 3.6z', .45)}`}</g>`;
+  return shadow(22, 41, 18) + `
+    ${wing('r-arm2', true)}
+    <g class="r-tail" style="transform-origin:92% 88%">${k.tail}</g>
+    ${r6_bleg('r-leg2', 18, 31, 40.6, k.legFar)}${r6_bleg('r-leg1', 25, 31, 40.6, k.leg)}
+    <g class="r-body"><ellipse cx="20" cy="22" rx="16" ry="13" fill="${B}" ${O()}/>
+      ${r6_SH('M5.5 27 Q10 35 21 35 Q31 35 35 27.5 Q30 32 20 32.4 Q10 32.4 5.5 27z', .14)}
+      ${r6_SN('M9 16 Q14 10 22 10 Q15 13 11 19z', .4)}
+      <path d="M31 25 q2 1.6 3.4 0 M29.4 29.4 q2 1.6 3.4 0 M33 20.6 q1.6 1.4 2.6 0" ${O(1.1)} fill="none" opacity=".35"/>
+</g>
+    <g class="r-head">
+      ${k.comb ? k.comb(hx, hy, hr) : ''}
+      <circle cx="${hx}" cy="${hy}" r="${hr}" fill="${B}" ${O()}/>
+      ${k.neck ? `<path d="M26.4 21 C27 14.6 28.6 9.6 31 7 L38.6 7.6 C36 11 34.8 15.6 35 21z" fill="${B}"/><path d="M27.7 11.6 C28.6 9.6 29.4 8.4 30.6 7.6 M38.4 8.4 C36 11.6 34.8 15.4 34.9 18.6" ${O()} fill="none"/>${r6_SH('M36.6 10.6 C35.4 13.4 34.8 16.6 35 21 L32.6 21 C32.6 17 33.6 13.4 36.6 10.6z', .1)}` : ''}
+      ${r6_SH(`M${hx + 2} ${hy - hr + 1} q${hr * .9} ${hr * .7} ${hr * .5} ${hr * 1.5} q-1.6 1.2 -3.6 1.8 q3.6 -4 1.6 -11z`, .1)}
+      ${r6_SN(`M${hx - hr + 2.4} ${hy - 2} q1.4 -4.2 5 -5`, .4).replace('fill="#fff"', 'fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"')}
+      <path d="M${hx + hr - 2} ${hy - 2.4} q${k.bill * .62} ${k.bill * .18} ${k.bill} ${k.bill * .32} q${-k.bill * .3} ${k.bill * .14} ${-k.bill} ${k.bill * .1}z" fill="${k.beak}" ${O(1.2)}/>
+      ${r6_beak(hx + hr - 2, hy + .7, k.bill * .92, k.beak2)}
+      ${k.wattle ? `<path d="M${hx + hr - 2.6} ${hy + 4} q2.6 3.6 .4 7 q-2.8 -1.6 -2 -5.6z" fill="#e2445c" ${O(1.1)}/>` : ''}
+      ${eye(hx + 2, hy - 1.6, o.closed, 3)}${blush(hx - 1.6, hy + 4, 2.2)}</g>
+    ${wing('r-arm1', false)}`;
+};
+const r6_henTail = (c, dk) => `<path d="M10 20.5 C3.6 18 0.6 11 2.6 3.4 C5 6.6 6.6 8.4 8.6 9.6 C8 4.4 10.6 .6 14.6 -.4 C14 4.4 15 8.4 16.6 12.6 C14.6 16 12.6 19 10 20.5z" fill="${c}" ${O(1.5)}/>
+  <path d="M4.6 8 q3 5 6 9 M11.6 4 q0 6 2.6 10" stroke="${dk}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".7"/>${r6_SH('M10 20.5 C6 19 3.4 16 2.4 11 C5 15 8 17.4 12.6 17.6z', .14)}`;
+const r6_henComb = (x, y, r) => `<path d="M${x - 5} ${y - r + 1.8} q-.6 -3.8 2.4 -4 q.8 -3 3.4 -2.2 q2 -2.6 4 .4 q3 .4 1.4 3.8z" fill="#e2445c" ${O(1.2)}/>${r6_SN(`M${x - 3.6} ${y - r - .4} q.4 -2 2 -2.2`, .45)}`;
+C.hen = o => {
+  const g = o.gold;
+  return r6_fowl(o, { body: g ? '#ffd34d' : '#f4ecdc', wing: g ? '#ffc93c' : '#e0d4c0', wingFar: g ? '#e8ac2a' : '#cbbca4',
+    tail: r6_henTail(g ? '#ffc93c' : '#a8743f', g ? '#d8962a' : '#7a5028'), comb: r6_henComb, wattle: 1,
+    beak: '#ffb347', beak2: '#f09a30', bill: 6.6, leg: '#ff9f43', legFar: '#e0802a' });
+};
+C.goose = o => {
+  const g = o.gold;
+  return r6_fowl(o, { body: g ? '#ffd34d' : '#fff', wing: g ? '#ffc93c' : '#e6e8f2', wingFar: g ? '#e8ac2a' : '#c8cad8', neck: 1,
+    tail: `<path d="M10 20.5 C5 18.6 2 14 2.6 7.6 C5.6 10 8 11 10.4 11.4 C10 9 11 7.6 12.6 7.4 C13.4 10.6 15 13 17 14.6 C15 17.6 13 19.6 10 20.5z" fill="${g ? '#ffc93c' : '#f2f2f8'}" ${O(1.5)}/>${r6_SH('M10 20.5 C6 19 3.4 16 2.6 11 C5 15 8 17 12.6 17.4z', .12)}`,
+    beak: '#ff9f43', beak2: '#f08a30', bill: 7.4, leg: '#ff9f43', legFar: '#e0802a' });
+};
+const r6_rooTail = `<g transform="translate(0 3.4) scale(1 .84)"><path d="M10 21 C-2 18 -7 4 -2 -7 C1 -3 3 0 6 2 C2 -6 4 -13 10 -15 C9 -8 10 -3 12 2 C12 -4 15 -8 18 -9 C16 -3 16 6 17 13 C15 17 13 20 10 21z" fill="#3aa860" ${O(1.5)}/>
+  <path d="M10 21 C2 16 0 6 4 -3 C6 4 9 9 14 13z" fill="#e2445c" ${O(1.3)}/><path d="M11 20 C7 14 7 6 10 -1 C11 6 13 10 16 13z" fill="#2a1840" opacity=".5"/>
+  <path d="M-1 -4 q1 10 9 18 M10 -12 q-1 10 4 18" stroke="#2a8048" stroke-width="1.3" fill="none" stroke-linecap="round"/>${r6_SN('M-1.4 -3 q0 -2 .6 -3.4 q1.6 5 4 8 q-3.6 -1 -4.6 -4.6z', .3)}</g>`;
+const r6_rooComb = (x, y, r) => `<path d="M${x - 6} ${y - r + 2} q-1.6 -6 2.4 -6.4 q.2 -4.6 4 -4 q1.8 -4.4 5 -.6 q4 -.6 2.8 4.4 q2.6 1.6 -.2 4.2z" fill="#e2445c" ${O(1.2)}/>${r6_SN(`M${x - 4.4} ${y - r - 1.6} q.2 -3 2.4 -3.4`, .45)}`;
+C.rooster = o => r6_fowl(o, { body: '#ff9f43', wing: '#e07a2a', wingFar: '#c0601a', tail: r6_rooTail, comb: r6_rooComb, wattle: 1,
+  beak: '#ffd34d', beak2: '#f0b830', bill: 7, leg: '#ffc93c', legFar: '#e0a82a' });
+
+// ---------- duck ----------
+C.duck = o => {
+  const B = o.grey ? '#b8b4c8' : '#ffd34d', W = o.grey ? '#9a96aa' : '#ffc02a', WF = o.grey ? '#86829a' : '#e8a818', beak = '#ff9f43';
+  const wing = (cls, far) => `<g class="${cls}" style="transform-origin:72% 9%"><path d="M22 16.4 C26.4 16.4 27.6 20.4 25.4 23.6 C23 27 17.6 28.6 11.4 27.8 C10.4 26.4 11 25 12.4 24.4 C11.4 23 12 21.4 13.6 21 C14.6 18 18 16.4 22 16.4z" fill="${far ? WF : W}" ${O(1.5)}/>
+    ${far ? '' : `<path d="M12.6 24.4 q6 .4 10.4 -3.6 M13.8 21.2 q4.4 .4 8.4 -2.4" ${O(1)} fill="none" opacity=".4"/>${r6_SN('M15.6 20 q2 -2.6 5.6 -2.4 q-3 .8 -4.4 3z', .45)}`}</g>`;
+  return shadow(20, 33, 16) + `
+    ${wing('r-arm2', true)}
+    <g class="r-tail" style="transform-origin:90% 80%"><path d="M8 22 C5 20 3.4 16.6 3 13.6 C6 14 9 15.6 11.4 18z" fill="${B}" ${O(1.5)}/>${r6_SH('M8 22 C5.6 20.4 4.4 18.4 3.8 16.4 C6 18 8.6 19 10.6 19.4z', .14)}</g>
+    ${r6_wleg('r-leg2', 15, 26, 33, '#e0802a')}${r6_wleg('r-leg1', 22, 26, 33, '#ff9f43')}
+    <g class="r-body"><ellipse cx="18.6" cy="21.4" rx="14.6" ry="9.2" fill="${B}" ${O()}/>${r6_SH('M5.6 24 Q10 30.6 19 30.6 Q28 30.6 32 24.6 Q27 28.4 19 28.4 Q11 28.4 5.6 24z', .14)}${r6_SN('M9 17 Q14 13.6 20 13.6 Q14 15.6 11 19z', .4)}</g>
+    <g class="r-head"><path d="M25 16 C26 18 30 19 33 17 L32 12 L26 12z" fill="${B}"/>
+      <circle cx="30" cy="10" r="8" fill="${B}" ${O()}/><path d="M27 17.4 C29 19.4 32 19 34 16.6" stroke="${B}" stroke-width="3.4" fill="none"/>
+      ${r6_SH('M32 2.6 q7 3.6 5.4 10 q-1.2 3 -3.6 4 q3 -6 -1.8 -14z', .1)}<path d="M25 7 q1.4 -3.6 5 -4.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".45"/>
+      <path d="M33 4.4 q2 -3.4 0 -4.4 q-1 2 -3 2.4" fill="${B}" ${O(1.2)}/>
+      <path d="M36.4 8.4 q5.4 -1 8.4 1.6 q.6 1.6 -1 2.2 q-4 .6 -7.6 .2z" fill="${beak}" ${O(1.2)}/><path d="M38.4 9.2 q.6 -.4 1 0" ${O(1)} fill="none"/>
+      ${r6_beak(36.6, 12.2, 8, '#f08a30')}
+      ${eye(31.4, 7.6, o.closed, 2.9)}${blush(28.4, 12.6, 2.2)}</g>
+    ${wing('r-arm1', false)}`;
+};
+
+// ---------- swan ----------
+C.swan = o => {
+  const wing = (cls, far) => `<g class="${cls}" style="transform-origin:92% 22%"><path d="M42 28 C36 26 29 26 23.4 28.8 C20.8 30.2 20 32.4 21.4 34 C23.4 33.6 25 34.4 25.8 36 C29 35.6 31.2 36.4 32.6 38 C37.2 37.4 40.6 35 43.4 31 C44 29.6 43.4 28.4 42 28z" fill="${far ? '#dfe4f4' : '#fff'}" ${O(1.7)}/>
+    ${far ? '' : `<path d="M22.4 32.4 q9 -3.4 18.6 0 M26.4 35 q7 -1.8 13.6 0" ${O(1.1)} fill="none" opacity=".35"/>${r6_SH('M21.4 34 C23.4 33.6 25 34.4 25.8 36 C29 35.6 31.2 36.4 32.6 38 C37.2 37.4 40.6 35 43 31.4 C37 35.4 30 35 21.4 34z', .12)}${r6_SN('M24.6 29.6 q8 -2.6 16.6 -.6 q-8 -.6 -15 1.8z', .6)}`}</g>`;
+  return shadow(28, 48, 20) + `
+    ${wing('r-arm2', true)}
+    <g class="r-tail" style="transform-origin:95% 85%"><path d="M12 38 C8 35 6 30 7 25 C10 27 12 28 15 29 C14 32 14 35 12 38z" fill="#fff" ${O(1.6)}/>${r6_SH('M12 38 C9.6 35.6 8 33 7.6 30 C10 32 12 33 14.6 33z', .12)}</g>
+    ${r6_wleg('r-leg2', 24, 42, 49, '#4a4458')}${r6_wleg('r-leg1', 32, 42, 49, '#3b3448')}
+    <g class="r-body"><path d="M9 38 C5 30 11 23 20 23 C32 23 44 29 50 35 C47 44 36 48 22 48 C15 48 11 44 9 38z" fill="#fff" ${O()}/>
+      <path d="M8.8 33 C10 28 16 25.6 24.6 28 C21.6 29.8 21 32 22 33.8 C19.6 33.6 18 34.6 17.2 36.4 C14.4 35.2 11.4 35.2 8.8 33z" fill="#eef1fa" ${O(1.4)}/><path d="M11 31.6 q4 -2.6 10 -2" ${O(1)} fill="none" opacity=".3"/>${r6_SH('M10 40 C14 46 20 47.4 26 47.4 C38 47.4 46 42 49.4 36 C44 42 34 45 24 45 C17 45 12 43 10 40z', .1)}</g>
+    <g class="r-head" style="transform-origin:20% 96%">
+      ${r6_ln('M45 36 C54 34 58 27 55 18 C53 11 53 3 59.6 .6', '#fff', 6.4)}
+      <path d="M50 33.6 C55 30 56.4 25 54.6 19" stroke="#2a1840" stroke-width="2" fill="none" opacity=".1" stroke-linecap="round"/>
+      <path d="M53.6 6 C54 3 56 1 58.6 .4" stroke="#fff" stroke-width="1.4" fill="none" opacity=".6"/>
+      <ellipse cx="60.6" cy="-.6" rx="5" ry="4.2" fill="#fff" ${O(1.8)}/><path d="M56 1.6 C57 4 60 4.2 62 3" stroke="#fff" stroke-width="2.6" fill="none"/>
+      <path d="M63.6 -3.2 q-1.6 1.2 -1.4 3 l1.4 .8z" fill="${INK}"/>
+      <path d="M64 -3 q4.6 .8 6.6 3 q-3 .8 -6.6 .2z" fill="#ff9f43" ${O(1.2)}/>
+      ${r6_beak(64, .4, 6, '#f08a30')}
+      ${eye(60.6, -1.4, o.closed, 2.3)}${blush(58.6, 2.2, 1.7)}</g>
+    ${wing('r-arm1', false)}`;
+};
+
+// ---------- tortoise ----------
+C.tortoise = o => {
+  const sk = '#c4dc84', skF = '#a8c470';
+  const leg = (cls, x, far) => `<g class="${cls}"><path d="M${x - 5} 46 h10 v13.6 q0 3 -3 3 h-4.6 q-3.4 0 -3.4 -3z" fill="${far ? skF : sk}" ${O()}/>
+    ${far ? '' : r6_SH(`M${x + 1.6} 47 h3.4 v12.6 q0 2.4 -2.4 2.4 h-1z`, .14)}<path d="M${x - 2.6} 62.4 v-2.2 M${x} 62.4 v-2.2 M${x + 2.6} 62.4 v-2.2" ${O(1.1)} opacity=".6"/></g>`;
+  return shadow(34, 63, 30) + `
+    ${leg('r-leg1', 13, true)}${leg('r-leg2', 44, true)}
+    <g class="r-tail" style="transform-origin:100% 40%"><path d="M7 45 Q1 46 -.4 50 Q4 50.6 8 49z" fill="${sk}" ${O(1.6)}/></g>
+    ${leg('r-leg2', 19, false)}${leg('r-leg1', 50, false)}
+    <g class="r-head" style="transform-origin:18% 92%">
+      ${r6_ln('M53 45 Q61 42 63.6 35', sk, 8.6)}<path d="M57 45 q4 -3 5 -8" stroke="#2a1840" stroke-width="2" fill="none" opacity=".12" stroke-linecap="round"/>
+      <circle cx="67" cy="30" r="11" fill="${sk}" ${O()}/>${r6_SH('M72 20.4 q8 5 5.6 13.6 q-2.6 5.6 -9 6.4 q7 -7 3.4 -20z', .1)}${r6_SN('M59.6 25 q2 -5 7 -6', .4).replace('fill="#fff"', 'fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"')}
+      <path d="M62 34 q-3 -1 -2 -4 M64 38 q3 1 5 -.4" ${O(1)} fill="none" opacity=".3"/>
+      <circle cx="77" cy="28.6" r=".8" fill="${INK}" opacity=".6"/>
+      ${eye(70, 26.6, o.closed, 4)}${blush(64, 34, 2.8)}
+      <g class="r-mouth"><path d="M69.6 34.4 q3.4 2.8 6.4 -.2" ${O(1.4)} fill="none"/>
+        <g class="m-open"><path d="M69.4 34.4 q3.4 .2 6.6 -.4 q-.2 4.6 -3.4 5.2 q-3 -.4 -3.2 -4.8z" fill="#7a3a4a" ${O(1.3)}/><ellipse cx="72.6" cy="38" rx="1.8" ry="1" fill="#ff8fa8"/></g></g></g>
+    <g class="r-body"><g transform="translate(0 -3)">
+      <path d="M2 49 Q32 58 62 49 Q64 52 60 54.6 Q32 62 4 54.6 Q0 52 2 49z" fill="#5e8a4a" ${O()}/>
+      <path d="M4 50 Q6 22 32 20 Q58 22 60 50 Q32 56 4 50z" fill="#7fb069" ${O()}/>
+      ${r6_SH('M44 23.4 Q58 30 60 50 Q52 52.6 44 53.4 Q54 40 44 23.4z', .14)}
+      <g fill="#a7cf8a" ${O(1.5)}><path d="M24 33 l8 -6.6 l8 6.6 l-2.6 8.4 h-10.8z"/><path d="M10.6 45 q1.4 -6 5.4 -9.6 l6 2.4 l-1 9 q-5 -.4 -10.4 -1.8z"/><path d="M53.4 45 q-1.4 -6 -5.4 -9.6 l-6 2.4 l1 9 q5 -.4 10.4 -1.8z"/>
+        <path d="M27 43.6 h10 l1.4 5.2 q-6.4 .8 -12.8 0z"/><path d="M22 26.4 q4 -3.6 9 -4.6 l-.6 3.6 l-6.4 5z" opacity=".9"/><path d="M42 26.4 q-4 -3.6 -9 -4.6 l.6 3.6 l6.4 5z" opacity=".9"/></g>
+      <path d="M10 50.6 q2 3 5 3.6 M22 52.6 v3 M32 53.6 v3 M42 52.6 v3 M54 50.6 q-2 3 -5 3.6" ${O(1.2)} fill="none" opacity=".4"/>
+      <path d="M13 34 q6 -10 17 -11.4" stroke="#fff" stroke-width="3" opacity=".45" fill="none" stroke-linecap="round"/></g></g>`;
+};
+
+// ---------- frog ----------
+C.frog = o => {
+  const G = '#7fd07a', GF = '#62b05e', BL = '#d8f0a0';
+  return shadow(20, 29, 18) + `
+    <g class="r-leg2" style="transform-origin:60% 12%"><path d="M3 21 C1 25 2 28.4 6 28.6 L12 28.6 L11 25 C10 22 6 19.6 3 21z" fill="${GF}" ${O(1.6)}/></g>
+    <g class="r-arm2"><path d="M30.6 19 C30 23 29.4 26 30 28.6" stroke="${INK}" stroke-width="5.4" fill="none" stroke-linecap="round"/><path d="M30.6 19 C30 23 29.4 26 30 28.6" stroke="${GF}" stroke-width="3.2" fill="none" stroke-linecap="round"/><circle cx="31.6" cy="29.2" r="1.6" fill="${GF}" ${O(1.1)}/></g>
+    <g class="r-body"><path d="M1.6 24 C-1 15 7 9.6 18 10.4 C28 11 36 14.6 37 21 C37.6 27 31 30 20 30 C9 30 3 28.4 1.6 24z" fill="${G}" ${O()}/>
+      <path d="M22 21.4 C29 20 35 22 35.4 25 C34 28.4 28 29.6 21 29.4 C19.4 26.6 19.6 23 22 21.4z" fill="${BL}"/>
+      ${r6_SH('M2 24 C4 28 10 29.6 20 29.8 C14 28 8 27 3.6 21.6z', .14)}
+      <circle cx="8" cy="16" r="1.8" fill="#5aa856"/><circle cx="13" cy="13.4" r="1.3" fill="#5aa856"/><circle cx="11.6" cy="19" r="1.2" fill="#5aa856"/>
+      ${r6_SN('M5 15.6 q4 -4 10 -4.4 q-6 2 -8.6 6z', .35)}</g>
+    <g class="r-head" style="transform-origin:40% 90%">
+      <path d="M17 17 C16 10.6 22 8.6 28 9 C35 9.4 39.6 12 39.4 16.6 C39 21 34 23 27 23 C21 23 17.6 21 17 17z" fill="${G}" ${O()}/>
+      <circle cx="21.6" cy="8.4" r="5" fill="${GF}" ${O()}/><circle cx="30.4" cy="8" r="5.6" fill="${G}" ${O()}/>
+      <path d="M18 17.6 C20 21 24 22.4 28 22.4 C22 20.6 19.4 19 18 17.6z" fill="#2a1840" opacity=".12"/>
+      ${eye(22, 8.2, o.closed, 3.2)}${eye(31, 7.8, o.closed, 3.7)}
+      <circle cx="37.6" cy="13" r=".6" fill="${INK}" opacity=".6"/>${blush(33, 17.4, 2.4)}
+      <g class="r-mouth"><path d="M24 17.4 q6.6 3.2 14 -1.4" ${O(1.4)} fill="none"/>
+        <g class="m-open"><path d="M24.4 17.6 q6.4 1.4 13.4 -1.6 q-1.2 6.4 -6.8 6.8 q-5 0 -6.6 -5.2z" fill="#7a3a4a" ${O(1.3)}/><ellipse cx="30.2" cy="21" rx="2.6" ry="1.2" fill="#ff8fa8"/></g></g></g>
+    <g class="r-leg1" style="transform-origin:55% 10%"><path d="M3.4 26.4 C1 20 5 14.6 11 15.6 C16 16.6 18 22 15.4 27 L13 28.6z" fill="${G}" ${O()}/>${r6_SH('M4 27 C3 23 4 20 6.4 18.4 C6 22 8 25.6 12 28z', .14)}
+      <path d="M8 28.6 C13 27.4 18 27.6 23.4 28.4 Q25 29.8 23.6 30.4 L8.4 30.4 Q6.6 29.6 8 28.6z" fill="${G}" ${O(1.6)}/><path d="M17 28.6 v1.6 M20.4 28.8 v1.4" ${O(1)} opacity=".5"/></g>
+    <g class="r-arm1"><path d="M34 19.6 C34.4 23.4 34.6 26 35.6 28.4" stroke="${INK}" stroke-width="5.6" fill="none" stroke-linecap="round"/><path d="M34 19.6 C34.4 23.4 34.6 26 35.6 28.4" stroke="${G}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <path d="M34 29.4 q1.6 -2 3 -1.4 q2.4 -.6 3.4 1.4 q-1.4 1 -6.4 0z" fill="${G}" ${O(1.2)}/></g>`;
+};
+
+// ---------- snail ----------
+C.snail = o => {
+  const sk = '#e8c9a0', sh = '#c98a4a';
+  return shadow(22, 25, 18) + `
+    <g class="r-tail" style="transform-origin:100% 70%"><path d="M8 21.6 C4 22 1 23 -.4 25 C3 26 6 26 9 25.4z" fill="${sk}" ${O(1.6)}/></g>
+    <g class="r-head" style="transform-origin:20% 92%">
+      <g class="r-ear" style="transform-origin:10% 100%"><path d="M39.6 10 Q38 6 39 2.6" ${O(1.4)} fill="none"/><circle cx="39" cy="2.4" r="1.6" fill="${sk}" ${O(1.2)}/></g>
+      <g class="r-ear" style="transform-origin:0% 100%"><path d="M43.4 9.4 Q45 6 47.4 3.4" ${O(1.4)} fill="none"/><circle cx="47.6" cy="3.2" r="1.7" fill="${sk}" ${O(1.2)}/></g>
+      <path d="M32.6 24.6 C32.6 19 33.6 14 36.4 11 C39.6 7.6 45.6 7.8 48 11.4 C50.4 15 49.6 20 46 22.2 C43 24 39.6 24.6 37 25z" fill="${sk}" ${O()}/>
+      ${r6_SH('M45.4 9.4 q4.4 2.6 3.4 8 q-1 3.6 -4.6 5 q3.4 -5.6 1.2 -13z', .12)}<path d="M35.6 15 q1 -3.6 4 -5" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".5"/>
+      <path d="M36.6 22.6 q-1.6 -3 -.6 -6" ${O(1)} fill="none" opacity=".25"/>
+      ${eye(42.4, 14.4, o.closed, 3)}${blush(39.6, 19.2, 2)}
+      <g class="r-mouth"><path d="M43 19.4 q2.4 2 4.6 -.2" ${O(1.3)} fill="none"/>
+        <g class="m-open"><path d="M42.8 19.4 q2.6 .4 4.8 -.4 q-.2 3.6 -2.4 3.8 q-2.2 -.2 -2.4 -3.4z" fill="#7a3a4a" ${O(1.1)}/><ellipse cx="45" cy="21.8" rx="1.3" ry=".6" fill="#ff8fa8"/></g></g></g>
+    <g class="r-body"><path d="M5 22 C14 19.6 30 19.6 38 21.6 C40 22.6 40.4 24.4 38.4 25.2 C28 26.6 14 26.6 5 25.4 C3.6 24.4 3.6 22.6 5 22z" fill="${sk}" ${O()}/>
+      ${r6_SH('M6 25.2 C16 26.2 28 26.2 38 25 Q30 24 6 25.2z', .16)}
+      <circle cx="21" cy="12" r="12" fill="${sh}" ${O()}/>
+      ${r6_SH('M26 1.6 Q34 5 33 14 Q31.6 22 23 24 Q31 16 26 1.6z', .16)}
+      <path d="M21 12.4 m-1.4 -.4 a1.6 1.6 0 1 1 2.6 1.8 a3.6 3.6 0 1 1 -4.6 -4.8 a6 6 0 1 1 -1.8 8.6 a8.6 8.6 0 0 1 1.4 -13" fill="none" stroke="#8a5428" stroke-width="1.6" stroke-linecap="round"/>
+      ${r6_SN('M11.4 7.6 q3 -5 9 -6 q-5 2.6 -7 7.2z', .4)}</g>`;
+};
+
+// --- part 7 ---
+// r7: fish, dolphin, ant, hopper (grasshopper), bee, firefly, bun (kolobok) — rigged with r-* parts.
+const r7_SH = (d, op = .16) => `<path d="${d}" fill="#2a1840" opacity="${op}"/>`;
+const r7_SN = (d, op = .35) => `<path d="${d}" fill="#fff" opacity="${op}"/>`;
+// a thin insect limb: ink outline under a coloured core
+const r7_limb = (d, col, w = 1.6) => `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${w + 1.5}" stroke-linecap="round" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+// mouth: closed smile + open mouth (dark half-moon with a pink tongue), w = half width
+const r7_mouth = (x, y, w, line = INK, lw = 1.3) => `<g class="r-mouth"><path d="M${x - w} ${y} q${w} ${w * .75} ${w * 2} 0" fill="none" stroke="${line}" stroke-width="${lw}" stroke-linecap="round"/>
+  <g class="m-open"><path d="M${x - w * .95} ${y - .2} q${w * .95} ${w * .35} ${w * 1.9} 0 q-.1 ${w * 1.5} ${-w * .95} ${w * 1.6} q${-w * .85} -.1 ${-w * .95} ${-w * 1.6}z" fill="#7a3a4a" ${O(Math.min(1.2, w * .6))}/><ellipse cx="${x}" cy="${y + w * 1.05}" rx="${w * .5}" ry="${w * .28}" fill="#ff8fa8"/></g></g>`;
+const r7_knob = (x, y, r, c) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" ${O(1)}/>`;
+
+C.fish = o => {
+  const fin = '#ff9f43', bd = '#ffb347';
+  return `
+  <g class="r-arm2"><path d="M12.5 8 q-1.6 3 -.4 5.2 q3 -.6 3.8 -3.8z" fill="#e8892e" ${O(1.2)}/></g>
+  <g class="r-tail" style="transform-origin:100% 50%"><path d="M3 6 C-1 2 -5 -1.4 -8.6 -1 C-7 3 -7 9 -8.6 13 C-5 13.4 -1 10 3 6z" fill="${fin}" ${O(1.4)}/>
+    <path d="M-5.6 2 q2 2 4.6 3.6 M-5.6 10 q2 -2 4.6 -3.4" stroke="#e8892e" stroke-width="1.1" fill="none" stroke-linecap="round"/>${r7_SH('M-8 9 q4 -1 9 -3 q-3 4 -9 7z', .12)}</g>
+  <path d="M5 1.6 q4 -4.4 11.4 -2 q-1.2 1.4 -1.6 2.4z" fill="${fin}" ${O(1.3)}/>
+  <g class="r-body"><ellipse cx="12" cy="6" rx="12.4" ry="6.8" fill="${bd}" ${O(1.6)}/>
+    <path d="M2.6 8.4 q9 5.6 19.6 .8 q-3 3.4 -9.6 3.6 q-6.4 0 -10 -4.4z" fill="#ffe0a8"/>
+    ${r7_SH('M1.6 9 q10 6 21 0 q-3 4 -10.6 4 q-7 -.4 -10.4 -4z', .12)}${r7_SN('M5 2.2 q5 -3.4 11 -2.6 q-6 .8 -10 3.6z', .4)}
+    <path d="M7.4 .6 q-2 5.4 0 10.8 M11.6 -.6 q-2 6.6 0 13.2" stroke="${fin}" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <path d="M15.6 1 q2 5 0 10" stroke="#e8892e" stroke-width="1.1" fill="none" stroke-linecap="round"/></g>
+  <g class="r-head">${eye(18.6, 4.4, o.closed, 2.6)}${blush(19.4, 8.8, 1.5)}${r7_mouth(20.8, 8.6, 1.5, INK, 1.2)}</g>
+  <g class="r-arm1"><path d="M11 7.4 q-1.6 3.4 .2 5.6 q3.4 -.6 4 -4.6 q-2 -1.4 -4.2 -1z" fill="#f0862a" ${O(1.2)}/>${r7_SN('M12 8.6 q.4 2 0 3.4', .35)}</g>`;
+};
+
+C.dolphin = o => {
+  const c = '#7ab8f0', d = '#5a98d4';
+  return `
+  <g class="r-arm2"><path d="M38 25 q-1 6 -6 9 q7 .6 9.6 -7z" fill="${d}" ${O(1.5)}/></g>
+  <g class="r-tail" style="transform-origin:100% 50%"><path d="M6 24.6 C1 22 -3 18 -7.6 17 C-6.6 20.4 -5.4 22.6 -4 25 C-5.4 27.4 -6.6 30 -7.6 33 C-3 31.6 1 29 6 27.4z" fill="${c}" ${O(1.6)}/>${r7_SH('M-7 32 q5 -3 12 -6 l0 1.4 q-5 2 -12 5z', .14)}</g>
+  <path d="M28 8 q3.4 -7 10.4 -8 q-2.4 5 -.4 10z" fill="${d}" ${O(1.6)}/>
+  <g class="r-body"><path d="M3 26 C8 11 30 3 47 7.4 C53 9 56.6 12 58.6 15.4 C61.6 15.4 65 15.6 66 17.6 C66.4 20.4 63.4 21.6 60 22 C50 33 20 35 3 26z" fill="${c}" ${O()}/>
+    <path d="M12 28.4 q22 6 46.6 -6 q-6 9 -22 10.6 q-14 1 -24.6 -4.6z" fill="#d6ecff"/>
+    ${r7_SH('M10 29.4 q24 6 48 -7 q-8 10 -24 11 q-14 .6 -24 -4z', .12)}${r7_SN('M16 13 q12 -7 26 -6 q-14 2 -24 9z', .38)}
+    <circle cx="41" cy="7.6" r="1" fill="${INK}" opacity=".6"/></g>
+  <g class="r-head">${eye(50, 14.6, o.closed, 3)}${blush(52.6, 19.6, 2)}${r7_mouth(60, 19.6, 2.3, INK, 1.3)}</g>
+  <g class="r-arm1"><path d="M36.6 24.4 q-1 6 -6.4 9.4 q7.4 1 10.4 -7.6z" fill="${c}" ${O(1.6)}/>${r7_SN('M35.6 27 q-1 3 -3 5', .35)}</g>`;
+};
+
+C.ant = o => {
+  const c = '#b0503a', d = '#8a3a2a';
+  return shadow(20, 25, 16) + `
+  <g class="r-arm2" style="transform-origin:0% 0%">${r7_limb('M22.6 16 q3 3 3 5 l1.6 3', d)}</g>
+  <g class="r-leg2" style="transform-origin:100% 0%">${r7_limb('M17.4 16.4 q-3.4 3 -4.4 7.6 l-1.8 .4', d)}</g>
+  <g class="r-leg1" style="transform-origin:0% 0%">${r7_limb('M20 17 q.8 3.4 1.6 7 l1.6 .2', d)}</g>
+  <g class="r-tail" style="transform-origin:100% 50%"><ellipse cx="8" cy="12.6" rx="8" ry="6.6" fill="${c}" ${O(1.6)}/>
+    <path d="M5 6.6 q-2 6 0 12 M9.6 6.2 q-2 6.4 0 12.8" stroke="${d}" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+    ${r7_SH('M1.4 15 q6 6 13 1 q-2 3.6 -7 3.4 q-4.4 -.4 -6 -4.4z', .16)}${r7_SN('M3 9 q3 -3 7 -2.4 q-4 .8 -6 3.4z', .4)}</g>
+  <g class="r-body"><circle cx="15.6" cy="13.6" r="2.2" fill="${d}" ${O(1.3)}/><ellipse cx="20" cy="13.8" rx="5.4" ry="4.4" fill="${c}" ${O(1.6)}/>${r7_SN('M16.6 12 q2 -2 5 -1.6 q-3 .6 -4.4 2.4z', .4)}${r7_SH('M15.6 15.6 q4 3 9 0 q-1 2.4 -4.4 2.6 q-3 -.2 -4.6 -2.6z', .16)}</g>
+  <g class="r-leg1" style="transform-origin:100% 0%">${r7_limb('M16.6 16 q-4 3 -5 7.6 l-2 .4', c)}</g>
+  <g class="r-leg2" style="transform-origin:50% 0%">${r7_limb('M19.4 17 q-.6 3.6 -1 7 l-1.8 .2', c)}</g>
+  <g class="r-head" style="transform-origin:15% 85%">
+    <circle cx="31" cy="10.4" r="7" fill="${c}" ${O(1.6)}/>
+    ${o.grain ? `<ellipse cx="28.4" cy="2.6" rx="5" ry="3.3" fill="#ffd98a" ${O(1.2)}/>${r7_SN('M25.4 1.6 q2 -1.6 4.6 -1.2', .5)}` : ''}
+    ${r7_limb('M29.6 4.4 q-.6 -5 3 -8', d, 1.1)}${r7_knob(32.8, -3.8, 1.4, c)}${r7_limb('M33 4.4 q3 -4.4 7.6 -4', d, 1.1)}${r7_knob(40.8, .4, 1.4, c)}${r7_SH('M33 4.4 q6 4 4 10 q-2 3 -6 3.4 q5 -6 2 -13.4z', .12)}${r7_SN('M26.4 7 q2 -3.6 6 -3.6 q-3.4 1.6 -4.6 4.4z', .4)}
+    ${eye(33, 8.8, o.closed, 2.8)}${blush(35.6, 13.4, 1.6)}${r7_mouth(36.2, 14.2, 1.4, INK, 1.1)}
+    <path d="M37.6 12.8 q2 .6 1.4 2.6" fill="none" ${O(1.1)}/>
+</g>
+  <g class="r-arm1" style="transform-origin:0% 0%">${r7_limb('M24 16.4 q3 3 3.2 5 l1.8 3', c)}</g>`;
+};
+
+// grasshopper hind leg: a thick thigh from the hip (24,15) up to the knee, the shin folding down-forward to the foot
+const r7_hind = (c, d, near) => `<path d="M25 12.6 C20 6 14 1 10.4 1 C8.4 1.4 8.4 3.8 10 4.8 C15 8.2 19 13 22.6 17.4 C24.6 17.8 25.8 15 25 12.6z" fill="${c}" ${O(1.5)}/>
+  <path d="M12 3.4 q6 4 11 11" stroke="${d}" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".8"/>${near ? r7_SN('M12 2 q5 2 9.6 7.4', .4) : r7_SH('M12 4.6 q6 5 10 11', .14)}
+  ${r7_limb('M10.4 2.8 L14.2 23.2 l-3.4 .8', d, near ? 2 : 1.8)}<path d="M11.8 9 l-1.6 .4 M12.8 14 l-1.6 .4 M13.6 18.6 l-1.6 .4" ${O(1)}/>`;
+C.hopper = o => {
+  const c = '#7fd07a', d = '#5cb85c', dk = '#4a9a4a';
+  return shadow(26, 25, 22) + `
+  <g class="r-leg2" style="transform-origin:92% 60%"><g transform="translate(-3 .6)">${r7_hind(d, dk, false)}</g></g>
+  <g class="r-arm2" style="transform-origin:0% 0%">${r7_limb('M38.6 19.4 q2 3 2 4.6 l1.6 2.4', dk)}</g>
+  <g class="r-leg1" style="transform-origin:50% 0%">${r7_limb('M31.6 20.4 q1.6 3 1.4 5.6 l1.6 .4', dk)}</g>
+  <g class="r-body"><ellipse cx="24.4" cy="16" rx="17.6" ry="6.6" fill="${c}" ${O(1.6)}/>
+    <path d="M8.6 17.6 q16 6 32 1 q-4 3.6 -15 3.6 q-11 0 -17 -4.6z" fill="#c8f0a0"/>
+    ${r7_SH('M7.4 18 q17 7 34 0 q-5 4.6 -17 4.6 q-12 -.4 -17 -4.6z', .14)}
+    <path d="M9.4 12.4 Q24 6.4 38.6 11 Q26 12.4 11.6 15.4z" fill="${d}" ${O(1.2)}/>${r7_SN('M14 11.6 q10 -3.6 20 -1.6 q-10 .4 -18 3z', .35)}
+    <path d="M14 19.6 q.6 -1.6 0 -3 M19 20.6 q.6 -1.6 0 -3 M24 20.8 q.6 -1.6 0 -3" stroke="${dk}" stroke-width="1" fill="none" stroke-linecap="round" opacity=".7"/></g>
+  <g class="r-leg2" style="transform-origin:50% 0%">${r7_limb('M30 20.6 q-.6 3 -1.6 5.8 l-1.8 .2', c)}</g>
+  <g class="r-head" style="transform-origin:5% 80%">
+    ${r7_limb('M43.4 7.4 q4 -8 13 -8.6', dk, 1.1)}${r7_limb('M46 8.6 q6 -4.6 13.6 -2.6', dk, 1.1)}
+    <circle cx="43.4" cy="13" r="6.6" fill="${c}" ${O(1.6)}/>${r7_SH('M45.4 7 q6 4 3.6 10 q-2 2.6 -5.6 2.6 q5 -5.6 2 -12.6z', .12)}${r7_SN('M38.6 10 q2 -3.6 6 -3.6 q-3.6 1.4 -4.6 4.6z', .4)}
+    ${eye(45.4, 11, o.closed, 3)}${blush(47.6, 15.6, 1.6)}${r7_mouth(47.8, 16.6, 1.5, INK, 1.1)}</g>
+  <g class="r-leg1" style="transform-origin:92% 60%">${r7_hind(c, d, true)}</g>
+  <g class="r-arm1" style="transform-origin:0% 0%">${r7_limb('M36.6 20 q2 3 2 4.6 l1.8 2.4', c)}</g>`;
+};
+
+C.bee = o => {
+  const y = '#ffd34d', dk = '#3a3550';
+  return `
+  <g class="r-arm2" style="transform-origin:50% 75%"><ellipse cx="9.6" cy=".6" rx="6.2" ry="3.6" transform="rotate(-18 9.6 .6)" fill="#e6f4ff" opacity=".9" ${O(1)}/>
+    <ellipse cx="17" cy=".2" rx="5.2" ry="3.4" transform="rotate(16 17 .2)" fill="#e6f4ff" opacity=".9" ${O(1)}/>
+    <path d="M12 2.4 q-3 -2 -6.6 -2.6 M14.4 2.4 q2 -2.4 5.6 -3" stroke="#a8c8e8" stroke-width=".8" fill="none"/>${r7_SN('M5 -2 q3 -2.4 6 -1.6', .7)}</g>
+  <g class="r-leg2" style="transform-origin:50% 0%">${r7_limb('M15.4 16.4 q.4 1.4 1.2 2.4', dk, 1)}</g>
+  <path d="M2.4 9 l-2.2 1.3 l2.2 1.5z" fill="${dk}" ${O(1)}/>
+  <g class="r-body"><ellipse cx="12.4" cy="10" rx="10.6" ry="7.6" fill="${y}" ${O(1.6)}/>
+    <path d="M5.4 4.9 q-1.2 5.1 0 10.2 M9.6 3.1 q-1.6 6.9 0 13.8 M14.8 2.7 q-1.6 7.3 0 14.6" stroke="${dk}" stroke-width="2" fill="none"/>
+    ${r7_SH('M3.4 13 q9 6.4 18 0 q-2.4 4.4 -9 4.6 q-6.6 -.2 -9 -4.6z', .16)}${r7_SN('M6.6 5 q5 -3 11 -2 q-6 .6 -9.6 3.4z', .45)}</g>
+  <g class="r-leg1" style="transform-origin:50% 0%">${r7_limb('M10.6 16.8 q-.2 1.4 .3 2.2', dk, 1)}</g>
+  <g class="r-head" style="transform-origin:10% 75%">
+    ${r7_limb('M23 4 q-1.4 -3.6 .6 -6', dk, .9)}${r7_knob(23.8, -2.4, 1.2, dk)}${r7_limb('M26 4.6 q1.6 -3 4 -3.6', dk, .9)}${r7_knob(30.2, 1, 1.2, dk)}
+    <circle cx="24.2" cy="9.4" r="5.6" fill="${dk}" ${O(1.3)}/>${r7_SN('M20.4 7.4 q1.4 -2.4 4 -2.6 q-2.2 1.2 -3 3.4z', .3)}
+    ${eye(25.6, 8.4, o.closed, 2.2)}${blush(27.6, 12, 1.2)}${r7_mouth(27, 12.2, 1, '#ffe48a', .8)}</g>
+  <g class="r-arm1" style="transform-origin:50% 0%">${r7_limb('M19 13.6 q.2 2 1.2 3.4', dk, 1.1)}<circle cx="20.4" cy="17.4" r="1.1" fill="${y}" ${O(.9)}/></g>`;
+};
+
+C.firefly = o => {
+  const g = '#5a8a4a', dk = '#3a4a3a';
+  return `
+  <g class="r-arm2" style="transform-origin:50% 75%"><ellipse cx="16" cy="4" rx="7" ry="3.8" transform="rotate(-14 16 4)" fill="#dff0ff" opacity=".9" ${O(1)}/>
+    <ellipse cx="22.4" cy="3.2" rx="5.4" ry="3.4" transform="rotate(16 22.4 3.2)" fill="#dff0ff" opacity=".9" ${O(1)}/>
+    <path d="M19 7 q-4 -2.4 -8.4 -3 M21 6.8 q2 -2.6 5.6 -3.6" stroke="#a8c8e8" stroke-width=".8" fill="none"/>${r7_SN('M11 2 q3 -2.4 7 -2', .7)}</g>
+  <g class="r-leg2" style="transform-origin:50% 0%">${r7_limb('M23.4 18.6 q.6 2 1.6 3.6', dk, 1)}</g>
+  <g class="r-tail" style="transform-origin:85% 45%"><g class="glow"><circle cx="8" cy="16" r="9" fill="#fff59a" opacity=".55"/></g>
+    <ellipse cx="8.4" cy="15.6" rx="7" ry="6" fill="#e8f87a" ${O(1.4)}/><path d="M5 10.4 q-1.6 5.2 0 10.4 M9.4 9.8 q-1.6 5.8 0 11.6" stroke="#c8d850" stroke-width="1.1" fill="none"/>${r7_SN('M3.6 13 q1.6 -3 5 -3.4 q-3 1.4 -3.6 4z', .6)}</g>
+  <g class="r-body"><ellipse cx="20" cy="13" rx="8.6" ry="6.6" fill="${g}" ${O(1.6)}/><path d="M13 9.4 q7 -3.4 14 0" stroke="#7aaa5a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    ${r7_SH('M12.4 15.6 q7.6 5 15.4 0 q-2 3.4 -7.6 3.6 q-5.6 -.2 -7.8 -3.6z', .16)}${r7_SN('M14.4 11 q3 -2 6.6 -2 q-3.6 .8 -5.4 2.6z', .35)}</g>
+  <g class="r-leg1" style="transform-origin:50% 0%">${r7_limb('M18.6 19 q-.2 2 .4 3.6', dk, 1)}</g>
+  <g class="r-head" style="transform-origin:15% 80%">
+    ${r7_limb('M30 5 q-1 -5 -4 -7.4', dk, .9)}${r7_knob(25.8, -2.6, 1.2, '#e8f87a')}${r7_limb('M33 5 q2 -5 5.6 -6.6', dk, .9)}${r7_knob(38.8, -1.8, 1.2, '#e8f87a')}
+    <circle cx="31" cy="11" r="6.5" fill="${dk}" ${O(1.4)}/>${r7_SN('M26.6 9 q1.6 -3 4.6 -3 q-2.6 1.2 -3.4 3.6z', .3)}
+    ${eye(33, 10, o.closed, 2.6)}${blush(35.4, 14.2, 1.4)}${r7_mouth(34.8, 14.6, 1, '#e8f87a', .8)}</g>
+  <g class="r-arm1" style="transform-origin:50% 0%">${r7_limb('M25.6 15.6 q.4 2.2 1.8 3.8', dk, 1.1)}<circle cx="27.6" cy="19.8" r="1.1" fill="${g}" ${O(.9)}/></g>`;
+};
+
+// kolobok: a round bun with little arms; when it walks its crust and seeds rock round its middle (it rolls)
+C.bun = o => {
+  const c = '#f0b45a', cr = '#d8923a';
+  const arm = (cls, x, front) => `<g class="${cls}"><path d="M${x - 2.4} 22 q-.6 5 ${front ? 1.4 : -1.4} 9" fill="none" stroke="${INK}" stroke-width="5.4" stroke-linecap="round"/><path d="M${x - 2.4} 22 q-.6 5 ${front ? 1.4 : -1.4} 9" fill="none" stroke="${front ? c : cr}" stroke-width="2.6" stroke-linecap="round"/>
+    <circle cx="${x - 2.4 + (front ? 1.4 : -1.4)}" cy="32" r="2.6" fill="${front ? c : cr}" ${O(1.4)}/></g>`;
+  return shadow(20, 41, 18) + `
+  ${arm('r-arm2', 4.4, false)}
+  <g class="r-body"><circle cx="20" cy="20" r="20" fill="${c}" ${O()}/>
+    <path d="M2.4 15 Q6 1 20 .6 Q34 1 37.6 15 Q30 6 20 6 Q10 6 2.4 15z" fill="${cr}" opacity=".55"/>
+    ${r7_SH('M5 31 q15 14 31 -1 q-5 10 -16 10 q-10 -.4 -15 -9z', .14)}${r7_SN('M7 11 q5 -7 14 -7.4 q-8 2.6 -11.6 9z', .45)}</g>
+  <g class="r-leg1" style="transform-origin:50% 50%"><circle cx="20" cy="20" r="19" fill="none"/>
+    <path d="M6 9 q3 -3 6.4 -4.4 M27.6 4.6 q4 1.4 6.6 4.6" stroke="#ffd98a" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="9" cy="30" rx="1.4" ry=".8" fill="#fff3d0" transform="rotate(30 9 30)"/><ellipse cx="33" cy="29" rx="1.4" ry=".8" fill="#fff3d0" transform="rotate(-30 33 29)"/>
+    <ellipse cx="20" cy="2.6" rx="1.4" ry=".8" fill="#fff3d0"/><ellipse cx="4" cy="20" rx="1.4" ry=".8" fill="#fff3d0" transform="rotate(80 4 20)"/>
+    <ellipse cx="36.4" cy="18" rx="1.4" ry=".8" fill="#fff3d0" transform="rotate(-80 36.4 18)"/><ellipse cx="22" cy="37" rx="1.4" ry=".8" fill="#fff3d0"/>
+    <path d="M12 36 q4 2 8 2" stroke="${cr}" stroke-width="1.4" fill="none" stroke-linecap="round" opacity=".7"/></g>
+  <g class="r-head" style="transform-origin:50% 50%"><circle cx="20" cy="20" r="18" fill="none"/>
+    <path d="M10 12.4 q3 -2 6 -.6 M24 11.8 q3 -1.4 6 .6" fill="none" ${O(1.4)}/>
+    ${eye(13, 18, o.closed, 3.6)}${eye(27, 18, o.closed, 3.6)}${blush(8.6, 25.6, 2.8)}${blush(31.4, 25.6, 2.8)}
+    <path d="M19 22.4 q1 1.2 2 0" fill="none" ${O(1.2)} opacity=".6"/>
+    ${r7_mouth(20, 27.6, 5, INK, 1.6)}</g>
+  ${arm('r-arm1', 38, true)}`;
+};
+
+// --- part 8 ---
+// R8 — sky folk: cloudy, windy, sun, star, moon. No legs; little arms (r-arm1 near/front, r-arm2 far/behind),
+// face in r-head, puff/rays in r-body, talking mouth in r-mouth > .m-open.
+const r8_SHADE = (d, op = .14) => `<path d="${d}" fill="#2a1840" opacity="${op}"/>`;
+const r8_SHINE = (d, op = .35) => `<path d="${d}" fill="#fff" opacity="${op}"/>`;
+// mouth: closed smile (or sad curve) + open half-moon mouth with a pink tongue, opening down from y
+const r8_mouth = (x, y, w, o, lip = '#7a3a4a') => `<g class="r-mouth">
+  <path d="M${x - w} ${y} q${w} ${o.sad ? -w * .5 : w * .8} ${w * 2} 0" ${O(1.5)} fill="${o.sad ? 'none' : lip}"/>
+  <g class="m-open"><path d="M${x - w * .95} ${y} q${w * .95} -${w * .2} ${w * 1.9} 0 q0 ${w * 1.25} -${w * .95} ${w * 1.35} q-${w * .95} -${w * .1} -${w * .95} -${w * 1.35}z" fill="${lip}" ${O(1.3)}/>
+  <ellipse cx="${x}" cy="${y + w * .95}" rx="${w * .5}" ry="${w * .27}" fill="#ff8fa8"/></g></g>`;
+// a little arm: rounded sleeve hanging down from (x, y), length len, with a round hand
+const r8_arm = (cls, x, y, len, fill, hand, w = 3) => `<g class="${cls}">
+  <path d="M${x - w} ${y} C${x - w * 1.4} ${y + len * .6} ${x - w} ${y + len} ${x} ${y + len} C${x + w} ${y + len} ${x + w * 1.4} ${y + len * .6} ${x + w} ${y} A${w} ${w} 0 0 0 ${x - w} ${y}z" fill="${fill}" ${O(1.6)}/>${r8_SHADE(`M${x + w * .3} ${y + 1} C${x + w} ${y + len * .5} ${x + w * .8} ${y + len - 1} ${x} ${y + len - .4}z`, .12)}
+  <circle cx="${x}" cy="${y + len + .6}" r="${w + .4}" fill="${hand}" ${O(1.4)}/>${r8_SHINE(`M${x - w * .6} ${y + len - .2} q${w * .33} -${w * .5} ${w * .9} -${w * .43}`, .55)}</g>
+`;
+// ---------- cloudy: a fluffy white cloud ----------
+const r8_cloud = (o, col, shade, face) => {
+  const puff = 'M6 34 C-8 34 -7 14 8 14 C9 -4 32 -7 38 6 C46 -6 70 0 66 16 C81 16 81 34 66 34z';
+  return `${r8_arm('r-arm2', 3, 18, 11, col, col, 4)}
+  <g class="r-body"><path d="${puff}" fill="${col}" ${O()}/>
+    ${r8_SHADE('M10 34 Q30 26 52 30 Q64 26 72 30 Q74 34 66 34z', .1)}${r8_SHADE('M60 16 C70 13 78 20 75 28 C72 22 67 19 60 16z', .1)}
+    ${r8_SHINE('M3 22 C3 17 7 15 11 16 C8 18 6 20 5 24z', .6)}${r8_SHINE('M14 10 C17 1 28 -2 34 4 C27 1 20 3 16 11z', .7)}${r8_SHINE('M42 4 C48 -1 58 0 62 6 C56 3 48 3 44 7z', .6)}
+    <path d="M10 30 h52" stroke="${shade}" stroke-width="3.4" stroke-linecap="round" opacity=".9"/>
+    <path d="M22 13 q3 -3 6 -1 M48 10 q3 -3 6 0" ${O(1.2)} fill="none" opacity=".35"/>
+    <g class="r-head" style="transform-origin:50% 100%">${face}</g></g>
+  ${r8_arm('r-arm1', 70, 18, 11, col, col, 4)}`;
+};
+C.cloudy = o => r8_cloud(o, '#fff', '#e3eaff',
+  `${eye(29, 19, o.closed, 3.7)}${eye(46, 19, o.closed, 3.7)}${blush(22, 25.5, 3.4)}${blush(53, 25.5, 3.4)}${r8_mouth(37.5, 25, 3.6, o)}`);
+
+// ---------- windy: a grey-blue cloud that blows: puffed cheeks, wind curls at the back ----------
+C.windy = o => {
+  const curls = `<g opacity=".9"><path d="M-1 9 q-6 -1 -6 -6 q0 -5 5 -5 q4 0 4 4" stroke="#b9c6e4" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M-3 29 q-5 2 -6.5 -2 q-1.5 -4.5 3 -5.5" stroke="#b9c6e4" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>`;
+  const mouth = `<g class="r-mouth"><ellipse cx="38" cy="26.5" rx="2.6" ry="2.2" fill="#7a3a4a" ${O(1.3)}/>
+    <g class="m-open"><path d="M34.6 26 q3.4 -1 6.8 0 q.2 5.2 -3.4 5.6 q-3.6 -.4 -3.4 -5.6z" fill="#7a3a4a" ${O(1.3)}/><ellipse cx="38" cy="30" rx="1.8" ry="1" fill="#ff8fa8"/></g></g>`;
+  const face = `${eye(29, 19, false, 3.7)}${eye(46, 19, false, 3.7)}
+    ${blush(22.5, 25.5, 3.8)}${blush(52.5, 25.5, 3.8)}<path d="M18.5 25 q-1.6 1.6 0 3.2 M56.5 25 q1.6 1.6 0 3.2" ${O(1.1)} fill="none" opacity=".4"/>
+    <path d="M25 13.4 q3.5 -1.4 7 .6 M43 14 q3.5 -2 7 -.6" ${O(1.2)} fill="none" opacity=".45"/>${mouth}`;
+  return curls + r8_cloud(o, '#dfe6f4', '#c6d1ea', face);
+};
+
+// ---------- sun: rays around a round smiling face, little arms ----------
+C.sun = o => {
+  const x = 30, y = 30;
+  const rays = Array.from({ length: 10 }, (_, i) => {
+    const a = i * Math.PI / 5 - Math.PI / 2, p = (r, d) => `${(x + Math.cos(a + d) * r).toFixed(1)} ${(y + Math.sin(a + d) * r).toFixed(1)}`;
+    return `<path d="M${p(19, -.2)} Q${p(27, -.08)} ${p(28.5, 0)} Q${p(27, .08)} ${p(19, .2)}z" fill="${i % 2 ? '#ffb733' : '#ffc93c'}" ${O(1.3)}/>`;
+  }).join('');
+  return `${r8_arm('r-arm2', 17, 39, 9, '#ffc93c', '#ffd94d')}
+  <g class="r-body">${rays}<circle cx="${x}" cy="${y}" r="18" fill="#ffd94d" ${O(2)}/>
+    ${r8_SHADE('M38 15 q10 9 6 22 q-5 9 -14 11 q12 -12 8 -33z', .1)}${r8_SHINE('M17 22 q3 -8 11 -9 q-6 3 -8 10z', .45)}
+    <g class="r-head" style="transform-origin:50% 100%">
+      ${eye(24, 27, o.closed, 3.3)}${eye(36.5, 27, o.closed, 3.3)}${blush(19, 34, 3)}${blush(41.5, 34, 3)}
+      <path d="M20.5 21 q3 -2 6 -.6 M33.5 20.4 q3 -1.4 6 .6" ${O(1.2)} fill="none" opacity=".5"/>${r8_mouth(30.2, 34.5, 3.4, o)}</g></g>
+  ${r8_arm('r-arm1', 43, 39, 9, '#ffc93c', '#ffd94d')}`;
+};
+
+// ---------- star: a plump rounded five-pointed star ----------
+C.star = o => {
+  const star = 'M30 1 Q32.5 1 34 5 L38.5 18.5 L53 19.5 Q60 20.5 55 25.5 L44 35 L49 52 Q51 60 44 57 L30 48.5 L16 57 Q9 60 11 52 L16 35 L5 25.5 Q0 20.5 7 19.5 L21.5 18.5 L26 5 Q27.5 1 30 1z';
+  return `${r8_arm('r-arm2', 14, 30, 9, '#ffc93c', '#ffd34d')}
+  <g class="r-body"><path class="glow" d="${star}" fill="#ffd34d" ${O(2)}/>
+    ${r8_SHADE('M30 48.5 L44 57 Q51 60 49 52 L44 35 L55 25.5 Q58 22.5 56 21 L40 34 z', .12)}${r8_SHINE('M27.5 6 Q29 3.5 30.5 4 L27 14 z', .55)}${r8_SHINE('M8 22 L18 21.5 L11 24z', .45)}
+    <g class="r-head" style="transform-origin:50% 100%">
+      ${eye(24, 28, o.closed, 3.6)}${eye(36.5, 28, o.closed, 3.6)}${blush(19, 35, 2.6)}${blush(42, 35, 2.6)}${r8_mouth(30.2, 36.2, 3, o)}</g></g>
+  ${r8_arm('r-arm1', 46, 30, 9, '#ffc93c', '#ffd34d')}`;
+};
+
+// ---------- moon (new): a friendly crescent with a sleepy face and a nightcap ----------
+// crescent opening to the right: outer circle (30,30) r26 from horn (40,6) to horn (40,54), inner arc r30 bulging left
+C.moon = o => {
+  const cap = o.cap || '#7b6fd0';
+  const cres = 'M40 6 A26 26 0 1 0 40 54 A30 30 0 0 1 40 6z';
+  return `${r8_arm('r-arm2', 14, 44, 8, '#ffe9a8', '#ffe9a8')}
+  <g class="r-head" style="transform-origin:45% 95%">
+    <path class="glow" d="${cres}" fill="#ffe9a8" ${O(2)}/>
+    ${r8_SHADE('M6 40 Q12 54 28 56 Q38 56 40 54 Q22 52 14 44 Q8 36 9 24 Q4 32 6 40z', .12)}${r8_SHINE('M10 20 Q14 10 24 6 Q16 12 13 22z', .5)}
+    <circle cx="11" cy="42" r="2.4" fill="#f3d27a"/><circle cx="17" cy="48" r="1.5" fill="#f3d27a"/>
+    <path d="M28.2 28 q4.6 1.2 4.4 4 q-.6 2.2 -4.4 2.4" fill="#ffe9a8" ${O(1.6)}/>
+    ${eye(20, 25, o.closed, 3.4)}
+    <path d="M16.5 19.5 q3.5 -2.2 7 -.4" ${O(1.2)} fill="none" opacity=".55"/>${blush(16, 33, 3)}
+    ${r8_mouth(23.6, 39.2, 3, o)}
+    <g><path d="M8 17 Q12 2 30 2 Q44 2 50 10 Q54 16 52 22 Q47 13 38 10 Q30 8 24 10 Q14 12 8 17z" fill="${cap}" ${O(1.8)}/>
+      ${r8_SHADE('M30 3 Q44 3 50 10 Q53 15 52 21 Q47 12 38 9z', .16)}${r8_SHINE('M14 10 Q20 4 28 4 Q20 7 16 12z', .35)}
+      <circle cx="22" cy="7" r="1.2" fill="#ffe08a"/><circle cx="36" cy="5.5" r="1.2" fill="#ffe08a"/><circle cx="45" cy="11" r="1.1" fill="#ffe08a"/>
+      <path d="M6 18.5 Q14 9 26 9.5 Q34 10 38 11 L37 15 Q32 13 25 13.5 Q15 14 8.5 21.5z" fill="#fff" ${O(1.6)}/>
+      <circle cx="52.5" cy="24" r="4" fill="#fff" ${O(1.5)}/>${r8_SHINE('M50.5 22.6 q1 -1.6 3 -1.2', .9)}</g></g>
+  ${r8_arm('r-arm1', 31, 46, 8, '#ffe9a8', '#ffe9a8')}`;
+};
+
 // ---------- colouring pages: the tale characters as line art ----------
 const PAGES = [
   { id: 'c1', who: 'hare', title: 'კურდღელი', free: true },
