@@ -1747,7 +1747,7 @@ function scenery(q, tale, text, i) {
   if (q.build && PROP[q.build]) behind += buildSvg(q.build, 100, gy + 2);
   svg += behind;
   // night: everything dims under a blue veil, then the moon and stars come out
-  if (night && !place.noSky) svg += `<rect x="-400" y="-800" width="1000" height="1800" fill="#0b1240" opacity="${indoor ? .3 : .45}"/>` + (indoor ? '' : starsField(14) + ((q.props || []).includes('moon') ? '' : bigMoon(r() > .5 ? 160 : 40, 34, 13)) + (/forest|meadow|garden|pond|village|yard/.test(q.bg) ? fireflies() : ''));
+  if (night && !place.noSky) svg += `<rect x="-400" y="-800" width="1000" height="1800" fill="#0b1240" opacity="${indoor ? .3 : .45}"/>` + (indoor ? '' : starsField(14) + ((q.props || []).includes('moon') || (q.cast || []).some(k => PLANS[tale?.id]?.cast?.[k]?.who === 'moon') ? '' : bigMoon(r() > .5 ? 160 : 40, 34, 13)) + (/forest|meadow|garden|pond|village|yard/.test(q.bg) ? fireflies() : ''));
   if (evening && !place.noSky) svg += `<rect x="-400" y="-800" width="1000" height="1800" fill="#6a2a7a" opacity=".16"/>`;
   if (!indoor) svg += q.weather === 'rain' ? rain() : q.weather === 'snow' && q.bg !== 'snow' && q.bg !== 'wintervillage' ? snow() : q.weather === 'wind' ? windLines() : q.weather === 'fog' ? fog() : '';
   svg += above;
