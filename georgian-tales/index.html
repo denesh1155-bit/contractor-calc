@@ -1472,7 +1472,7 @@ function bbox(who, o) {
   return (sizeCache[key] = { x: b.x, y: b.y, w: b.width, h: b.height });
 }
 const HUMANS = new Set(['witch', 'natsar', 'brother', 'man', 'redhood', 'king', 'mom', 'princess', 'granny', 'grandpa', 'girl', 'boy', 'prince', 'fairy']);
-const TARGET = { star: 44, firefly: 30, witch: 74, sun: 56, dove: 34, windy: 60, natsar: 64, brother: 70, man: 74, redhood: 64, quail: 34, cloudy: 60, goat: 50, crow: 40, donkey: 60, bull: 62, bee: 30, snowman: 90, fish: 30, dolphin: 40, gull: 34, bird: 34, ant: 30, hopper: 34, mouse: 32, snail: 32, hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
+const TARGET = { moon: 58, star: 44, firefly: 30, witch: 74, sun: 56, dove: 34, windy: 60, natsar: 64, brother: 70, man: 74, redhood: 64, quail: 34, cloudy: 60, goat: 50, crow: 40, donkey: 60, bull: 62, bee: 30, snowman: 90, fish: 30, dolphin: 40, gull: 34, bird: 34, ant: 30, hopper: 34, mouse: 32, snail: 32, hare: 60, cat: 52, dog: 50, sheep: 50, hedgehog: 44, pig: 50, hen: 48, rooster: 50, duck: 44, frog: 40, bun: 44, squirrel: 48, swan: 52, devi: 118, king: 74, mom: 74, princess: 74, granny: 72, grandpa: 74, girl: 64, boy: 64, prince: 66, fairy: 74, horse: 66, cow: 56, bull: 62, deer: 62, lion: 58, wolf: 56, fox: 52, bear: 62, crane: 80, eagle: 54, owl: 46 };
 function place(who, cx, ground, o, small) {
   const opts = who === 'princess' ? { ...o, princess: 1, dress: '#ffb347' } : o;
   const b = bbox(who, opts);
@@ -1798,7 +1798,7 @@ const SPEED = { walk: 50, run: 125, fly: 85, swim: 60 };
 const MOOD_ACT = { happy: 'joy', sad: 'sad', scared: 'shiver', angry: 'stomp', surprised: 'pop', love: 'idle', sleep: 'sleep' };
 const ACT_FX = { talk: 'talk', sing: 'notes', dance: 'notes', eat: 'yum', run: 'dust', sleep: 'zzz', hug: 'hearts' };
 const MOOD_FX = { sad: 'tears', scared: 'sweat', angry: 'puff', surprised: 'bang', happy: 'sparks', love: 'hearts', sleep: 'zzz' };
-const SKY = new Set([...FLYERS, 'cloudy', 'bee', 'dove', 'windy', 'sun', 'star', 'firefly']);
+const SKY = new Set([...FLYERS, 'cloudy', 'bee', 'dove', 'windy', 'sun', 'star', 'firefly', 'moon']);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const offstage = x => x < 100 ? -80 : 280;
 
