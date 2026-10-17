@@ -556,6 +556,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
     </button>
     <button class="round music-btn" id="musicBtn" aria-label="მუსიკა" style="margin-left:auto;margin-right:10px"></button>
+    <button class="round" id="voiceBtn" aria-label="მშობლის ხმა" style="margin-right:10px"></button>
     <button class="round" id="favBtn" aria-label="რჩეულში დამატება" style="margin-right:10px"></button>
     <button class="round" id="sleepBtn" aria-label="ეკრანის ჩაქრობა">
       <svg width="24" height="24" viewBox="0 0 24 24"><path d="M15 3a9 9 0 1 0 6 14A8 8 0 0 1 15 3z" fill="#ffd98a"/></svg>
@@ -2099,10 +2100,10 @@ function applyBeat(root, para, bi, instant) {
 }
 // when, inside a paragraph, each sentence starts: paragraph times come from the audio, sentences share them by length
 function beatAt(id, para, pi, time) {
-  const starts = TIMINGS[id]?.starts, total = TIMINGS[id]?.duration || audio.duration || 0;
+  const T = timingOf(id), starts = T?.starts, total = T?.duration || audio.duration || 0;
   if (!starts) return 0;
   // exact: the voice recording knows when every sentence starts
-  const exact = TIMINGS[id].sents?.[pi];
+  const exact = T.sents?.[pi];
   if (exact && exact.length === para.beats.length) { let bi = 0; while (bi + 1 < exact.length && exact[bi + 1] <= time + .05) bi++; return bi; }
   const a = starts[pi], z = starts[pi + 1] ?? total;
   const sum = para.weights.reduce((x, y) => x + y, 0);
@@ -2260,14 +2261,16 @@ function paintProfile() {
   $('helloLine').textContent = profile.name ? `გამარჯობა, ${profile.name}!` : 'გამარჯობა!';
 }
 function openProfile() {
-  const got = TALES.filter(t => stickers[t.id]);
+  const got = TALES.filter(t => stickers[t.id]), pgot = PAGES.filter(pg => paintStickers[pg.id]);
   openSheet(`
     <h3>${profile.name ? profile.name + 'ს' : 'ჩემი'} გვერდი</h3>
     <input class="name-input" id="nameIn" maxlength="16" placeholder="სახელი" value="${profile.name.replace(/"/g, '')}" aria-label="სახელი">
     <p>აირჩიე შენი გმირი</p>
     <div class="avatars">${AVATARS.map(a => `<button data-av="${a}" aria-pressed="${a === profile.avatar}" aria-label="${a}">${faceOf(a)}</button>`).join('')}</div>
-    <p><b>ჩემი სტიკერები:</b> ${got.length} / ${TALES.filter(ready).length}. ყოველი მოსმენილი ზღაპრისთვის — ახალი სტიკერი.</p>
+    <p><b>ზღაპრების სტიკერები:</b> ${got.length} / ${TALES.filter(ready).length}. ყოველი მოსმენილი ზღაპრისთვის — ახალი სტიკერი.</p>
     <div class="stickers">${got.map(t => `<div class="sticker" title="${t.title}">${faceOf(stickers[t.id])}</div>`).join('')}${Array.from({ length: Math.max(0, 8 - got.length) }, () => '<div class="sticker empty">?</div>').join('')}</div>
+    <p><b>გაცოცხლებული სურათები:</b> ${pgot.length} / ${PAGES.length}. გააფერადე სურათი ბოლომდე და გააცოცხლე!</p>
+    <div class="stickers">${pgot.map(pg => `<div class="sticker" title="${pg.title}">${stickerOfPage(pg)}</div>`).join('')}${Array.from({ length: Math.max(0, 4 - pgot.length) }, () => '<div class="sticker empty">?</div>').join('')}</div>
     <button class="cta" data-close>მზადაა</button>`);
   $('nameIn').oninput = e => { profile.name = e.target.value.trim(); store.set('profile', profile); paintProfile(); };
   $('sheet').onclick = e => {
@@ -2277,15 +2280,40 @@ function openProfile() {
   };
 }
 $('profileBtn').onclick = openProfile;
-function giveSticker(t) {
-  if (stickers[t.id]) return;
-  const who = taleHeroAny(t) || 'bun';
-  stickers[t.id] = who; store.set('stickers', stickers);
-  const el = document.createElement('div'); el.className = 'reward';
-  el.innerHTML = `<div class="reward-card"><div class="sticker">${faceOf(who)}</div><h3>ახალი სტიკერი!</h3><p>${profile.name ? profile.name + ', ' : ''}შენ მოისმინე „${t.title}“</p><button class="cta" style="width:100%">ვაშა!</button></div>`;
-  document.body.appendChild(el); chime();
-  el.onclick = () => el.remove();
+// the colouring page of a tale's hero, if there is one
+function pageOfTale(t) {
+  const whos = [taleHeroAny(t), ...Object.values(PLANS[t.id]?.cast || {}).map(c => c.who)].filter(Boolean);
+  for (const w of whos) { const pg = PAGES.find(p => p.who === w || (w === 'natsar' && p.id === 'c2') || (w === 'princess' && p.o?.princess)); if (pg) return pg; }
+  return null;
 }
+function giveSticker(t) {
+  const fresh = !stickers[t.id], pg = pageOfTale(t);
+  if (!fresh && !pg) return;
+  const who = stickers[t.id] || taleHeroAny(t) || 'bun';
+  if (fresh) { stickers[t.id] = who; store.set('stickers', stickers); }
+  const el = document.createElement('div'); el.className = 'reward';
+  el.innerHTML = `<div class="reward-card">${fresh ? `<div class="sticker">${faceOf(who)}</div><h3>ახალი სტიკერი!</h3><p>${profile.name ? profile.name + ', ' : ''}შენ მოისმინე „${t.title}“</p>` : `<h3>„${t.title}“ დასრულდა!</h3>`}
+    ${pg ? `<button class="cta" data-paint style="width:100%;background:#3aa860">🎨 გააფერადე: ${pg.title}</button>` : ''}
+    <button class="cta" data-ok style="width:100%">${fresh ? 'ვაშა!' : 'კარგი'}</button></div>`;
+  document.body.appendChild(el); if (fresh) chime();
+  el.onclick = e => {
+    if (e.target.closest('[data-paint]')) { el.remove(); $('closePlayer').onclick(); if (pg.free || testMode) openPage(pg); else gate(paywall); return; }
+    if (e.target.closest('[data-ok]') || e.target === el) el.remove();
+  };
+  return true;
+}
+// a sticker for every picture brought to life
+function givePaintSticker(pg) {
+  if (paintStickers[pg.id]) return;
+  paintStickers[pg.id] = 1; store.set('paintStickers', paintStickers);
+  setTimeout(() => {
+    const el = document.createElement('div'); el.className = 'reward';
+    el.innerHTML = `<div class="reward-card"><div class="sticker">${stickerOfPage(pg)}</div><h3>ახალი სტიკერი!</h3><p>${profile.name ? profile.name + ', ' : ''}შენ გააცოცხლე „${pg.title}“</p><button class="cta" style="width:100%">ვაშა!</button></div>`;
+    document.body.appendChild(el); chime(); el.onclick = () => el.remove();
+  }, 2600);
+}
+const paintStickers = store.get('paintStickers', {});
+const stickerOfPage = pg => { const d = document.createElement('div'); d.innerHTML = pageSvg(pg); fitArt(d.firstElementChild); return d.innerHTML; };
 
 // ---------- mode: cartoon by day, bedtime at night ----------
 const hour = new Date().getHours();
@@ -2485,6 +2513,7 @@ function fitArt(svgEl, aspect = 1) {
 }
 // turn a coloured drawing into an outline page: every filled shape becomes white and tappable
 function toLineArt(root) {
+  root.querySelectorAll('.m-open').forEach(el => el.remove());   // a talking mouth is not a place to colour
   root.querySelectorAll('[class]').forEach(el => el.removeAttribute('class'));
   root.querySelectorAll('[fill]').forEach(el => {
     const f = (el.getAttribute('fill') || '').toLowerCase();
@@ -2690,6 +2719,7 @@ function comeAlive() {
   fx.innerHTML = Array.from({ length: 26 }, (_, i) => `<i style="left:${(i * 37) % 100}%;background:${COLORS[i % 9]};animation-delay:${(i % 7) * .08}s"></i>`).join('');
   $('pageStage').appendChild(fx); setTimeout(() => fx.remove(), 2600);
   try { navigator.vibrate?.([30, 40, 30]); } catch {}
+  givePaintSticker(page);
 }
 
 $('palette').innerHTML = COLORS.map((c, i) => `<button style="background:${c}" data-c="${c}" aria-label="ფერი ${i + 1}" aria-pressed="${i === 0}"></button>`).join('');
@@ -2710,7 +2740,7 @@ Promise.all([fetch('tales.json').then(r => r.json()), fetch('plans.json').then(r
 
 function sceneAt(id, time) {
   const n = PLAYS[id]?.length || SCENES[id].length;
-  const starts = TIMINGS[id]?.starts || Array.from({ length: n }, (_, i) => i * (audio.duration || n * 6) / n);
+  const starts = timingOf(id)?.starts || Array.from({ length: n }, (_, i) => i * (audio.duration || n * 6) / n);
   let i = 0;
   while (i + 1 < n && starts[i + 1] <= time + .15) i++;
   return i;
@@ -2751,7 +2781,8 @@ function openPlayer(t) {
   paintFav();
   $('hint').textContent = t.cat === 'sleep' ? 'მთვარეზე დააჭირე — ეკრანი ჩაქრება, ზღაპარი გაგრძელდება' : '';
   $('sleepBtn').hidden = t.cat !== 'sleep';
-  audio.src = `audio/${t.id}.mp3`;
+  OWN.on = false; audio.src = `audio/${t.id}.mp3`; paintVoice();
+  ownVoiceFor(t).then(v => { if (v && current === t && store.get('ownVoice', true)) useOwnVoice(v); });
   audio.volume = 1;
   // continue where the child stopped last time
   const at = positions[t.id] || 0;
@@ -2779,6 +2810,84 @@ $('bar').addEventListener('click', e => e.stopPropagation());
 $('restartBtn').onclick = e => { e.stopPropagation(); audio.currentTime = 0; if (current) showBeat(0); if (audio.paused) audio.play().catch(() => {}); };
 $('prevBtn').onclick = () => { if (audio.currentTime > 5) { audio.currentTime = 0; return; } const sh = shelfOf(current); openPlayer(sh[(sh.indexOf(current) - 1 + sh.length) % sh.length]); };
 $('closePlayer').onclick = () => { audio.pause(); musicPause(true); $('player').hidden = true; $('layerA').innerHTML = $('layerB').innerHTML = ''; renderShelves(); };
+
+// ---------- mum's or dad's voice: a parent reads the tale, the cartoon plays to their voice ----------
+// recordings stay on this phone (IndexedDB); paragraph times come from the parent's taps, or from paragraph lengths
+const OWN = { on: false, url: '', t: {} };
+const timingOf = id => (OWN.on && OWN.t[id]) || TIMINGS[id];
+const voiceDb = () => new Promise((ok, no) => { try { const r = indexedDB.open('voices', 1); r.onupgradeneeded = () => r.result.createObjectStore('v'); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e) { no(e); } });
+const voiceGet = id => voiceDb().then(db => new Promise(ok => { const q = db.transaction('v').objectStore('v').get(id); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); })).catch(() => null);
+const voicePut = (id, v) => voiceDb().then(db => new Promise((ok, no) => { const tx = db.transaction('v', 'readwrite'); v === null ? tx.objectStore('v').delete(id) : tx.objectStore('v').put(v, id); tx.oncomplete = ok; tx.onerror = () => no(tx.error); }));
+const voiceCache = {};
+const ownVoiceFor = t => t.id in voiceCache ? Promise.resolve(voiceCache[t.id]) : voiceGet(t.id).then(v => (voiceCache[t.id] = v));
+const MIC = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+function paintVoice() { $('voiceBtn').innerHTML = MIC; $('voiceBtn').style.background = OWN.on ? '#c2577a' : ''; }
+function useOwnVoice(v, playNow = true) {
+  if (OWN.url) URL.revokeObjectURL(OWN.url);
+  OWN.url = URL.createObjectURL(v.blob); OWN.on = true; OWN.t[current.id] = { starts: v.starts, duration: v.duration };
+  audio.src = OWN.url; sceneIdx = -1; beatIdx = -1; showBeat(0); paintVoice();
+  if (playNow) audio.play().catch(() => {});
+}
+function useNarrator() { OWN.on = false; audio.src = `audio/${current.id}.mp3`; sceneIdx = -1; beatIdx = -1; showBeat(0); paintVoice(); audio.play().catch(() => {}); }
+// paragraph starts from paragraph lengths, when the parent did not tap along
+const startsByLength = (id, dur) => { const ps = (TEXTS[id] || '').split('\n\n'), tot = ps.reduce((a, p) => a + p.length + 30, 0); let acc = 0; return ps.map(p => { const at = acc / tot * dur; acc += p.length + 30; return +at.toFixed(2); }); };
+const audioDuration = blob => new Promise(ok => { const a = new Audio(); a.preload = 'metadata'; a.onloadedmetadata = () => { if (isFinite(a.duration)) ok(a.duration); else { a.currentTime = 1e9; a.ontimeupdate = () => { a.ontimeupdate = null; ok(a.duration); }; } }; a.onerror = () => ok(0); a.src = URL.createObjectURL(blob); });
+$('voiceBtn').onclick = e => { e.stopPropagation(); audio.pause(); gate(voiceMenu); };
+async function voiceMenu() {
+  const t = current, v = await ownVoiceFor(t);
+  openSheet(`<h3>დედის ან მამის ხმა</h3>
+    <p>წაიკითხე „${t.title}“ შენი ხმით — მულტფილმი შენს ხმაზე ითამაშებს. ჩანაწერი ინახება მხოლოდ ამ ტელეფონში.</p>
+    ${v ? `<button class="cta" data-v="own">${OWN.on ? '✓ ' : ''}ჩემი ჩანაწერით მოსმენა</button><button class="cta" data-v="nar" style="background:#7a7290">${OWN.on ? '' : '✓ '}მთხრობელის ხმით</button>` : ''}
+    <button class="cta" data-v="rec" style="background:#3aa860">🎙 ${v ? 'თავიდან ჩაწერა' : 'ჩაწერა'}</button>
+    <label class="cta" style="display:grid;place-items:center;background:#4a7ab0;cursor:pointer">📁 ჩანაწერის ატვირთვა<input type="file" accept="audio/*" capture hidden id="voiceFile"></label>
+    ${v ? '<button class="link" data-v="del">ჩანაწერის წაშლა</button>' : ''}
+    <button class="link" data-close>დახურვა</button>`);
+  $('voiceFile').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const dur = await audioDuration(f); if (!dur) { toast('ამ ფაილის მოსმენა ვერ მოხერხდა'); return; }
+    const rec = { blob: f, starts: startsByLength(t.id, dur), duration: dur };
+    try { await voicePut(t.id, rec); } catch { toast('შენახვა ვერ მოხერხდა'); }
+    voiceCache[t.id] = rec; store.set('ownVoice', true); closeSheet(); useOwnVoice(rec);
+  };
+  $('sheet').onclick = async e => {
+    const b = e.target.closest('[data-v],[data-close]'); if (!b) return;
+    if (b.dataset.close !== undefined) return closeSheet();
+    const k = b.dataset.v;
+    if (k === 'own') { store.set('ownVoice', true); closeSheet(); useOwnVoice(v); }
+    if (k === 'nar') { store.set('ownVoice', false); closeSheet(); useNarrator(); }
+    if (k === 'del') { await voicePut(t.id, null).catch(() => {}); voiceCache[t.id] = null; closeSheet(); if (OWN.on) useNarrator(); toast('ჩანაწერი წაიშალა'); }
+    if (k === 'rec') recordVoice(t);
+  };
+}
+// recording: one paragraph on screen at a time; the parent taps "next" as they go, so the pictures follow their pace
+async function recordVoice(t) {
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+  catch { toast('მიკროფონი აქ მიუწვდომელია — ჩაწერე ტელეფონის დიქტოფონით და ატვირთე ფაილი'); return; }
+  const paras = (TEXTS[t.id] || '').split('\n\n'), starts = [0], chunks = [];
+  const type = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find(x => window.MediaRecorder?.isTypeSupported?.(x)) || '';
+  let mr; try { mr = new MediaRecorder(stream, type ? { mimeType: type } : undefined); } catch { stream.getTracks().forEach(x => x.stop()); toast('ჩაწერა ამ ბრაუზერში ვერ ხერხდება — ატვირთე ფაილი'); return; }
+  let i = 0, t0 = 0;
+  const show = () => openSheet(`<h3>🔴 ჩაწერა · ${i + 1} / ${paras.length}</h3>
+    <p style="font-size:1.25rem;line-height:1.6;max-height:46vh;overflow:auto;text-align:left">${paras[i].replace(/</g, '&lt;')}</p>
+    <button class="cta" data-r="next" style="background:#3aa860">${i + 1 < paras.length ? 'შემდეგი ▶' : '✓ დასრულება'}</button>
+    <button class="link" data-r="stop">შეწყვეტა</button>`);
+  mr.ondataavailable = e => e.data.size && chunks.push(e.data);
+  mr.onstop = async () => {
+    stream.getTracks().forEach(x => x.stop());
+    if (mr.cancelled) return closeSheet();
+    const blob = new Blob(chunks, { type: mr.mimeType || 'audio/webm' }), dur = (performance.now() - t0) / 1000;
+    const rec = { blob, starts: starts.map(x => +x.toFixed(2)), duration: dur };
+    try { await voicePut(t.id, rec); } catch { toast('შენახვა ვერ მოხერხდა'); }
+    voiceCache[t.id] = rec; store.set('ownVoice', true); closeSheet(); toast('ჩაწერილია! ახლა მულტფილმი შენს ხმაზე ითამაშებს'); useOwnVoice(rec);
+  };
+  mr.start(1000); t0 = performance.now(); show();
+  $('sheet').onclick = e => {
+    const b = e.target.closest('[data-r]'); if (!b) return;
+    if (b.dataset.r === 'stop') { mr.cancelled = true; mr.stop(); return; }
+    if (i + 1 < paras.length) { i++; starts.push((performance.now() - t0) / 1000); show(); } else mr.stop();
+  };
+}
 // lips follow the voice: a loudness track of each recording (audio/lips.json, 12.5 values a second) opens the speaker's mouth
 const LIP = { data: null, id: '', run: false };
 function lipInit() {
@@ -2787,7 +2896,7 @@ function lipInit() {
   let last = -1;
   const tick = () => {
     requestAnimationFrame(tick);
-    const tr = LIP.data?.[current?.id];
+    const tr = OWN.on ? null : LIP.data?.[current?.id];
     if (!tr) { $('stage').classList.remove('lipsync'); return; }
     $('stage').classList.add('lipsync');
     const v = audio.paused ? 0 : +(tr[Math.floor(audio.currentTime * 12.5)] || 0) / 9;
@@ -2814,12 +2923,13 @@ audio.addEventListener('timeupdate', () => {
 audio.addEventListener('ended', () => {
   musicPause(true);
   listened[current.id] = 1; store.set('listened', listened);
-  giveSticker(current);
+  const card = !(chain && current.cat === 'sleep') && giveSticker(current);
+  if (chain && current.cat === 'sleep' && !stickers[current.id]) { stickers[current.id] = taleHeroAny(current) || 'bun'; store.set('stickers', stickers); }
   delete positions[current.id]; store.set('pos', positions);
   // next open tale on the same shelf; bedtime stories run on into each other
   const shelf = TALES.filter(t => t.cat === current.cat && open_(t));
   const next = shelf[shelf.indexOf(current) + 1] || (current.cat === 'sleep' ? shelf[0] : null);
-  if (chain && next && next !== current) openPlayer(next); else setPlayIcon();
+  if (chain && next && next !== current && !card) openPlayer(next); else setPlayIcon();
 });
 setPlayIcon();
 
