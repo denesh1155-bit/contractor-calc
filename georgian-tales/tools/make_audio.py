@@ -43,7 +43,7 @@ for tale in json.loads((root / "tales.json").read_text()):
             out.writeframes(silence(PARAGRAPH_PAUSE - SENTENCE_PAUSE))
     timings[tale["id"]] = {"starts": starts, "sents": sents, "duration": None}
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav),
-                    "-ac", "1", "-b:a", "64k", str(mp3)], check=True)
+                    "-ac", "1", "-b:a", "32k", str(mp3)], check=True)
     wav.unlink()
     timings[tale["id"]]["duration"] = round(float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(mp3)], capture_output=True, text=True).stdout), 1)
     hashes[tale["id"]] = digest
