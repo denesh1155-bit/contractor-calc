@@ -98,6 +98,8 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .tile:active { transform: scale(.96); }
 .tile .art { aspect-ratio: 1 / 1; max-width: 100%; border-radius: 22px; overflow: hidden; box-shadow: 0 10px 24px rgba(0,0,0,.25); }
 .tile .art svg { display: block; width: 100%; height: 100%; }
+.tile .art *, .daily svg * { animation-play-state: paused; }
+.tile .art.live *, .daily.live svg * { animation-play-state: running; }
 .tile .name { font-family: var(--display); font-weight: 600; font-size: 1rem; line-height: 1.3; padding-inline: 4px; }
 .tile .len { padding-inline: 4px; font-size: .76rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .tile.locked .art { filter: saturate(.6) brightness(.82); }
@@ -1607,6 +1609,99 @@ const torch = (x, y) => `<g transform="translate(${x} ${y})"><rect x="-2" y="0" 
 const hay = (x, y, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})">${shadow(0, 0, 26)}<path d="M-26 0 Q-24 -34 0 -38 Q24 -34 26 0z" fill="#f0d070" ${O()}/><g stroke="#c9a03a" stroke-width="1.6" fill="none"><path d="M-14 -6 q2 -16 10 -24 M0 -4 v-28 M14 -6 q-2 -16 -10 -24"/></g></g>`;
 
 // every place returns its landscape; the ground colour continues below the frame
+// ---------- interiors: every tale has its own home — walls, window, floor and furniture come from the tale's name ----------
+const IN_WALLS = [['#f4e1c1', 'plaster'], ['#ffd8c8', 'plaster'], ['#d6efe0', 'plaster'], ['#d8e8fb', 'plaster'], ['#efe0f7', 'plaster'], ['#fff1b8', 'plaster'], ['#ffe6ee', 'plaster'],
+  ['#b8844e', 'planks'], ['#c9a070', 'planks'], ['#a8785a', 'planks'], ['#d4b088', 'planks'], ['#c8c4bc', 'stone'], ['#d9cbb4', 'stone'], ['#bfb2a4', 'stone']];
+const IN_PATTERN = ['none', 'dots', 'stripes', 'flowers', 'stars', 'diamonds', 'none'];
+const IN_FLOOR = ['#8a5a34', '#a8743f', '#6a4a3a', '#b88a5a', '#9a7a6a', '#7a5a4a'];
+const IN_RUG = ['#c2483a', '#4a7ab0', '#5a9a5a', '#8a5aa0', '#e0a040', '#d0607a', '#3aa0a0'];
+const IN_CURTAIN = ['#ff9fb4', '#7ab8f0', '#ffd34d', '#8fd07a', '#c9a0e0', '#ff9f43', '#e2445c'];
+function wallPattern(kind, wall, top, r) {
+  const ink = mixHex(wall, '#3a2040', .14), lite = mixHex(wall, '#ffffff', .35);
+  let s = '';
+  for (let y = 10; y < top - 4; y += 22) for (let x = -20; x < 220; x += 22) {
+    const ox = (Math.floor(y / 22) % 2) * 11;
+    if (kind === 'dots') s += `<circle cx="${x + ox}" cy="${y}" r="2.2" fill="${ink}"/>`;
+    if (kind === 'stars') s += `<path d="M${x + ox} ${y - 3} l1 2 2 .3 -1.5 1.4 .4 2.2 -1.9 -1 -1.9 1 .4 -2.2 -1.5 -1.4 2 -.3z" fill="${lite}"/>`;
+    if (kind === 'flowers') s += `<g fill="${ink}">${[0, 72, 144, 216, 288].map(a => `<circle cx="${(x + ox + Math.cos(a * Math.PI / 180) * 2.6).toFixed(1)}" cy="${(y + Math.sin(a * Math.PI / 180) * 2.6).toFixed(1)}" r="1.5"/>`).join('')}</g><circle cx="${x + ox}" cy="${y}" r="1.2" fill="${lite}"/>`;
+    if (kind === 'diamonds') s += `<path d="M${x + ox} ${y - 4} l4 4 -4 4 -4 -4z" fill="none" stroke="${ink}" stroke-width="1.1"/>`;
+  }
+  if (kind === 'stripes') for (let x = -40; x < 240; x += 16) s += `<rect x="${x}" y="0" width="7" height="${top}" fill="${ink}" opacity=".55"/>`;
+  return s;
+}
+function wallMaterial(mat, wall, top) {
+  const dark = mixHex(wall, '#3a2010', .22);
+  if (mat === 'planks') return Array.from({ length: 11 }, (_, i) => `<path d="M${-40 + i * 26} 0 V${top}" stroke="${dark}" stroke-width="2.2"/>`).join('') + Array.from({ length: 6 }, (_, i) => `<circle cx="${-27 + i * 52}" cy="${12 + (i % 3) * 40}" r="1.2" fill="${dark}"/>`).join('');
+  if (mat === 'stone') { let s = ''; for (let row = 0; row * 18 < top; row++) for (let i = -1; i < 9; i++) { const x = i * 28 + (row % 2) * 14, w = 24 + ((i * 7 + row * 3) % 3) * 2; s += `<rect x="${x}" y="${row * 18 + 2}" width="${w}" height="15" rx="6" fill="${mixHex(wall, i % 2 ? '#ffffff' : '#5a4a40', .1)}" stroke="${dark}" stroke-width="1.4"/>`; } return s; }
+  return '';
+}
+// the window sits where sky folk look in (room 148,53 · hut 41,52); its style changes from home to home
+function windowAt(cx, cy, w, h, style, night, curtain, frame, r) {
+  const x = cx - w / 2, y = cy - h / 2, sky = night ? '#141a52' : '#9ad8ff';
+  const shape = style === 'arch' ? `<path d="M${x} ${y + h} V${y + w / 2} A${w / 2} ${w / 2} 0 0 1 ${x + w} ${y + w / 2} V${y + h}z" fill="${sky}" ${O()}/>`
+    : style === 'round' ? `<circle cx="${cx}" cy="${cy}" r="${Math.min(w, h) / 2}" fill="${sky}" ${O()}/>` : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${sky}" ${O()}/>`;
+  const view = night ? `<circle class="twinkle" cx="${x + 10}" cy="${y + 12}" r="1.4" fill="#fff6dc"/><circle class="twinkle" style="animation-delay:.8s" cx="${x + w - 10}" cy="${y + h - 14}" r="1.4" fill="#fff6dc"/>`
+    : `<path d="M${x + 4} ${y + h - 10} q${w / 4} -12 ${w / 2} -2 t${w / 2 - 8} -4 V${y + h - 2} H${x + 4}z" fill="#8fd07a" opacity=".8"/>` + cloud(x + 4, y + 4, w / 120);
+  const bars = style === 'round' ? `<path d="M${cx} ${cy - h / 2} V${cy + h / 2} M${cx - w / 2} ${cy} H${cx + w / 2}" stroke="${frame}" stroke-width="2.6"/>` : `<path d="M${cx} ${style === 'arch' ? y : y} V${y + h} M${x} ${cy + 4} H${x + w}" stroke="${frame}" stroke-width="2.6"/>`;
+  const sill = `<rect x="${x - 6}" y="${y + h}" width="${w + 12}" height="5" rx="2" fill="${mixHex(frame, '#ffffff', .3)}" ${O(1.6)}/>`;
+  const drape = curtain === 'none' ? '' : curtain === 'valance'
+    ? `<path d="M${x - 8} ${y - 4} h${w + 16} v10 q-${(w + 16) / 8} 8 -${(w + 16) / 4} 0 q-${(w + 16) / 8} 8 -${(w + 16) / 4} 0 q-${(w + 16) / 8} 8 -${(w + 16) / 4} 0 q-${(w + 16) / 8} 8 -${(w + 16) / 4} 0z" fill="${IN_CURTAIN[0]}" ${O(1.6)}/>`.replace(IN_CURTAIN[0], r.c)
+    : `<path d="M${x - 6} ${y - 4} q8 ${h / 2} 0 ${h + 8} h-6 V${y - 4}z M${x + w + 6} ${y - 4} q-8 ${h / 2} 0 ${h + 8} h6 V${y - 4}z" fill="${r.c}" ${O(1.8)}/>`;
+  const pot = r.pot ? `<g transform="translate(${x + w - 10} ${y + h})"><path d="M-5 0 h10 l-2 -7 h-6z" fill="#d2704a" ${O(1.2)}/><circle cx="0" cy="-10" r="3.4" fill="${r.flower}" ${O(1)}/><circle cx="-4" cy="-8" r="2.4" fill="${r.flower}" ${O(1)}/></g>` : '';
+  return shape + view + bars + sill + drape + pot;
+}
+const IN_DECOR = {
+  picture: (x, y, c) => `<g transform="translate(${x} ${y})"><rect x="-13" y="-10" width="26" height="20" rx="2" fill="#fff6e8" ${O(1.8)}/><path d="M-10 6 l7 -9 5 6 3 -3 5 6z" fill="${c}"/><circle cx="6" cy="-4" r="2.4" fill="#ffd34d"/></g>`,
+  clock: (x, y) => `<g transform="translate(${x} ${y})"><circle r="10" fill="#fff6e8" ${O(1.8)}/><path d="M0 0 V-6 M0 0 L4 2" ${O(1.6)}/><path d="M0 10 V22" stroke="#a8743f" stroke-width="2"/><circle cx="0" cy="24" r="3" fill="#ffd34d" ${O(1.2)}/></g>`,
+  rug: (x, y, c) => `<g transform="translate(${x} ${y})"><rect x="-18" y="-24" width="36" height="48" rx="2" fill="${c}" ${O(1.8)}/><rect x="-13" y="-19" width="26" height="38" fill="none" stroke="#fff3d6" stroke-width="1.6"/><path d="M0 -12 l8 12 -8 12 -8 -12z" fill="#ffd34d" ${O(1.2)}/><path d="M-18 24 v4 M-12 24 v4 M-6 24 v4 M0 24 v4 M6 24 v4 M12 24 v4 M18 24 v4" stroke="${INK}" stroke-width="1"/></g>`,
+  plates: (x, y) => `<g transform="translate(${x} ${y})"><rect x="-24" y="6" width="48" height="4" fill="#8a5a34" ${O(1.4)}/>${[-15, 0, 15].map((dx, k) => `<circle cx="${dx}" cy="-2" r="7" fill="${['#fff6e8', '#cfe6ff', '#ffe0c8'][k]}" ${O(1.4)}/><circle cx="${dx}" cy="-2" r="3.4" fill="none" stroke="${['#4a7ab0', '#e2445c', '#3aa860'][k]}" stroke-width="1.2"/>`).join('')}</g>`,
+  churchkhela: (x, y) => `<g transform="translate(${x} ${y})"><path d="M-18 -10 H18" stroke="#8a5a34" stroke-width="2.4" stroke-linecap="round"/>${[-12, -4, 4, 12].map((dx, k) => `<path d="M${dx} -10 V12" stroke="${['#a8402a', '#c86a2a', '#7a2a3a', '#d8902a'][k]}" stroke-width="5" stroke-linecap="round"/>`).join('')}</g>`,
+  peppers: (x, y) => `<g transform="translate(${x} ${y})"><path d="M0 -12 V-4" stroke="#8a5a34" stroke-width="2"/>${[[-5, 0], [0, 4], [5, 0], [-3, 9], [3, 10]].map(([dx, dy]) => `<path d="M${dx} ${dy - 4} q2 8 -1 12" stroke="#e2445c" stroke-width="3.4" stroke-linecap="round" fill="none"/>`).join('')}</g>`,
+  shelf: (x, y) => `<g transform="translate(${x} ${y})"><rect x="-22" y="6" width="44" height="4" fill="#8a5a34" ${O(1.4)}/>${[['#e2445c', -16, 12], ['#7ab8f0', -9, 10], ['#ffd34d', -3, 13], ['#8fd07a', 3, 9]].map(([c, dx, h]) => `<rect x="${dx}" y="${6 - h}" width="6" height="${h}" fill="${c}" ${O(1)}/>`).join('')}<circle cx="15" cy="0" r="5" fill="#d98b52" ${O(1.2)}/></g>`,
+  horseshoe: (x, y) => `<path d="M${x - 6} ${y + 6} V${y} a6 6 0 0 1 12 0 V${y + 6}" fill="none" stroke="#9a9aa6" stroke-width="3.4" stroke-linecap="round"/>`,
+  lamp: (x, y) => `<g transform="translate(${x} ${y})"><path d="M0 -26 V-10" stroke="${INK}" stroke-width="1.4"/><path d="M-9 -10 h18 l-4 -8 h-10z" fill="#ffd98a" ${O(1.4)}/><circle class="glow" cx="0" cy="-6" r="3" fill="#fff1b8"/></g>`,
+};
+// big furniture standing on the floor, behind the characters
+const IN_FURN = {
+  hearth: (x, g) => hearth(x, g, .8),
+  stove: (x, g) => `<g transform="translate(${x} ${g})"><rect x="-18" y="-40" width="36" height="40" rx="4" fill="#4a4a5e" ${O()}/><rect x="-11" y="-26" width="22" height="16" rx="3" fill="#ffb347" ${O(1.4)}/><path d="M-6 -12 q6 -10 12 0" fill="#e2445c"/><rect x="-4" y="-120" width="8" height="80" fill="#5a5a6e" ${O(1.6)}/></g>`,
+  cupboard: (x, g, c) => `<g transform="translate(${x} ${g})"><rect x="-22" y="-62" width="44" height="62" rx="3" fill="${c}" ${O()}/><path d="M0 -58 V-4 M-22 -32 H22" ${O(1.6)}/><circle cx="-4" cy="-18" r="1.6" fill="${INK}"/><circle cx="4" cy="-18" r="1.6" fill="${INK}"/><circle cx="-11" cy="-46" r="6" fill="#fff6e8" ${O(1.2)}/><circle cx="11" cy="-46" r="6" fill="#cfe6ff" ${O(1.2)}/></g>`,
+  bookcase: (x, g, c) => `<g transform="translate(${x} ${g})"><rect x="-20" y="-70" width="40" height="70" rx="3" fill="${c}" ${O()}/>${[-48, -24].map(y => `<path d="M-20 ${y} H20" ${O(1.6)}/>`).join('')}${[-66, -44, -20].map((y, row) => [0, 1, 2, 3, 4].map(i => `<rect x="${-16 + i * 6.4}" y="${y}" width="5" height="${16 - (i + row) % 3 * 2}" fill="${IN_CURTAIN[(i + row * 2) % 7]}" ${O(.8)}/>`).join('')).join('')}</g>`,
+  chest: (x, g, c) => `<g transform="translate(${x} ${g})"><rect x="-22" y="-22" width="44" height="22" rx="3" fill="${c}" ${O()}/><path d="M-22 -14 H22" ${O(1.4)}/><path d="M-12 -22 v22 M12 -22 v22" stroke="#ffd34d" stroke-width="2.4"/><rect x="-3" y="-17" width="6" height="7" rx="1" fill="#ffd34d" ${O(1)}/></g>`,
+  plant: (x, g) => `<g transform="translate(${x} ${g})"><path d="M-9 0 h18 l-3 -16 h-12z" fill="#d2704a" ${O(1.6)}/>${[-30, -10, 10, 30].map(a => `<ellipse cx="0" cy="-30" rx="5" ry="15" fill="#3aa860" transform="rotate(${a} 0 -16)" ${O(1.2)}/>`).join('')}</g>`,
+  table: (x, g) => `<g transform="translate(${x} ${g})">${table(0, -28)}<g transform="translate(-10 -54) scale(.42)">${jug(0, 0)}</g></g>`,
+  cradle: (x, g) => `<g transform="translate(${x} ${g})"><path d="M-22 -8 Q0 10 22 -8 V-22 H-22z" fill="#ffd6e0" ${O(1.6)}/><path d="M-26 0 q26 10 52 0" fill="none" stroke="#a8743f" stroke-width="3"/></g>`,
+  toybox: (x, g) => `<g transform="translate(${x} ${g})"><rect x="-18" y="-18" width="36" height="18" rx="3" fill="#7ab8f0" ${O()}/><circle cx="-6" cy="-24" r="7" fill="#e2445c" ${O(1.4)}/><rect x="4" y="-30" width="10" height="12" fill="#ffd34d" ${O(1.2)}/></g>`,
+};
+function interior(kind, seed, night, opts = {}) {
+  const r = rnd(seed * 3 + 7), pick = a => a[Math.floor(r() * a.length)];
+  const floorY = kind === 'room' ? 176 : 168;
+  let [wall, mat] = pick(IN_WALLS);
+  if (kind === 'room' && mat !== 'plaster') mat = 'plaster';
+  if (night && kind === 'room') wall = mixHex(wall, '#2a2460', .55);
+  const floor = pick(IN_FLOOR), rug = pick(IN_RUG), frame = mixHex(pick(['#8a5a34', '#ffffff', '#4a7ab0', '#3a2a4a']), INK, .1);
+  const win = { c: pick(IN_CURTAIN), pot: r() > .4, flower: pick(['#e2445c', '#ffd34d', '#ff9fd0', '#7ab8f0']) };
+  const wstyle = pick(['square', 'arch', 'square', 'round']), curtain = pick(['side', 'valance', 'side', 'none']);
+  let s = `<rect x="-400" width="1000" height="${floorY}" fill="${wall}"/>` + wallMaterial(mat, wall, floorY) + (mat === 'plaster' ? wallPattern(pick(IN_PATTERN), wall, floorY, r) : '');
+  if (r() > .5) s += `<rect x="-400" y="${floorY - 26}" width="1000" height="26" fill="${mixHex(wall, '#5a3a20', .25)}"/><path d="M-400 ${floorY - 26} H600" stroke="${INK}" stroke-width="1.6"/>`;
+  s += kind === 'room' ? windowAt(148, 53, 64, 66, wstyle, night, curtain, frame, win) : windowAt(41, 52, 46, 44, wstyle, night, curtain, frame, win);
+  // two things on the wall, away from the window
+  const spots = kind === 'room' ? [[40, 50], [86, 40]] : [[100, 44], [150, 40]];
+  const decor = Object.keys(IN_DECOR).sort(() => r() - .5).slice(0, 2);
+  decor.forEach((d, k) => { s += IN_DECOR[d](spots[k][0], spots[k][1], pick(IN_RUG)); });
+  // floor and rug
+  s += `<rect x="-400" y="${floorY}" width="1000" height="${200 - floorY + 10}" fill="${floor}"/>` + Array.from({ length: 8 }, (_, i) => `<path d="M${-20 + i * 32} ${floorY} l-6 ${200 - floorY}" stroke="${mixHex(floor, '#000000', .18)}" stroke-width="1.6"/>`).join('') + `<path d="M-400 ${floorY} H600" stroke="${INK}" stroke-width="2.2"/>`;
+  if (!opts.bed) s += r() > .5 ? `<ellipse cx="96" cy="${floorY + 14}" rx="50" ry="9" fill="${rug}" ${O(1.8)}/><ellipse cx="96" cy="${floorY + 14}" rx="36" ry="5.5" fill="${mixHex(rug, '#ffffff', .35)}"/>` : `<rect x="50" y="${floorY + 6}" width="92" height="14" rx="3" fill="${rug}" ${O(1.6)}/><path d="M56 ${floorY + 13} h80" stroke="${mixHex(rug, '#ffffff', .4)}" stroke-width="3" stroke-dasharray="6 4"/>`;
+  // furniture: the hearth when the tale wants it; the rest from this home's own set
+  const wood = pick(['#a8743f', '#c9a070', '#8a5a34', '#d98b52', '#7a9ac0', '#c86a6a']);
+  const pool = kind === 'room' ? ['bookcase', 'toybox', 'plant', 'cupboard', 'chest'] : ['cupboard', 'stove', 'chest', 'plant', 'table', 'cradle', 'bookcase'];
+  const left = opts.hearth || (kind === 'hut' && r() > .55) ? 'hearth' : pick(pool);
+  const right = pick(pool.filter(p => p !== left));
+  if (!opts.bed) s += IN_FURN[left](kind === 'room' ? 30 : 166, floorY, wood) + (kind === 'room' ? '' : IN_FURN[right](98, floorY, wood));
+  else s += IN_FURN[pick(['plant', 'toybox', 'chest'])](186, floorY, wood);
+  return { svg: s, floorY, ground: floor };
+}
+
 const PLACES = {
   meadow: (P, r) => ({ svg: band(118, P.g[0], 8, r() * 6) + roundTree(r() > .5 ? 170 : 30, 128, .7, P.leaf) + band(140, P.g[1], 10, r() * 6) + band(160, P.g[2], 6, r() * 6, 2.2) + flowers() + dayLife(), ground: P.g[2] }),
   forest: (P, r) => ({ svg: [20, 70, 120, 170].map((x, i) => roundTree(x + r() * 10, 116, .55, [mixHex(P.leaf[0], '#6a8ab0', .35), mixHex(P.leaf[1], '#6a8ab0', .35)])).join('') + band(124, mixHex(P.g[1], '#4a6a50', .25), 6) + [0, 50, 150, 196].map((x, i) => roundTree(x, 150 - (i % 2) * 6, .9 + r() * .2, P.leaf)).join('') + band(156, P.g[2], 5, 1, 2.2) + `<g transform="translate(70 168)"><path d="M0 0 v-6" ${O(1.6)}/><path d="M-6 -6 a6 5 0 0 1 12 0z" fill="#e2445c" ${O(1.4)}/></g>` + butterfly(120, 110, 1, '#ffd34d'), ground: P.g[2] }),
@@ -1636,8 +1731,8 @@ const PLACES = {
   cave: (P, r) => ({ svg: band(116, P.g[0], 8) + cave(110, 152, 1.1) + rockAt(30, 156, 1) + rockAt(186, 160, .8) + band(158, mixHex(P.g[2], '#8a8a70', .4), 3, 0, 2.2), ground: mixHex(P.g[2], '#8a8a70', .4) }),
   swamp: (P, r) => ({ svg: band(116, '#7a9a6a', 6) + `<path d="M-300 132 L600 132 V156 H-300z" fill="#5a7a6a" ${O(1.6)}/>` + reeds(20, 140) + reeds(90, 138) + reeds(170, 142) + `<g transform="translate(130 148)"><rect x="-26" y="-6" width="52" height="10" rx="5" fill="#8a5a34" ${O(1.6)}/></g>` + band(156, '#6a8a4a', 3, 0, 2.2) + fog(), ground: '#6a8a4a' }),
   // indoors
-  hut: (P, r) => { const k = Math.floor(r() * 4), wall = ['#b8844e', '#c9a070', '#a8785a', '#d4b088'][k], plank = mixHex(wall, '#5a3a20', .25), rug = ['#c2483a', '#4a7ab0', '#5a9a5a', '#8a5aa0'][Math.floor(r() * 4)]; return { svg: BG.hut(P.night).replace(/#b8844e/g, wall).replace(/#9a6a3a/g, plank).replace(/#c2483a/g, rug).replace(/#e8806a/g, mixHex(rug, '#ffffff', .35)) + (P.hearth || r() > .5 ? hearth(166, 168, .8) : `<g transform="translate(160 120)"><rect x="-22" y="0" width="44" height="4" fill="#8a5a34"/>${jug(-18, -52).replace('translate(-18 -52)', 'translate(-18 -52) scale(.5)')}</g>` + table(150, 150)) + `<g transform="translate(40 120)"><rect x="-18" y="0" width="36" height="4" fill="#8a5a34"/>${[[-12, '#d98b52'], [0, '#c2483a'], [12, '#fff']].map(([x, c]) => `<rect x="${x - 4}" y="-10" width="8" height="10" rx="2" fill="${c}" ${O(1.2)}/>`).join('')}</g>`, ground: '#8a5a34', indoor: 1 }; },
-  room: (P, r) => ({ svg: BG.room() + `<g transform="translate(36 120)"><rect x="-20" y="0" width="40" height="4" fill="#a8743f"/>${[[-14, '#ff9fb4'], [-6, '#7ab8f0'], [2, '#ffd34d'], [10, '#8fd07a']].map(([x, c]) => `<rect x="${x}" y="-12" width="6" height="12" fill="${c}" ${O(1)}/>`).join('')}</g>`, ground: '#4e4290', indoor: 1 }),
+  hut: (P, r) => { curBg = 'hut'; const h = interior('hut', P.seed, P.night, { hearth: P.hearth }); return { svg: h.svg, ground: h.ground, indoor: 1 }; },
+  room: (P, r) => { curBg = 'room'; const h = interior('room', P.seed, P.night, { bed: P.bed }); return { svg: h.svg, ground: h.ground, indoor: 1 }; },
   kitchen: (P, r) => ({ svg: `<rect x="-400" width="1000" height="200" fill="#f4e4c8"/><g stroke="#e0caa0" stroke-width="1.4">${Array.from({ length: 30 }, (_, i) => `<path d="M${-60 + i * 12} 100 v70"/>`).join('')}<path d="M-400 100 H600 M-400 112 H600 M-400 124 H600 M-400 136 H600 M-400 148 H600 M-400 160 H600"/></g>
     <rect x="18" y="30" width="44" height="40" rx="6" fill="${P.night ? '#141a52' : '#9ad8ff'}" ${O()}/><path d="M40 30 V70 M18 50 H62" stroke="${INK}" stroke-width="2.4"/><rect x="100" y="50" width="80" height="5" fill="#a8743f" ${O(1.2)}/>${[110, 128, 146, 164].map((x, i) => `<rect x="${x}" y="36" width="12" height="14" rx="3" fill="${['#ff9f43', '#e2445c', '#8fd07a', '#ffd34d'][i]}" ${O(1.2)}/>`).join('')}
     <g transform="translate(150 172)"><path d="M-30 0 V-50 Q0 -70 30 -50 V0z" fill="#e8d8c8" ${O()}/><path d="M-14 0 V-24 Q0 -34 14 -24 V0z" fill="#3a2a2a" ${O(1.6)}/><path class="flicker" d="M-6 -2 q6 -14 12 0z" fill="#ffb347"/></g><rect x="-400" y="172" width="1000" height="40" fill="#b88a5a"/><path d="M-400 172 H600" ${O(2)}/>`, ground: '#b88a5a', indoor: 1 }),
@@ -1726,7 +1821,7 @@ function scenery(q, tale, text, i) {
   const pal = GREENS[hashOf(tale.id) % GREENS.length];
   const season = SEASON(text);
   const night = q.time === 'night', evening = q.time === 'evening';
-  const P = { g: season === 'autumn' ? AUTUMN : pal, leaf: season === 'autumn' ? ['#f0a040', '#e07030'] : season === 'spring' ? ['#ffc0d8', '#ff9fc0'] : [pal[1], pal[2]], night, lit: night || evening, hearth: q.bg === 'hut' && (q.props || []).includes('hearth') };
+  const P = { g: season === 'autumn' ? AUTUMN : pal, leaf: season === 'autumn' ? ['#f0a040', '#e07030'] : season === 'spring' ? ['#ffc0d8', '#ff9fc0'] : [pal[1], pal[2]], night, lit: night || evening, hearth: q.bg === 'hut' && (q.props || []).includes('hearth'), seed: hashOf(tale.id), bed: q.bg === 'room' && (q.props || []).includes('bed') };
   const place = (PLACES[q.bg] || PLACES.meadow)(P, r);
   const indoor = !!place.indoor;
   const [s0, s1] = SKIES[q.time] || SKIES.day;
@@ -1850,8 +1945,8 @@ const GROUP_TINTS = ['#4a7ab0', '#5a9a5a', '#c2577a', '#e9a03a'];
 function planMember(key, def, text, n) {
   const who = def.who, o = { ...(def.o || {}) };
   const opts = who === 'princess' ? { princess: 1, dress: '#ffb347', ...o } : o;
-  const b = bbox(who, opts), count = Math.min(def.count || 1, 4);
-  const spread = 1 + .72 * (count - 1);
+  const b = bbox(who, opts), count = Math.min(def.count || 1, 8);
+  const cols = count > 4 ? Math.ceil(count / 2) + .5 : count, spread = 1 + .72 * (cols - 1);
   const s = Math.min((TARGET[who] || 46) * (n >= 5 ? .62 : n >= 3 ? .78 : 1) * (count > 2 ? .86 : 1) * (o.big || 1) / b.h, 110 / b.w / Math.max(1, spread * .6));
   return { id: key, who, draw: who === 'princess' ? 'mom' : who, o: opts, b, s, count, w: b.w * s * spread, h: b.h * s, front: HUMANS.has(who) || ['snowman', 'cloudy', 'windy', 'bun', 'devi', 'bear', 'owl', 'sun'].includes(who) };
 }
@@ -1873,7 +1968,7 @@ function directParagraph(tale, text, i) {
   let ids, cast, nameIn;
   if (q) {
     ids = (q.cast || []).filter(k => plan.cast[k]).slice(0, 6);
-    cast = ids.map(k => planMember(k, plan.cast[k], text, ids.length));
+    cast = ids.map(k => planMember(k, q.counts?.[k] ? { ...plan.cast[k], count: q.counts[k] } : plan.cast[k], text, ids.length));
     nameIn = s => planWho(s, plan);
   } else {
     ids = whoIn(text, hero, alias).filter(w => w !== 'moon').slice(0, 3);
@@ -2016,9 +2111,11 @@ function charSvg(a, mood) {
     return Array.from({ length: n }, (_, k) => {
       const o = { ...a.o, closed: mood === 'sleep' };
       if (people && k) { if (a.who === 'girl' || a.who === 'mom' || a.who === 'princess') o.dress = GROUP_TINTS[k % 4]; else o.shirt = GROUP_TINTS[k % 4]; }
-      const dx = (k - (n - 1) / 2) * a.b.w * .72, sc = k === Math.floor(n / 2) ? 1 : .93;
-      return `<g transform="translate(${dx + cx * (1 - sc)} ${(a.b.y + a.b.h) * (1 - sc)}) scale(${sc})"><g class="gsub" style="animation-delay:-${k * .37}s">${C[a.draw](o)}</g></g>`;
-    }).reverse().join('');
+      // up to four in a line; a bigger family stands in two rows, the back row a little higher and smaller
+      const rows = n > 4, back = rows && k >= Math.ceil(n / 2), m = rows ? (back ? n - Math.ceil(n / 2) : Math.ceil(n / 2)) : n, j = back ? k - Math.ceil(n / 2) : k;
+      const dx = (j - (m - 1) / 2 + (back ? .5 : 0)) * a.b.w * .72, sc = rows ? (back ? .82 : .95) : k === Math.floor(n / 2) ? 1 : .93, dy = back ? -a.b.h * .2 : 0;
+      return { back, svg: `<g transform="translate(${dx + cx * (1 - sc)} ${(a.b.y + a.b.h) * (1 - sc) + dy}) scale(${sc})"><g class="gsub" style="animation-delay:-${k * .37}s">${C[a.draw](o)}</g></g>` };
+    }).reverse().sort((x, y) => y.back - x.back).map(x => x.svg).join('');   // back row first, so the front row stands in front
   } finally { MOOD = ''; }
 }
 // little signs above a character's head: speech, tears, hearts, notes…
@@ -2212,7 +2309,22 @@ const SHELVES = [
 ];
 const ready = t => !!SCENES[t.id];
 const coverCache = {};
-const coverOf = t => { if (!(t.id in coverCache)) { const p = directParagraph(t, TEXTS[t.id].split('\n\n')[0], 0); coverCache[t.id] = paragraphSvg(p, p.beats[0].actors).replace('class="cam dir"', 'class="cam"'); } return coverCache[t.id]; };
+// a tale's cover is a living little scene: its main characters, in the place where most of the tale happens, waving and talking
+const coverOf = t => {
+  if (!(t.id in coverCache)) {
+    const paras = TEXTS[t.id].split('\n\n'), pl = PLANS[t.id], freq = {};
+    pl.paras.forEach(q => (q.beats || []).forEach(b => [...(b.who || []), b.say].filter(Boolean).forEach(k => { freq[k] = (freq[k] || 0) + 1; })));
+    let best = 0, top = -1;
+    pl.paras.forEach((q, i) => { const sc = (q.cast || []).slice(0, 4).reduce((a, k) => a + (freq[k] || 0), 0) - (i > paras.length * .75 ? 30 : 0) - ((q.cast || []).length > 4 ? 15 : 0); if (sc > top) { top = sc; best = i; } });
+    const p = directParagraph(t, paras[best], best), calm = t.cat === 'sleep';
+    const lively = calm ? ['wave', 'sing', 'idle', 'talk'] : ['wave', 'talk', 'joy', 'dance'];
+    const st = p.cast.map((a, k) => ({ ...p.beats[0].actors[k], x: a.home, y: 0, on: true, face: a.fixed ? 1 : a.home > 100 ? -1 : 1, act: a.bed ? 'idle' : lively[k % lively.length], fx: [], dur: 0, sleep: false, mood: k ? 'happy' : '' }));
+    let svg = paragraphSvg(p, st).replace('class="cam dir"', 'class="cam"');
+    if (p.cast.length > 1) svg = svg.replace('class="actor" data-k="1"', 'class="actor speaking" data-k="1"');
+    coverCache[t.id] = svg;
+  }
+  return coverCache[t.id];
+};
 const cover = t => TEXTS[t.id] && PLANS[t.id] ? coverOf(t) : ready(t) ? sceneSvg(t.id, 0)
   : `<svg viewBox="0 0 200 200" role="img" aria-hidden="true">${LOCKED_ART[t.id] ? LOCKED_ART[t.id]() : coverSky(t.cat === 'sleep' ? '#1d2a6a' : '#6cc4ff', t.cat === 'sleep' ? '#4a5aa0' : '#d6f3ff') + coverHills(t.cat === 'sleep' ? '#2a4a7a' : '#9ad88a', t.cat === 'sleep' ? '#1e3e62' : '#6cc46a') + (t.cat === 'sleep' ? bigMoon(100, 70, 22) : sunFace(100, 70))}</svg>`;
 const LOCK = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffd98a" stroke-width="2.4"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
@@ -2331,6 +2443,8 @@ let tab = store.get('tab', 'ge');
 setMode(tab === 'sleep' ? 'night' : 'day');
 function setTab(t) { tab = t; store.set('tab', t); setMode(t === 'sleep' ? 'night' : 'day'); $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === t)); renderShelves(); window.scrollTo(0, 0); }
 $('tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (b) setTab(b.dataset.tab); };
+const coverWatch = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle('live', e.isIntersecting)), { rootMargin: '80px' }) : null;
+function watchCovers() { document.querySelectorAll('#shelves .tile .art, #shelves .daily').forEach(el => coverWatch ? coverWatch.observe(el) : el.classList.add('live')); }
 function renderShelves() {
   $('testPill').hidden = !testMode;
   $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === tab));
@@ -2364,6 +2478,7 @@ function renderShelves() {
           <span class="name">${t.title}</span>
           <span class="len">${ready(t) ? minutes(t.id) : 'მზადდება'}${listened[t.id] ? ' · <b class="done">მოსმენილია</b>' : ''}</span>
         </button>`).join('')}</div>`;
+  watchCovers();
 }
 $('shelves').addEventListener('click', e => {
   const chip = e.target.closest('[data-pcat]'); if (chip) { paintCat = chip.dataset.pcat; store.set('paintCat', paintCat); return renderShelves(); }
