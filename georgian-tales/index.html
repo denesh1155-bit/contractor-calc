@@ -307,6 +307,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .a-sad .r-head, .a-shiver .r-head { animation: hdDown 1.2s ease-out both; } .a-sad .r-arm1, .a-sad .r-arm2 { animation: none; transform: rotate(6deg); }
 .a-sleep .r-head { animation: hdSleep 2s ease-out both; } .a-sleep .r-tail, .a-sleep .r-ear { animation: none; }
 .a-sit .r-leg1, .a-sit .r-leg2 { animation: lgSit .8s ease-out both; }
+.a-sit .beast .r-leg1, .a-sit .beast .r-leg2 { animation: none; }   /* animals sit by settling down, legs stay under them */
 .a-stomp .r-leg1 { animation: lgStomp .5s ease-in-out infinite; } .a-stomp .r-arm1, .a-stomp .r-arm2 { animation: amUp .5s ease-in-out infinite alternate; }
 .a-fly .r-arm1, .a-fly .r-arm2 { animation: amFlap .18s ease-in-out infinite alternate; } .a-fly .r-leg1, .a-fly .r-leg2 { transform: rotate(-30deg); }
 .a-swim .r-tail { animation: tlFast .4s ease-in-out infinite alternate; } .a-swim .r-arm1, .a-swim .r-arm2 { animation: amA .8s ease-in-out infinite; }
@@ -2044,7 +2045,7 @@ function fxSvg(list, a, face) {
   }).join('');
 }
 function actorSvg(a, k, p) {
-  return `<g class="actor" data-k="${k}" style="transform:translate(${p.x}px,${a.ground + p.y}px)"><g class="facing" style="transform:scaleX(${p.face})"><g class="act a-${p.act}" style="animation-delay:-${k * .7}s"><g transform="translate(${-(a.b.x + a.b.w / 2) * a.s} ${-(a.b.y + a.b.h) * a.s}) scale(${a.s})"><g class="body">${charSvg(a, p.mood)}</g></g></g></g><g class="fx">${fxSvg(p.fx, a, p.face)}</g></g>`;
+  return `<g class="actor" data-k="${k}" style="transform:translate(${p.x}px,${a.ground + p.y}px)"><g class="facing" style="transform:scaleX(${p.face})"><g class="act a-${p.act}" style="animation-delay:-${k * .7}s"><g transform="translate(${-(a.b.x + a.b.w / 2) * a.s} ${-(a.b.y + a.b.h) * a.s}) scale(${a.s})"><g class="body${HUMANS.has(a.who) ? '' : ' beast'}">${charSvg(a, p.mood)}</g></g></g></g><g class="fx">${fxSvg(p.fx, a, p.face)}</g></g>`;
 }
 // in the player: the background is a still picture (painted once), the characters and weather live in their own layer
 const STILL = /\sclass="(sway|twinkle|glow|wind|flutter|flyby|cloud|spin|flicker|drip|shoot|flap|wings|rise|appear|zf|breathe|ears|tail|eye|idle|bob|nod|dance|sad|roar|laugh|hop|neck|arm)"/g;
