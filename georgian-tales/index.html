@@ -241,6 +241,8 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 /* ---------- rigged characters: legs, arms, head, tail and mouth move on their own ----------
    parts: .r-leg1 .r-leg2 (alternate; for four legs diagonal pairs) .r-arm1 (front arm / wing) .r-arm2 (back arm / wing)
    .r-head (turns at the neck) .r-tail .r-body (breathes) .r-mouth > .m-open (opens with the voice) */
+.tear { transform-box: fill-box; transform-origin: 50% 0; animation: tearRoll 1.7s ease-in infinite; }
+@keyframes tearRoll { 0% { transform: translateY(-1px) scale(.5); opacity: 0; } 25% { opacity: 1; } 100% { transform: translateY(9px) scale(1.05); opacity: 0; } }
 @property --v { syntax: '<number>'; inherits: true; initial-value: 0; }
 .r-leg1, .r-leg2, .r-arm1, .r-arm2, .r-head, .r-tail, .r-body, .m-open, .r-ear { transform-box: fill-box; }
 .r-leg1, .r-leg2 { transform-origin: 50% 8%; }
@@ -619,11 +621,12 @@ const O = (w = 2.2) => `stroke="${INK}" stroke-width="${w}" stroke-linejoin="rou
 // MOOD is set by the director while it draws a character: the same eyes laugh, cry, get scared or fall asleep
 let MOOD = '';
 const eye = (x, y, closed, r = 4.4) => {
+  const tear = MOOD === 'sad' && !closed ? `<path class="tear" d="M${x + r * .55} ${y + r * .9} q-${r * .42} ${r * .6} 0 ${r * .85} q${r * .42} -${r * .25} 0 -${r * .85}z" fill="#8fd0ff" stroke="#4a8ac0" stroke-width=".6"/>` : '';
   if (closed || MOOD === 'sleep') return `<path d="M${x - r} ${y} q${r} ${r * .9} ${r * 2} 0" ${O(1.9)} fill="none"/><path d="M${x - r + .5} ${y + .8} l-2 1.6 M${x + r - .5} ${y + .8} l2 1.6" ${O(1.4)}/>`;
   if (MOOD === 'happy' || MOOD === 'love') return `<path d="M${x - r} ${y + r * .3} q${r} ${-r * 1.7} ${r * 2} 0" ${O(2.1)} fill="none"/>`;
   if (MOOD === 'sad' || MOOD === 'angry') {
     const top = y - r * .15;
-    return `<path d="M${x - r * .9} ${top} h${r * 1.8} a${r * .9} ${r * .85} 0 0 1 ${-r * 1.8} 0z" fill="#fff" ${O(1.6)}/><circle cx="${x + .3}" cy="${top + r * .38}" r="${r * .44}" fill="#2a1f3a"/>
+    return tear + `<path d="M${x - r * .9} ${top} h${r * 1.8} a${r * .9} ${r * .85} 0 0 1 ${-r * 1.8} 0z" fill="#fff" ${O(1.6)}/><circle cx="${x + .3}" cy="${top + r * .38}" r="${r * .44}" fill="#2a1f3a"/>
       ${MOOD === 'angry' ? `<path d="M${x - r * 1.1} ${top - r * .35} h${r * 2.2}" ${O(2.4)}/>` : ''}`;
   }
   const big = MOOD === 'surprised' || MOOD === 'scared' ? 1.22 : 1, pr = big > 1 ? .36 : .58;
@@ -1944,13 +1947,25 @@ function planWho(text, plan) {
   return found.sort((a, b) => a.at - b.at).map(f => f.key);
 }
 const GROUP_TINTS = ['#4a7ab0', '#5a9a5a', '#c2577a', '#e9a03a'];
+// people of a tale each get their own look: skin, hair, clothes and height come from the tale and the character's key
+const LOOK_SKIN = ['#f2c9a0', '#f6d4b4', '#e8b88e', '#dba47c', '#f0c4a0', '#e2ae86'], LOOK_HAIR = ['#3a2a1a', '#5a3a22', '#7a4a2a', '#2a2228', '#a8622e', '#c9963e', '#6a4a3a'];
+const LOOK_CLOTH = ['#e9784e', '#4a7ab0', '#5a9a5a', '#c2577a', '#8a5aa0', '#d9a03a', '#3aa0a0', '#a85a3a', '#6a7ab0', '#e2445c'];
+let LOOK_TALE = '';
+function lookOf(key, who, o) {
+  if (!HUMANS.has(who) || who === 'witch') return null;
+  const h = hashOf(LOOK_TALE + ':' + key), pick = (a, k) => a[(h >>> k) % a.length];
+  const kid = who === 'boy' || who === 'girl' || who === 'natsar' || who === 'redhood';
+  return { skin: pick(LOOK_SKIN, 0), hair: who === 'granny' || who === 'grandpa' ? '' : pick(LOOK_HAIR, 3), cloth: pick(LOOK_CLOTH, 6), big: o.big ? 0 : kid ? .9 + ((h >>> 9) % 5) * .03 : .94 + ((h >>> 9) % 5) * .03 };
+}
 function planMember(key, def, text, n) {
   const who = def.who, o = { ...(def.o || {}) };
+  const look = lookOf(key, who, o);
+  if (look) { if (!o.shirt && !o.dress && !o.robe && who !== 'princess' && who !== 'king' && who !== 'prince') { if (['girl', 'mom', 'granny'].includes(who)) o.dress = look.cloth; else o.shirt = look.cloth; } if (look.big) o.big = look.big; }
   const opts = who === 'princess' ? { princess: 1, dress: '#ffb347', ...o } : o;
   const b = bbox(who, opts), count = Math.min(def.count || 1, 8);
   const cols = count > 4 ? Math.ceil(count / 2) + .5 : count, spread = 1 + .72 * (cols - 1);
   const s = Math.min((TARGET[who] || 46) * (n >= 5 ? .62 : n >= 3 ? .78 : 1) * (count > 2 ? .86 : 1) * (o.big || 1) / b.h, 110 / b.w / Math.max(1, spread * .6));
-  return { id: key, who, draw: who === 'princess' ? 'mom' : who, o: opts, b, s, count, w: b.w * s * spread, h: b.h * s, front: HUMANS.has(who) || ['snowman', 'cloudy', 'windy', 'bun', 'devi', 'bear', 'owl', 'sun'].includes(who) };
+  return { id: key, who, look, draw: who === 'princess' ? 'mom' : who, o: opts, b, s, count, w: b.w * s * spread, h: b.h * s, front: HUMANS.has(who) || ['snowman', 'cloudy', 'windy', 'bun', 'devi', 'bear', 'owl', 'sun'].includes(who) };
 }
 function plannedSet(tale, text, i, q, plan) {
   const props = (q.props || []).filter(p => p !== 'bed' || q.bg !== 'room');
@@ -1970,6 +1985,7 @@ function directParagraph(tale, text, i) {
   let ids, cast, nameIn;
   if (q) {
     ids = (q.cast || []).filter(k => plan.cast[k]).slice(0, 6);
+    LOOK_TALE = tale.id;
     cast = ids.map(k => planMember(k, q.counts?.[k] ? { ...plan.cast[k], count: q.counts[k] } : plan.cast[k], text, ids.length));
     nameIn = s => planWho(s, plan);
   } else {
@@ -2105,19 +2121,20 @@ function directParagraph(tale, text, i) {
 const PLAYS = {};
 const playOf = t => TEXTS[t.id] ? (PLAYS[t.id] ||= TEXTS[t.id].split('\n\n').map((p, i) => directParagraph(t, p, i))) : null;
 
+const withLook = (svg, L) => { if (!L) return svg; const t = svg.split(SKIN).join(L.skin); return L.hair ? t.replace(/#3a2a1a|#7a4a2a/g, L.hair) : t; };
 function charSvg(a, mood) {
   MOOD = mood || '';
   try {
-    if (!(a.count > 1)) return C[a.draw]({ ...a.o, closed: mood === 'sleep' });
+    if (!(a.count > 1)) return withLook(C[a.draw]({ ...a.o, closed: mood === 'sleep' }), a.look);
     const n = a.count, cx = a.b.x + a.b.w / 2, people = HUMANS.has(a.who);
     return Array.from({ length: n }, (_, k) => {
       const o = { ...a.o, closed: mood === 'sleep' };
-      if (people && k) { if (a.who === 'girl' || a.who === 'mom' || a.who === 'princess') o.dress = GROUP_TINTS[k % 4]; else o.shirt = GROUP_TINTS[k % 4]; }
+      if (people && k) { if (a.who === 'girl' || a.who === 'mom' || a.who === 'princess' || a.who === 'granny') o.dress = GROUP_TINTS[k % 4]; else if (a.who === 'grandpa' || a.who === 'king') o.robe = GROUP_TINTS[k % 4]; else o.shirt = GROUP_TINTS[k % 4]; }
       // up to four in a line; a bigger family stands in two rows, the back row a little higher and smaller
       const rows = n > 4, back = rows && k >= Math.ceil(n / 2), m = rows ? (back ? n - Math.ceil(n / 2) : Math.ceil(n / 2)) : n, j = back ? k - Math.ceil(n / 2) : k;
       const dx = (j - (m - 1) / 2 + (back ? .5 : 0)) * a.b.w * .72, sc = rows ? (back ? .82 : .95) : k === Math.floor(n / 2) ? 1 : .93, dy = back ? -a.b.h * .2 : 0;
       return { back, svg: `<g transform="translate(${dx + cx * (1 - sc)} ${(a.b.y + a.b.h) * (1 - sc) + dy}) scale(${sc})"><g class="gsub" style="animation-delay:-${k * .37}s">${C[a.draw](o)}</g></g>` };
-    }).reverse().sort((x, y) => y.back - x.back).map(x => x.svg).join('');   // back row first, so the front row stands in front
+    }).reverse().sort((x, y) => y.back - x.back).map((x, j) => withLook(x.svg, a.look && { ...a.look, skin: LOOK_SKIN[(LOOK_SKIN.indexOf(a.look.skin) + j) % LOOK_SKIN.length], hair: a.look.hair && LOOK_HAIR[(LOOK_HAIR.indexOf(a.look.hair) + j * 2) % LOOK_HAIR.length] })).join('');   // back row first, so the front row stands in front
   } finally { MOOD = ''; }
 }
 // little signs above a character's head: speech, tears, hearts, notes…
@@ -2126,7 +2143,7 @@ function fxSvg(list, a, face) {
   return list.map(f => {
     switch (f) {
       case 'talk': { const bx = hx + (side > 0 ? 4 : -34); return `<g class="fx-pop"><path d="M${bx} ${top - 22} h30 a8 8 0 0 1 0 16 h-${side > 0 ? 22 : 8} l${side > 0 ? -7 : 5} 7 l${side > 0 ? 1 : 1} -7 h-${side > 0 ? 1 : 15} a8 8 0 0 1 0 -16z" fill="#fff" ${O(1.4)}/>${[0, 1, 2].map(d => `<circle class="dot" style="animation-delay:${d * .18}s" cx="${bx + 7 + d * 8}" cy="${top - 14}" r="2.2" fill="${INK}"/>`).join('')}</g>`; }
-      case 'tears': return [-1, 1].map((d, k) => `<g transform="translate(${hx + d * Math.min(7, a.w * .12)} ${top + a.h * .22})">${drips(0, 0)}</g>`).join('');
+      case 'tears': return '';   // tears roll from the eyes themselves (see eye())
       case 'sweat': return `<path class="fx-pop" d="M${hx + side * a.w * .22} ${top + 2} q-4 6 0 8 q4 -2 0 -8z" fill="#8fd0ff" ${O(1)}/>`;
       case 'bang': return `<text class="fx-pop" x="${hx + side * 10}" y="${top - 4}" text-anchor="middle" font-family="Georgia, serif" font-weight="900" font-size="20" fill="#ff5a6e" stroke="${INK}" stroke-width="1">!</text>`;
       case 'ask': return `<text class="fx-pop" x="${hx + side * 10}" y="${top - 4}" text-anchor="middle" font-family="Georgia, serif" font-weight="900" font-size="18" fill="#7ab8f0" stroke="${INK}" stroke-width="1">?</text>`;
@@ -2358,6 +2375,14 @@ const TALES = [
   { id: 'a20', title: 'გოგონა და რძის დოქი', cat: 'short' },
   { id: 'a21', title: 'დათვი და ორი მეგობარი', cat: 'short' },
   { id: 'a22', title: 'კატა და მელა', cat: 'short' },
+  { id: 'a23', title: 'მელა და თხა', cat: 'short' },
+  { id: 'a24', title: 'ძაღლი თივაზე', cat: 'short' },
+  { id: 'a25', title: 'ბიჭი და თხილის დოქი', cat: 'short' },
+  { id: 'a26', title: 'პატარა მოცურავე', cat: 'short' },
+  { id: 'a27', title: 'კნუტი და გორგალი', cat: 'short' },
+  { id: 'a28', title: 'ლოკოკინას სახლი', cat: 'short' },
+  { id: 'a29', title: 'დათუნია და ფუტკრები', cat: 'short' },
+  { id: 'a30', title: 'ბატკანი ნისლში', cat: 'short' },
 ];
 const SHELVES = [
   { cat: 'ge', title: 'ქართული ხალხური ზღაპრები', note: '3–6 წუთი' },
