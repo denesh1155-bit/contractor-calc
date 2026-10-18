@@ -1965,7 +1965,8 @@ function planMember(key, def, text, n) {
   const b = bbox(who, opts), count = Math.min(def.count || 1, 8);
   const cols = count > 4 ? Math.ceil(count / 2) + .5 : count, spread = 1 + .72 * (cols - 1);
   const s = Math.min((TARGET[who] || 46) * (n >= 5 ? .62 : n >= 3 ? .78 : 1) * (count > 2 ? .86 : 1) * (o.big || 1) / b.h, 110 / b.w / Math.max(1, spread * .6));
-  return { id: key, who, look, draw: who === 'princess' ? 'mom' : who, o: opts, b, s, count, w: b.w * s * spread, h: b.h * s, front: HUMANS.has(who) || ['snowman', 'cloudy', 'windy', 'bun', 'devi', 'bear', 'owl', 'sun'].includes(who) };
+  const acc = dressUp(key, who, who === 'princess' ? 'mom' : who, opts);
+  return { id: key, who, look, acc, draw: who === 'princess' ? 'mom' : who, o: opts, b, s, count, w: b.w * s * spread, h: b.h * s, front: HUMANS.has(who) || ['snowman', 'cloudy', 'windy', 'bun', 'devi', 'bear', 'owl', 'sun'].includes(who) };
 }
 function plannedSet(tale, text, i, q, plan) {
   const props = (q.props || []).filter(p => p !== 'bed' || q.bg !== 'room');
@@ -2121,11 +2122,53 @@ function directParagraph(tale, text, i) {
 const PLAYS = {};
 const playOf = t => TEXTS[t.id] ? (PLAYS[t.id] ||= TEXTS[t.id].split('\n\n').map((p, i) => directParagraph(t, p, i))) : null;
 
+
+// ---------- every tale dresses its characters its own way: hats, bows, scarves, glasses, curls ----------
+const headCache = {};
+function headBox(draw, o) {
+  const key = draw + JSON.stringify(o);
+  if (key in headCache) return headCache[key];
+  measure.innerHTML = `<svg viewBox="0 0 200 200"><g>${C[draw]({ ...o })}</g></svg>`;
+  const h = measure.querySelector('.r-head');
+  let b = null; try { if (h) { const r = h.getBBox(); b = { x: r.x, y: r.y, w: r.width, h: r.height }; } } catch {}
+  return (headCache[key] = b);
+}
+const ACC = {
+  cap: (b, c) => `<path d="M${b.x + b.w * .2} ${b.y + b.h * .14} Q${b.x + b.w * .5} ${b.y - b.h * .16} ${b.x + b.w * .8} ${b.y + b.h * .14}z" fill="${c}" ${O(1.6)}/><path d="M${b.x + b.w * .74} ${b.y + b.h * .12} h${b.w * .26}" stroke="${c}" stroke-width="${Math.max(2, b.h * .07)}" stroke-linecap="round"/><circle cx="${b.x + b.w * .5}" cy="${b.y - b.h * .02}" r="${b.w * .04}" fill="#fff" ${O(1)}/>`,
+  beret: (b, c) => `<ellipse cx="${b.x + b.w * .5}" cy="${b.y + b.h * .06}" rx="${b.w * .36}" ry="${b.h * .12}" fill="${c}" ${O(1.6)}/><path d="M${b.x + b.w * .5} ${b.y - b.h * .06} v-${b.h * .06}" ${O(1.6)}/>`,
+  beanie: (b, c) => `<path d="M${b.x + b.w * .18} ${b.y + b.h * .2} Q${b.x + b.w * .5} ${b.y - b.h * .22} ${b.x + b.w * .82} ${b.y + b.h * .2}z" fill="${c}" ${O(1.6)}/><rect x="${b.x + b.w * .16}" y="${b.y + b.h * .15}" width="${b.w * .68}" height="${b.h * .09}" rx="${b.h * .04}" fill="${mixHex(c, '#ffffff', .4)}" ${O(1.2)}/><circle cx="${b.x + b.w * .5}" cy="${b.y - b.h * .1}" r="${b.w * .07}" fill="#fff" ${O(1.2)}/>`,
+  bow: (b, c) => `<g transform="translate(${b.x + b.w * .78} ${b.y + b.h * .08})"><path d="M0 0 l-${b.w * .14} -${b.h * .09} v${b.h * .18}z M0 0 l${b.w * .14} -${b.h * .09} v${b.h * .18}z" fill="${c}" ${O(1.3)}/><circle r="${b.w * .035}" fill="${mixHex(c, '#000000', .2)}" ${O(1)}/></g>`,
+  flower: (b, c) => `<g transform="translate(${b.x + b.w * .22} ${b.y + b.h * .1})">${[0, 72, 144, 216, 288].map(a => `<circle cx="${(Math.cos(a * Math.PI / 180) * b.w * .05).toFixed(1)}" cy="${(Math.sin(a * Math.PI / 180) * b.w * .05).toFixed(1)}" r="${b.w * .045}" fill="${c}" ${O(.9)}/>`).join('')}<circle r="${b.w * .035}" fill="#ffd34d"/></g>`,
+  crownflowers: (b, c) => [.2, .35, .5, .65, .8].map((t, k) => `<circle cx="${b.x + b.w * t}" cy="${b.y + b.h * (.06 - Math.sin(t * Math.PI) * .06)}" r="${b.w * .05}" fill="${k % 2 ? '#ffd34d' : c}" ${O(1)}/>`).join(''),
+  scarf: (b, c) => `<path d="M${b.x + b.w * .18} ${b.y + b.h * .9} Q${b.x + b.w * .5} ${b.y + b.h * 1.06} ${b.x + b.w * .82} ${b.y + b.h * .9} l${-b.w * .02} ${b.h * .12} Q${b.x + b.w * .5} ${b.y + b.h * 1.18} ${b.x + b.w * .2} ${b.y + b.h * 1.02}z" fill="${c}" ${O(1.4)}/><path d="M${b.x + b.w * .3} ${b.y + b.h * 1.02} l-${b.w * .06} ${b.h * .22} l${b.w * .1} -${b.h * .02}z" fill="${c}" ${O(1.2)}/>`,
+  glasses: (b) => `<g fill="none" stroke="${INK}" stroke-width="1.3"><circle cx="${b.x + b.w * .36}" cy="${b.y + b.h * .55}" r="${b.w * .12}"/><circle cx="${b.x + b.w * .64}" cy="${b.y + b.h * .55}" r="${b.w * .12}"/><path d="M${b.x + b.w * .48} ${b.y + b.h * .55} h${b.w * .04}"/></g>`,
+  freckles: (b) => [[.3, .66], [.34, .7], [.27, .71], [.66, .66], [.7, .7], [.73, .65]].map(([u, v]) => `<circle cx="${b.x + b.w * u}" cy="${b.y + b.h * v}" r="${b.w * .016}" fill="#b0704a"/>`).join(''),
+  curls: (b, c, hair) => [.22, .34, .46, .58, .7, .8].map((t, k) => `<circle cx="${b.x + b.w * t}" cy="${b.y + b.h * (.1 + (k % 2) * .05)}" r="${b.w * .08}" fill="${hair}" ${O(1.2)}/>`).join(''),
+  pigtails: (b, c, hair) => `<circle cx="${b.x + b.w * .02}" cy="${b.y + b.h * .3}" r="${b.w * .11}" fill="${hair}" ${O(1.4)}/><circle cx="${b.x + b.w * .98}" cy="${b.y + b.h * .3}" r="${b.w * .11}" fill="${hair}" ${O(1.4)}/><circle cx="${b.x + b.w * .07}" cy="${b.y + b.h * .2}" r="${b.w * .04}" fill="${c}"/><circle cx="${b.x + b.w * .93}" cy="${b.y + b.h * .2}" r="${b.w * .04}" fill="${c}"/>`,
+  bun: (b, c, hair) => `<circle cx="${b.x + b.w * .5}" cy="${b.y - b.h * .02}" r="${b.w * .13}" fill="${hair}" ${O(1.4)}/><path d="M${b.x + b.w * .4} ${b.y + b.h * .06} h${b.w * .2}" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/>`,
+};
+// which extras suit whom
+const ACC_FOR = {
+  boy: ['cap', 'beanie', 'scarf', 'freckles', 'curls', 'glasses'], natsar: ['scarf', 'freckles', 'beanie'], brother: ['scarf', 'beanie', 'cap'], man: ['scarf', 'glasses', 'beret'],
+  girl: ['bow', 'flower', 'crownflowers', 'pigtails', 'bun', 'scarf', 'freckles'], redhood: ['flower', 'freckles'], mom: ['flower', 'bow', 'scarf', 'bun', 'glasses'], granny: ['glasses', 'flower', 'scarf'], grandpa: ['glasses', 'beret', 'scarf'],
+  _beast: ['bow', 'scarf', 'flower', 'beret', 'beanie', 'cap', 'crownflowers'],
+};
+const NO_ACC = new Set(['king', 'prince', 'princess', 'witch', 'fairy', 'snowman', 'sun', 'star', 'moon', 'cloudy', 'windy', 'fish', 'ant', 'bee', 'firefly', 'hopper', 'devi', 'bun', 'snail', 'dolphin']);
+function dressUp(key, who, draw, o) {
+  if (NO_ACC.has(who) || o.cap || o.hat || o.hood) return '';
+  const h = hashOf('acc:' + LOOK_TALE + ':' + key), list = ACC_FOR[who] || ACC_FOR._beast;
+  const b = headBox(draw, o); if (!b) return '';
+  const n = HUMANS.has(who) ? 1 + (h % 2) : (h % 3 === 0 ? 0 : 1), picks = [];
+  for (let i = 0; picks.length < n && i < 6; i++) { const a = list[(h >>> (i * 3)) % list.length]; if (!picks.includes(a) && !(picks.some(p => ['cap', 'beret', 'beanie', 'crownflowers', 'bun'].includes(p)) && ['cap', 'beret', 'beanie', 'crownflowers', 'bun'].includes(a))) picks.push(a); }
+  const c = LOOK_CLOTH[(h >>> 7) % LOOK_CLOTH.length], hair = LOOK_HAIR[(h >>> 11) % LOOK_HAIR.length];
+  return picks.map(a => ACC[a](b, c, hair)).join('');
+}
+const withAcc = (svg, acc) => !acc ? svg : svg.includes('<g class="r-mouth"') ? svg.replace('<g class="r-mouth"', acc + '<g class="r-mouth"') : svg + acc;
 const withLook = (svg, L) => { if (!L) return svg; const t = svg.split(SKIN).join(L.skin); return L.hair ? t.replace(/#3a2a1a|#7a4a2a/g, L.hair) : t; };
 function charSvg(a, mood) {
   MOOD = mood || '';
   try {
-    if (!(a.count > 1)) return withLook(C[a.draw]({ ...a.o, closed: mood === 'sleep' }), a.look);
+    if (!(a.count > 1)) return withAcc(withLook(C[a.draw]({ ...a.o, closed: mood === 'sleep' }), a.look), a.acc);
     const n = a.count, cx = a.b.x + a.b.w / 2, people = HUMANS.has(a.who);
     return Array.from({ length: n }, (_, k) => {
       const o = { ...a.o, closed: mood === 'sleep' };
