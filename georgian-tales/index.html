@@ -1825,7 +1825,9 @@ function scenery(q, tale, text, i) {
   const place = (PLACES[q.bg] || PLACES.meadow)(P, r);
   const indoor = !!place.indoor;
   const [s0, s1] = SKIES[q.time] || SKIES.day;
-  let svg = indoor || place.noSky ? '' : grad('sk' + ++gid, [[0, s0], [1, s1]]) + (night ? '' : evening ? `<circle cx="${r() > .5 ? 150 : 50}" cy="104" r="20" fill="#ffb05a" ${O(2)}/>` : sunFace(r() > .5 ? 34 : 166, q.time === 'morning' ? 64 : 32) + cloud(18 + r() * 20, r() * 30, .8) + cloud(46 + r() * 10, 10 + r() * 30, .6));
+  // a character who is the sun, a cloud or the moon is never doubled by the sky behind it
+  const whos = new Set([...(q.cast || []).map(k => PLANS[tale?.id]?.cast?.[k]?.who), ...Object.values(PLANS[tale?.id]?.cast || {}).map(c => c.who).filter(w => w === 'sun' || w === 'cloudy' || w === 'windy')]);
+  let svg = indoor || place.noSky ? '' : grad('sk' + ++gid, [[0, s0], [1, s1]]) + (night ? '' : evening ? whos.has('sun') ? '' : `<circle cx="${r() > .5 ? 150 : 50}" cy="104" r="20" fill="#ffb05a" ${O(2)}/>` : (whos.has('sun') ? '' : sunFace(r() > .5 ? 34 : 166, q.time === 'morning' ? 64 : 32)) + (whos.has('cloudy') || whos.has('windy') ? '' : cloud(18 + r() * 20, r() * 30, .8) + cloud(46 + r() * 10, 10 + r() * 30, .6)));
   svg += place.svg;
   const gy = indoor ? 172 : 156;
   // props: big things stand behind the characters, small things lie in front, sky things float
@@ -1842,7 +1844,7 @@ function scenery(q, tale, text, i) {
   if (q.build && PROP[q.build]) behind += buildSvg(q.build, 100, gy + 2);
   svg += behind;
   // night: everything dims under a blue veil, then the moon and stars come out
-  if (night && !place.noSky) svg += `<rect x="-400" y="-800" width="1000" height="1800" fill="#0b1240" opacity="${indoor ? .3 : .45}"/>` + (indoor ? '' : starsField(14) + ((q.props || []).includes('moon') || (q.cast || []).some(k => PLANS[tale?.id]?.cast?.[k]?.who === 'moon') ? '' : bigMoon(r() > .5 ? 160 : 40, 34, 13)) + (/forest|meadow|garden|pond|village|yard/.test(q.bg) ? fireflies() : ''));
+  if (night && !place.noSky) svg += `<rect x="-400" y="-800" width="1000" height="1800" fill="#0b1240" opacity="${indoor ? .3 : .45}"/>` + (indoor ? '' : starsField(14) + ((q.props || []).includes('moon') || whos.has('moon') ? '' : bigMoon(r() > .5 ? 160 : 40, 34, 13)) + (/forest|meadow|garden|pond|village|yard/.test(q.bg) ? fireflies() : ''));
   if (evening && !place.noSky) svg += `<rect x="-400" y="-800" width="1000" height="1800" fill="#6a2a7a" opacity=".16"/>`;
   if (!indoor) svg += q.weather === 'rain' ? rain() : q.weather === 'snow' && q.bg !== 'snow' && q.bg !== 'wintervillage' ? snow() : q.weather === 'wind' ? windLines() : q.weather === 'fog' ? fog() : '';
   svg += above;
@@ -1976,7 +1978,7 @@ function directParagraph(tale, text, i) {
     cast = ids.map(w => castMember(w, text, ids.length));
     nameIn = s => whoIn(s, hero, alias);
   }
-  cast.forEach(a => { a.ground = SKY.has(a.who) && !set.indoor ? 96 : SWIMMERS.has(a.who) ? 182 : set.indoor ? 172 : 156; });
+  cast.forEach(a => { a.ground = SKY.has(a.who) && !set.indoor ? 84 : SWIMMERS.has(a.who) ? 182 : set.indoor ? 172 : 156; });
   if (set.wantBed && cast.length) Object.assign(cast[0], { bed: true, fixed: true, home: 78, ground: 142 });
   // sky folk never wander about a room: they look in through the window, or stay outside
   if (set.indoor) {
