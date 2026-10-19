@@ -1,0 +1,8 @@
+name = "zghaprebi-billing"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+PACKAGE_NAME = "ge.zghaprebi.app"
+ALLOWED_ORIGIN = "https://zghaprebi.ge"
+# secret: GOOGLE_SA_JSON  (wrangler secret put GOOGLE_SA_JSON)

@@ -2,6 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;600;700&family=Noto+Serif+Georgian:wght@600;800&display=swap">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#131938"><link rel="icon" href="icons/icon-192.png">
 <style>
 /* Layout: phone-first storybook — mode switch, shelves of picture tiles by category, full-screen player where the living picture fills the whole screen and controls float on top */
 :root {
@@ -2396,6 +2397,8 @@ const TALES = [
   { id: 'w17', title: 'მეფის ახალი ტანსაცმელი', cat: 'world' },
   { id: 'w18', title: 'ქალბატონი ჰოლე', cat: 'world' },
   { id: 'w19', title: 'მეწაღე და ჯუჯები', cat: 'world' },
+  { id: 'w20', title: 'ოქროს ბატი', cat: 'world' },
+  { id: 'w21', title: 'ბაყაყი უფლისწული', cat: 'world' },
   { id: 'w22', title: 'თალგამი', cat: 'world' },
   { id: 'w23', title: 'ხელთათმანი', cat: 'world' },
   { id: 'w24', title: 'მელია და რძის დოქი', cat: 'world' },
@@ -2471,10 +2474,15 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
 };
+// ---------- what is free, what the subscription opens ----------
+// free: the first 2 tales of every section and the first 10 pictures; everything else with the subscription
+const FREE_TALES_PER_SECTION = 2, FREE_PAGES = 10;
+let premium = store.get('premium', false);
 let chain = store.get('chain', true);
 // test mode: every finished tale is open, so the owner can watch and check them all
 let testMode = store.get('test', true);
-const open_ = t => ready(t) && (t.free || testMode);
+const open_ = t => ready(t) && (t.free || testMode || premium);
+const pageOpen = pg => pg.free || testMode || premium;
 const listened = store.get('listened', {});
 const positions = store.get('pos', {});
 const favs = store.get('favs', {});
@@ -2545,7 +2553,7 @@ function giveSticker(t) {
     <button class="cta" data-ok style="width:100%">${fresh ? 'ვაშა!' : 'კარგი'}</button></div>`;
   document.body.appendChild(el); if (fresh) chime();
   el.onclick = e => {
-    if (e.target.closest('[data-paint]')) { el.remove(); $('closePlayer').onclick(); if (pg.free || testMode) openPage(pg); else gate(paywall); return; }
+    if (e.target.closest('[data-paint]')) { el.remove(); $('closePlayer').onclick(); if (pageOpen(pg)) openPage(pg); else gate(paywall); return; }
     if (e.target.closest('[data-ok]') || e.target === el) el.remove();
   };
   return true;
@@ -2590,7 +2598,7 @@ function renderShelves() {
     const free = shown.filter(pg => pg.free), rest = shown.filter(pg => !pg.free);
     $('shelves').innerHTML = `<div class="shelf-head"><h2>გააფერადე და გააცოცხლე!</h2><small>${PAGES.length} სურათი</small></div>
       <div class="grid">${[...free, ...rest].map(pg => `
-        <button class="tile page ${pg.free || testMode ? '' : 'locked'}" data-page="${pg.id}" aria-label="${pg.title}">
+        <button class="tile page ${pageOpen(pg) ? '' : 'locked'}" data-page="${pg.id}" aria-label="${pg.title}">
           <div class="art">${pageThumb(pg)}</div>
           ${pg.free ? '<span class="badge free">უფასო</span>' : testMode ? '' : `<span class="badge">${LOCK}</span>`}
           <span class="name">${pg.title}</span>
@@ -2618,7 +2626,7 @@ function renderShelves() {
 $('shelves').addEventListener('click', e => {
   const chip = e.target.closest('[data-pcat]'); if (chip) { paintCat = chip.dataset.pcat; store.set('paintCat', paintCat); return renderShelves(); }
   const tile = e.target.closest('.tile, .mini, .daily'); if (!tile) return;
-  if (tile.dataset.page) { const pg = PAGES.find(x => x.id === tile.dataset.page); return pg.free || testMode ? openPage(pg) : gate(paywall); }
+  if (tile.dataset.page) { const pg = PAGES.find(x => x.id === tile.dataset.page); return pageOpen(pg) ? openPage(pg) : gate(paywall); }
   const t = TALES.find(x => x.id === tile.dataset.id);
   if (!ready(t)) return toast('ეს ზღაპარი მალე დაემატება');
   open_(t) ? openPlayer(t) : gate(paywall);
@@ -4229,9 +4237,39 @@ const PAGES = [
   { id: 'n23', who: 'sun', title: 'მზე' },
   { id: 'n24', who: 'bun', title: 'ფუნთუშა' },
   { id: 'n25', who: 'granny', title: 'ბებია' },
+  { id: 'n26', who: 'girl', title: 'გოგონა' },
+  { id: 'n27', who: 'redhood', title: 'წითელქუდა' },
+  { id: 'n28', who: 'grandpa', title: 'ბაბუა' },
+  { id: 'n29', who: 'man', title: 'მწყემსი' },
+  { id: 'n30', who: 'snowman', title: 'თოვლის ბაბუა' },
+  { id: 'n31', who: 'moon', title: 'მთვარე' },
+  { id: 'n32', who: 'windy', title: 'ქარი' },
+  { id: 'n33', who: 'bird', title: 'ჩიტუნია' },
+  { id: 'n34', who: 'boy', duo: [["boy", {}], ["dog", {}]], title: 'ბიჭი და ძაღლი' },
+  { id: 'n35', who: 'girl', duo: [["girl", {}], ["cat", {}]], title: 'გოგონა და კნუტი' },
+  { id: 'n36', who: 'eagle', title: 'არწივი' },
+  { id: 'n37', who: 'gull', title: 'თოლია' },
+  { id: 'n38', who: 'sheep', duo: [["sheep", {}], ["sheep", {"big": 0.7}]], title: 'ცხვარი და ბატკანი' },
+  { id: 'n39', who: 'goose', title: 'ბატი' },
+  { id: 'n40', who: 'fish', title: 'თევზი' },
+  { id: 'n41', who: 'ant', title: 'ჭიანჭველა' },
+  { id: 'n42', who: 'hopper', title: 'ჭრიჭინა' },
+  { id: 'n43', who: 'firefly', title: 'ციცინათელა' },
+  { id: 'n44', who: 'hare', duo: [["hare", {}], ["tortoise", {}]], title: 'კურდღელი და კუ' },
+  { id: 'n45', who: 'fox', duo: [["fox", {}], ["crow", {"cheese": 1}]], title: 'მელია და ყვავი' },
+  { id: 'n46', who: 'cat', duo: [["cat", {}], ["mouse", {}]], title: 'კატა და თაგვი' },
+  { id: 'n47', who: 'bear', duo: [["bear", {}], ["bee", {}]], title: 'დათვი და ფუტკარი' },
+  { id: 'n48', who: 'king', duo: [["king", {}], ["mom", {"princess": 1, "dress": "#ffb347"}]], title: 'მეფე და მზეთუნახავი' },
+  { id: 'n49', who: 'hen', duo: [["hen", {}], ["hen", {"big": 0.7}]], title: 'კრუხი და წიწილა' },
+  { id: 'n50', who: 'goat', duo: [["goat", {}], ["goat", {"big": 0.7}]], title: 'თხა და ციკანი' },
+  { id: 'n51', who: 'bun', duo: [["bun", {}], ["fox", {}]], title: 'ფუნთუშა და მელია' },
+  { id: 'n52', who: 'redhood', duo: [["redhood", {}], ["wolf", {}]], title: 'წითელქუდა და მგელი' },
 ].map(pg => ({ ...pg, cat: 'tales' })).concat(MORE_PAGES);
+TALES.forEach(t => { delete t.free; });
+['ge', 'sleep', 'world', 'short'].forEach(c => TALES.filter(t => t.cat === c).slice(0, FREE_TALES_PER_SECTION).forEach(t => { t.free = true; }));
+PAGES.forEach((pg, i) => { pg.free = i < FREE_PAGES; });
 // the character alone, zoomed so it fills the page: big areas a small finger can hit
-const pageSvg = pg => `<svg viewBox="0 0 200 200" role="img" aria-label="${pg.title}" data-fit><g data-who>${pg.art ? ART[pg.art]() : A(pg.who, 0, 0, 1, { ...(pg.o || {}), anim: 'none' })}</g></svg>`;
+const pageSvg = pg => `<svg viewBox="0 0 200 200" role="img" aria-label="${pg.title}" data-fit><g data-who>${pg.art ? ART[pg.art]() : pg.duo ? pg.duo.map(([w, o], k) => place(w, k ? 124 : 76, k ? 190 : 180, { ...o, anim: 'none' })).join('') : A(pg.who, 0, 0, 1, { ...(pg.o || {}), anim: 'none' })}</g></svg>`;
 const measure = document.createElement('div');
 measure.style.cssText = 'position:absolute;left:-9999px;top:0;width:200px;height:200px;visibility:hidden';
 document.body.appendChild(measure);
@@ -4567,7 +4605,7 @@ function useNarrator() { OWN.on = false; audio.src = `audio/${current.id}.mp3`; 
 // paragraph starts from paragraph lengths, when the parent did not tap along
 const startsByLength = (id, dur) => { const ps = (TEXTS[id] || '').split('\n\n'), tot = ps.reduce((a, p) => a + p.length + 30, 0); let acc = 0; return ps.map(p => { const at = acc / tot * dur; acc += p.length + 30; return +at.toFixed(2); }); };
 const audioDuration = blob => new Promise(ok => { const a = new Audio(); a.preload = 'metadata'; a.onloadedmetadata = () => { if (isFinite(a.duration)) ok(a.duration); else { a.currentTime = 1e9; a.ontimeupdate = () => { a.ontimeupdate = null; ok(a.duration); }; } }; a.onerror = () => ok(0); a.src = URL.createObjectURL(blob); });
-$('voiceBtn').onclick = e => { e.stopPropagation(); audio.pause(); gate(voiceMenu); };
+$('voiceBtn').onclick = e => { e.stopPropagation(); audio.pause(); gate(premium || testMode ? voiceMenu : paywall); };
 async function voiceMenu() {
   const t = current, v = await ownVoiceFor(t);
   openSheet(`<h3>დედის ან მამის ხმა</h3>
@@ -4694,33 +4732,93 @@ function gate(onPass) {
   };
 }
 
+
+// ---------- Google Play subscriptions ----------
+// Inside the Android app (a Trusted Web Activity) Google Play Billing is reached through the Digital Goods API and
+// Payment Request. Products are created in Play Console with these ids; prices, currency and the free trial come from
+// Play itself, so they show in the shopper's own currency. Every new purchase is sent to our server
+// (BILLING.verifyUrl) which checks it with Google and acknowledges it — Google refunds purchases not acknowledged
+// within 3 days. Outside the app (a browser) the paywall says the subscription lives in the Google Play app.
+const BILLING = {
+  skus: { month: 'premium_month', year: 'premium_year' },
+  fallback: { month: '9.99 ₾', year: '59.99 ₾', yearPerMonth: '5.00 ₾', trialDays: 7 },
+  verifyUrl: '',   // e.g. https://billing.example.ge/verify — the billing worker (billing-worker/), set before release
+  service: null, details: {},
+};
+function setPremium(on) {
+  if (premium === on) return;
+  premium = on; store.set('premium', on); renderShelves();
+}
+async function billingInit() {
+  if (!('getDigitalGoodsService' in window)) return;
+  try {
+    BILLING.service = await window.getDigitalGoodsService('https://play.google.com/billing');
+    const list = await BILLING.service.getDetails(Object.values(BILLING.skus));
+    list.forEach(d => { BILLING.details[d.itemId] = d; });
+    await billingRefresh();
+  } catch (e) { BILLING.service = null; }
+}
+// what the shopper owns right now (also "restore purchases" on a new phone)
+async function billingRefresh() {
+  if (!BILLING.service) return false;
+  try {
+    const owned = await BILLING.service.listPurchases();
+    const active = owned.some(p => Object.values(BILLING.skus).includes(p.itemId));
+    for (const p of owned) if (p.purchaseState !== undefined && !p.acknowledged) billingVerify(p.itemId, p.purchaseToken);
+    setPremium(active); return active;
+  } catch { return false; }
+}
+async function billingVerify(sku, token) {
+  if (!BILLING.verifyUrl) return true;
+  try { const r = await fetch(BILLING.verifyUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sku, purchaseToken: token }) }); return r.ok && (await r.json()).active; }
+  catch { return false; }
+}
+async function billingBuy(plan) {
+  if (!BILLING.service) { toast('გამოწერა ხელმისაწვდომია Google Play-დან გადმოწერილ აპლიკაციაში'); return; }
+  const sku = BILLING.skus[plan];
+  try {
+    const req = new PaymentRequest([{ supportedMethods: 'https://play.google.com/billing', data: { sku } }], { total: { label: 'Total', amount: { currency: 'GEL', value: '0' } } });
+    const res = await req.show();
+    const ok = await billingVerify(sku, res.details.purchaseToken);
+    await res.complete(ok ? 'success' : 'fail');
+    if (ok) { setPremium(true); closeSheet(); toast('მადლობა! ყველა ზღაპარი და სურათი გაიხსნა'); }
+    else toast('გადახდა ვერ დადასტურდა — სცადე თავიდან');
+  } catch (e) { if (e?.name !== 'AbortError') toast('გადახდა ვერ შესრულდა'); }
+}
+const priceOf = plan => BILLING.details[BILLING.skus[plan]]?.price ? new Intl.NumberFormat('ka-GE', { style: 'currency', currency: BILLING.details[BILLING.skus[plan]].price.currency }).format(BILLING.details[BILLING.skus[plan]].price.value) : BILLING.fallback[plan];
+billingInit();
+if ('serviceWorker' in navigator && window.top === window.self) navigator.serviceWorker.register('sw.js').catch(() => {});
+
 // ---------- paywall ----------
 function paywall() {
   let plan = 'year';
+  const trial = BILLING.fallback.trialDays;
   openSheet(`
     <h3>ყველა ზღაპარი თქვენი პატარასთვის</h3>
     <ul class="perks">
-      <li>ქართული ხალხური და მსოფლიოს საუკეთესო ზღაპრები, ნაზი ხმით</li>
-      <li>ცოცხალი სურათები — პატარა მულტფილმი ყველა ზღაპარში</li>
-      <li>გასაფერადებელი სურათები ზღაპრების გმირებით</li>
-      <li>ყოველ კვირას — ახალი ზღაპარი</li>
+      <li>${TALES.length} ზღაპარი — ქართული ხალხური, მსოფლიოს და ძილის წინ, ნაზი ხმით</li>
+      <li>ცოცხალი მულტფილმი ყველა ზღაპარში</li>
+      <li>${PAGES.length} გასაფერადებელი სურათი, რომლებიც ცოცხლდება</li>
+      <li>დედის ან მამის ხმით ჩაწერილი ზღაპრები</li>
       <li>ძილის წინ: ეკრანი ქრება, ზღაპრები ზედიზედ გრძელდება</li>
-      <li>რეკლამის გარეშე</li>
+      <li>რეკლამის გარეშე, უსაფრთხო ბავშვისთვის</li>
     </ul>
     <div class="plans">
-      <button class="plan" data-plan="month" aria-pressed="false"><small>თვე</small><b>4.99 ₾</b><small>ყოველთვიურად</small></button>
-      <button class="plan" data-plan="year" aria-pressed="true"><span class="save">−50%</span><small>წელი</small><b>29.99 ₾</b><small>2.50 ₾ თვეში</small></button>
+      <button class="plan" data-plan="month" aria-pressed="false"><small>თვე</small><b>${priceOf('month')}</b><small>ყოველთვიურად</small></button>
+      <button class="plan" data-plan="year" aria-pressed="true"><span class="save">−50%</span><small>წელი</small><b>${priceOf('year')}</b><small>${BILLING.fallback.yearPerMonth} თვეში</small></button>
     </div>
-    <button class="cta" data-buy>3 დღე უფასოდ</button>
+    <button class="cta" data-buy>${trial} დღე უფასოდ</button>
     <p class="fine" id="fine"></p>
+    <button class="link" data-restore>შეძენის აღდგენა</button>
     <button class="link" data-close>მოგვიანებით</button>`);
-  const fine = () => { $('fine').textContent = `3 დღის შემდეგ — ${plan === 'year' ? '29.99 ₾ წელიწადში' : '4.99 ₾ თვეში'}. გაუქმება ნებისმიერ დროს Google Play-ში.`; };
+  const fine = () => { $('fine').textContent = `${trial} დღის შემდეგ — ${plan === 'year' ? priceOf('year') + ' წელიწადში' : priceOf('month') + ' თვეში'}. გაუქმება ნებისმიერ დროს Google Play-ში.`; };
   fine();
-  $('sheet').onclick = e => {
+  $('sheet').onclick = async e => {
     if (e.target.closest('[data-close]')) return closeSheet();
     const p = e.target.closest('[data-plan]');
     if (p) { plan = p.dataset.plan; $('sheet').querySelectorAll('.plan').forEach(b => b.setAttribute('aria-pressed', b === p)); fine(); }
-    if (e.target.closest('[data-buy]')) { closeSheet(); toast('პროტოტიპი: აქ გაიხსნება Google Play-ის გადახდა'); }
+    if (e.target.closest('[data-buy]')) billingBuy(plan);
+    if (e.target.closest('[data-restore]')) { const ok = await billingRefresh(); toast(ok ? 'გამოწერა აღდგენილია' : BILLING.service ? 'აქტიური გამოწერა ვერ მოიძებნა' : 'აღდგენა შესაძლებელია Google Play-ის აპლიკაციაში'); if (ok) closeSheet(); }
   };
 }
 
@@ -4898,7 +4996,7 @@ $('parentBtn').onclick = () => gate(() => {
     <div class="row"><span>სატესტო რეჟიმი<br><small style="color:#7a7290">ყველა ზღაპარი ღიაა გადახდის გარეშე</small></span>
       <button class="switch" id="testSw" role="switch" aria-checked="${testMode}" aria-label="სატესტო რეჟიმი"></button></div>
     <p style="font-size:.72rem;color:#7a7290;line-height:1.4;margin:6px 0 10px">მუსიკა: ${MUSIC_CREDITS}</p>
-    <button class="cta" data-sub>გამოწერა — 3 დღე უფასოდ</button>
+    <button class="cta" data-sub>${premium ? '✓ გამოწერა აქტიურია' : 'გამოწერა — ' + BILLING.fallback.trialDays + ' დღე უფასოდ'}</button>
     <button class="link" data-close>დახურვა</button>`);
   $('sheet').onclick = e => {
     if (e.target.closest('[data-close]')) return closeSheet();

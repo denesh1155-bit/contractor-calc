@@ -1,0 +1,23 @@
+{
+  "packageId": "ge.zghaprebi.app",
+  "host": "zghaprebi.ge",
+  "name": "ქართული ზღაპრები",
+  "launcherName": "ზღაპრები",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#131938",
+  "navigationColor": "#131938",
+  "backgroundColor": "#131938",
+  "enableNotifications": false,
+  "startUrl": "/index.html",
+  "iconUrl": "https://zghaprebi.ge/icons/icon-512.png",
+  "maskableIconUrl": "https://zghaprebi.ge/icons/icon-512-maskable.png",
+  "webManifestUrl": "https://zghaprebi.ge/manifest.webmanifest",
+  "features": { "playBilling": { "enabled": true } },
+  "alphaDependencies": { "enabled": false },
+  "enableSiteSettingsShortcut": false,
+  "isChromeOSOnly": false,
+  "minSdkVersion": 23,
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1
+}
