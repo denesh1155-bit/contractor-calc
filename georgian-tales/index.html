@@ -1821,6 +1821,8 @@ const PROP = {
   fogbank: [() => `<g opacity=".93">${[[-90, -30, 46], [-40, -40, 52], [10, -34, 50], [60, -42, 54], [110, -30, 46], [-120, -10, 40], [140, -12, 40]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#f4f6fb"/>`).join('')}<rect x="-170" y="-34" width="340" height="40" fill="#f4f6fb"/></g>`, 90, 'front'],
   'garden-bed': [() => `<path d="M-30 0 h60" stroke="#8a5a34" stroke-width="8" stroke-linecap="round"/>${[-20, -6, 8, 22].map(x => `<path d="M${x} -2 q-4 -8 -1 -12 M${x} -2 q4 -8 1 -12" stroke="#3aa860" stroke-width="2.4" fill="none"/>`).join('')}`, 14, 'front'],
 };
+// more drawings of story things (items.json): { name: { svg, h } }, drawn with the bottom centre at 0,0
+function addItems(items) { Object.entries(items || {}).forEach(([name, d]) => { if (!PROP[name] && d?.svg) PROP[name] = [() => d.svg, d.h || 20, 'front']; }); }
 const propBoxes = {};
 function propFit(name, x, ground, h) {
   const [draw] = PROP[name];
@@ -1917,7 +1919,7 @@ const MOODS = [
   ['love', /უყვარ|სიყვარულ|გულში|საყვარელ/],
 ];
 const ANN_ACT = { walk: 'walk', run: 'run', fly: 'fly', swim: 'swim', jump: 'jump', come: 'come', leave: 'leave', talk: 'talk', sing: 'sing', dance: 'dance', eat: 'eat', drink: 'eat', sleep: 'sleep', wake: 'wake', sit: 'sit', lie: 'sit', look: 'look', think: 'think', work: 'work', give: 'come', hug: 'hug', wave: 'wave', cry: 'sad', laugh: 'joy', hide: 'leave', knock: 'work', play: 'jump', idle: 'idle',
-  hop: 'hop', fall: 'fall', reach: 'reach', climb: 'reach', pick: 'pick', push: 'push', roll: 'push', carry: 'walk', point: 'talk' };
+  hop: 'hop', fall: 'fall', reach: 'reach', climb: 'reach', pick: 'pick', push: 'push', roll: 'push', carry: 'walk', point: 'talk', dig: 'work', throw: 'work', pull: 'work', cook: 'work', build: 'work', open: 'work', shake: 'shiver', bow: 'pick', kneel: 'sit', peek: 'look', stand: 'idle', sniff: 'look' };
 const ANN_MOOD = { cry: 'sad', laugh: 'happy', play: 'happy', give: 'happy' };
 const MOVES = new Set(['walk', 'run', 'fly', 'swim', 'leave', 'come', 'jump', 'hug']);
 const SPEED = { walk: 50, run: 125, fly: 85, swim: 60 };
@@ -2067,7 +2069,7 @@ function directParagraph(tale, text, i) {
     const A = anns?.[b];
     let speaker = -1;
     if (A) { act = ANN_ACT[A.do] || 'idle'; mood = A.mood || ANN_MOOD[A.do] || ''; speaker = keyIdx(A.say); }
-    const nx = st.map(p => ({ ...p, y: p.lift || 0, dur: 0, act: p.sleep ? 'sleep' : 'idle', after: p.sleep ? 'sleep' : 'idle', mood: p.sleep ? 'sleep' : '', fx: p.sleep ? ['zzz'] : [], on: p.on && !p.gone, gone: false }));
+    const nx = st.map(p => ({ ...p, snap: false, y: p.lift || 0, dur: 0, act: p.sleep ? 'sleep' : 'idle', after: p.sleep ? 'sleep' : 'idle', mood: p.sleep ? 'sleep' : '', fx: p.sleep ? ['zzz'] : [], on: p.on && !p.gone, gone: false }));
     const who = named[b];
     const together = who.length > 1 && /ნენ[\s,.!?:]|ერთად|ორივე|ყველამ|ყველანი|ყველა /.test(narr);
     let subj = who.length ? (together ? who : [who[0]]) : last >= 0 && nx[last].on && (act !== 'idle' || mood) ? [last] : [];
@@ -2116,6 +2118,8 @@ function directParagraph(tale, text, i) {
     if (A && (A.x !== undefined || A.go || A.y !== undefined)) subj.forEach(k => {
       const a = cast[k], p = nx[k], it = A.go ? its.find(t => t.key === A.go) : null;
       let tx = A.x ?? p.x;
+      const mate = !it && A.go ? ids.indexOf(A.go) : -1;
+      if (mate >= 0 && mate !== k) tx = nx[mate].x + (p.x <= nx[mate].x ? -1 : 1) * ((a.w + cast[mate].w) * .4 + 2);
       if (it) tx = A.y !== undefined ? it.x : it.x + (p.x <= it.x ? -1 : 1) * (a.w * .45 + it.h * .4 + 4);
       tx = clamp(tx, 10, 190); p.lift = A.y || 0;
       if (Math.abs(tx - p.x) > 3 || p.lift !== p.y) {
@@ -2126,6 +2130,9 @@ function directParagraph(tale, text, i) {
         const fin = ANN_ACT[A.do]; p.after = fin && !MOVES.has(fin) && fin !== 'push' ? fin : MOOD_ACT[p.mood] || 'idle'; p.act = gait;
       }
     });
+    if (A?.from) subj.forEach(k => { const it = its.find(t => t.key === A.from), p = nx[k]; if (!it) return; Object.assign(p, { x: it.x, y: 0, lift: 0, on: true, gone: false, hidden: false, snap: true, dur: 0 }); });
+    if (A?.vanish) subj.forEach(k => { nx[k].hidden = true; });
+    if (A?.show) subj.forEach(k => { nx[k].hidden = false; nx[k].on = true; });
     if (A?.face) subj.forEach(k => { nx[k].face = A.face === 'left' ? -1 : 1; });
     if (A?.items) its = its.map(it => { const u = A.items[it.key]; if (!u) return it; const n = { ...it, ...u }; if ('hold' in u) n.hold = u.hold ? ids.indexOf(u.hold) : -1; return n; });
     const itemsNow = its.map(it => {
@@ -2133,9 +2140,9 @@ function directParagraph(tale, text, i) {
         const a = cast[it.hold], p = nx[it.hold];
         it.x = it.ground ? p.x + p.face * (a.w * .5 + it.h * .5) : p.x + p.face * a.w * .32;
         it.y = it.ground ? a.ground : a.ground + p.y - a.h * .3;
-        return { key: it.key, x: it.x, y: it.y, on: it.on && p.on, dur: p.dur || .5, rot: it.rot };
+        return { key: it.key, x: it.x, y: it.y, on: it.on && p.on && !p.hidden, dur: p.dur || .5, rot: it.rot, scale: it.scale };
       }
-      return { key: it.key, x: it.x, y: it.y, on: it.on, dur: .8, rot: it.rot };
+      return { key: it.key, x: it.x, y: it.y, on: it.on, dur: it.dur || .8, rot: it.rot, scale: it.scale };
     });
     // the speech bubble belongs to whoever speaks, and only to them
     if (A) {
@@ -2268,14 +2275,14 @@ function fxSvg(list, a, face) {
   }).join('');
 }
 function actorSvg(a, k, p) {
-  return `<g class="actor" data-k="${k}" style="transform:translate(${p.x}px,${a.ground + p.y}px)"><g class="facing" style="transform:scaleX(${p.face})"><g class="act a-${p.act}" style="animation-delay:-${k * .7}s"><g transform="translate(${-(a.b.x + a.b.w / 2) * a.s} ${-(a.b.y + a.b.h) * a.s}) scale(${a.s})"><g class="body${HUMANS.has(a.who) ? '' : ' beast'}">${charSvg(a, p.mood)}</g></g></g></g><g class="fx">${fxSvg(p.fx, a, p.face)}</g></g>`;
+  return `<g class="actor" data-k="${k}" style="transform:translate(${p.x}px,${a.ground + p.y}px);opacity:${p.hidden ? 0 : 1}"><g class="facing" style="transform:scaleX(${p.face})"><g class="act a-${p.act}" style="animation-delay:-${k * .7}s"><g transform="translate(${-(a.b.x + a.b.w / 2) * a.s} ${-(a.b.y + a.b.h) * a.s}) scale(${a.s})"><g class="body${HUMANS.has(a.who) ? '' : ' beast'}">${charSvg(a, p.mood)}</g></g></g></g><g class="fx">${fxSvg(p.fx, a, p.face)}</g></g>`;
 }
 // in the player: the background is a still picture (painted once), the characters and weather live in their own layer
 const STILL = /\sclass="(sway|twinkle|glow|wind|flutter|flyby|cloud|spin|flicker|drip|shoot|flap|wings|rise|appear|zf|breathe|ears|tail|eye|idle|bob|nod|dance|sad|roar|laugh|hop|neck|arm)"/g;
 const MOVING = /<g class="(fall|firefly)"[^>]*>(?:(?!<\/g>)[\s\S])*<\/g>/g;
 const itemsSvg = (para, back) => (para.items || []).filter(d => d.back === back).map(d => {
   const s = para.beats[0]?.items.find(v => v.key === d.key) || { x: 100, y: 156, on: false };
-  return `<g class="item" data-i="${d.key}" style="transform:translate(${s.x}px,${s.y}px) rotate(${s.rot || 0}deg);opacity:${s.on ? 1 : 0}">${propFit(d.draw, 0, 0, d.h).svg}</g>`;
+  return `<g class="item" data-i="${d.key}" style="transform:translate(${s.x}px,${s.y}px) rotate(${s.rot || 0}deg) scale(${s.scale || 1});opacity:${s.on ? 1 : 0}">${propFit(d.draw, 0, 0, d.h).svg}</g>`;
 }).join('');
 function paragraphHtml(para) {
   const [top, ground] = para.edge;
@@ -2299,7 +2306,8 @@ function applyBeat(root, para, bi, instant) {
   const beat = para.beats[bi];
   root.querySelectorAll('.actor').forEach(el => {
     const k = +el.dataset.k, a = para.cast[k], p = beat.actors[k];
-    el.style.transition = instant ? 'none' : `transform ${p.dur || .4}s ${p.act === 'run' ? 'cubic-bezier(.55,0,.5,1)' : 'cubic-bezier(.42,0,.4,1)'}`;
+    el.style.transition = instant || p.snap ? 'opacity .5s' : `transform ${p.dur || .4}s ${p.act === 'run' ? 'cubic-bezier(.55,0,.5,1)' : 'cubic-bezier(.42,0,.4,1)'}, opacity .5s ${p.hidden ? p.dur || 0 : 0}s`;
+    el.style.opacity = p.hidden ? 0 : 1;
     el.style.transform = `translate(${p.x}px,${a.ground + p.y}px)`;
     el.querySelector('.facing').style.transform = `scaleX(${p.face})`;
     const actEl = el.querySelector('.act');
@@ -2312,7 +2320,7 @@ function applyBeat(root, para, bi, instant) {
   root.querySelectorAll('.item').forEach(el => {
     const s = beat.items?.find(v => v.key === el.dataset.i); if (!s) return;
     el.style.transition = instant ? 'none' : `transform ${s.dur}s cubic-bezier(.42,0,.4,1), opacity .5s`;
-    el.style.transform = `translate(${s.x}px,${s.y}px) rotate(${s.rot || 0}deg)`; el.style.opacity = s.on ? 1 : 0;
+    el.style.transform = `translate(${s.x}px,${s.y}px) rotate(${s.rot || 0}deg) scale(${s.scale || 1})`; el.style.opacity = s.on ? 1 : 0;
   });
   // whatever is being built grows sentence by sentence
   const nb = para.beats.length, done = Math.min(1, (bi + 1) / Math.max(1, nb - 1));
@@ -4592,7 +4600,7 @@ const pageThumb = pg => { const d = document.createElement('div'); d.innerHTML =
 renderShelves();
 paintProfile();
 fetch('audio/timings.json').then(r => r.json()).then(j => { TIMINGS = j; renderShelves(); }).catch(() => {});
-Promise.all([fetch('tales.json').then(r => r.json()), fetch('plans.json').then(r => r.json()).catch(() => ({}))]).then(([list, plans]) => { PLANS = plans; list.forEach(t => { TEXTS[t.id] = t.text; }); buildAutoScenes(); renderShelves(); }).catch(() => {});
+Promise.all([fetch('tales.json').then(r => r.json()), fetch('plans.json').then(r => r.json()).catch(() => ({})), fetch('items.json').then(r => r.json()).catch(() => ({}))]).then(([list, plans, items]) => { addItems(items); PLANS = plans; list.forEach(t => { TEXTS[t.id] = t.text; }); buildAutoScenes(); renderShelves(); }).catch(() => {});
 
 function sceneAt(id, time) {
   const n = PLAYS[id]?.length || SCENES[id].length;
