@@ -22,7 +22,9 @@ def pauses(mp3):
 
 for tid, src in zip(sys.argv[1::2], sys.argv[2::2]):
     tale, mp3 = tales[tid], root / "audio" / f"{tid}.mp3"
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-ac", "1", "-b:a", "32k", str(mp3)], check=True)
+    # убираем лёгкое шипение в паузах; 24 кГц и 48 кбит/с — голос чистый, без «булькающих» призвуков сжатия
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-af", "highpass=f=70,afftdn=nr=12:nf=-50",
+                    "-ac", "1", "-ar", "24000", "-b:a", "48k", str(mp3)], check=True)
     duration = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(mp3)],
                                     capture_output=True, text=True).stdout)
     paras = [sentences(p) or [p] for p in tale["text"].split("\n\n")]

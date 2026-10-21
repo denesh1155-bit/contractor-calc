@@ -4865,7 +4865,9 @@ const PLAYLISTS = {
   world: ['teddy_waltz', 'carefree', 'sugar_plum', 'merry_go', 'rainbows', 'monkeys'],
   short: ['monkeys', 'fluffing_duck', 'cheery_monday', 'onion_capers', 'doobly_doo', 'carefree'],
 };
-const MUSIC_VOL = { sleep: .26, ge: .34, world: .34, short: .34 };
+const MUSIC_VOL = { sleep: .2, ge: .26, world: .26, short: .26 };
+// в сказке звучат только голос и музыка: без шумов места (ветер, дождь, огонь) и без звуков движений
+const TALE_FX = false;
 const MUSIC_CREDITS = 'Carefree, Monkeys Spinning Monkeys, Teddy Bear Waltz, Rainbows, Cheery Monday, Merry Go, Music Box Theme, Village Consort, Galway, Fluffing a Duck, Onion Capers, Doobly Doo, Dance of the Sugar Plum Fairy, Dreamer, Morning, Evening, Fireflies and Stardust, Friday Morning, Magic Scout – Farm, Magic Scout – Northern Glade, Almost Bliss — Kevin MacLeod (incompetech.com), Creative Commons: By Attribution 4.0';
 const MUSIC = { el: null, gain: null, tale: null, list: [], at: 0, timer: 1, playing: false };
 function musicEl() {
@@ -4932,7 +4934,7 @@ const cricket = () => { const c = SND.ctx, t = c.currentTime + .05; for (let i =
 const crackle = () => { const c = SND.ctx, t = c.currentTime + Math.random() * .2, src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(); src.buffer = SND.noise; f.type = 'highpass'; f.frequency.value = 1800; env(g, t, .12 + Math.random() * .1, .002, .03); src.connect(f).connect(g).connect(SND.amb); src.start(t, Math.random()); src.stop(t + .06); };
 const bubble = () => { const c = SND.ctx, t = c.currentTime + .05, o = c.createOscillator(), g = c.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(400 + Math.random() * 300, t); o.frequency.exponentialRampToValueAtTime(1200, t + .08); env(g, t, .05, .005, .08); o.connect(g).connect(SND.amb); o.start(t); o.stop(t + .12); };
 function ambience(kind) {
-  if (!sounds || !SND.ctx) return;
+  if (!TALE_FX || !sounds || !SND.ctx) return;
   const c = SND.ctx; SND.amb.gain.setTargetAtTime(1.6, c.currentTime, .8);
   if (kind === AMB.kind) return;
   ambStop(); AMB.kind = kind;
@@ -4972,7 +4974,7 @@ const SFX = {
   puff: t => whoosh(t, .3, false), ask: t => sweep('sine', 500, 800, t, .25, .07), yum: t => [300, 360].forEach((f, k) => sweep('triangle', f, f * .9, t + k * .15, .1, .07)),
 };
 function beatSounds(para, bi) {
-  if (!sounds || !SND.ctx || !MUSIC.playing) return;
+  if (!TALE_FX || !sounds || !SND.ctx || !MUSIC.playing) return;
   const t = SND.ctx.currentTime + .05, beat = para.beats[bi], prev = bi ? para.beats[bi - 1] : null;
   const want = [];
   beat.actors.forEach((p, k) => {
