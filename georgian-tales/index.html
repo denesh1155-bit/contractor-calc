@@ -238,6 +238,18 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .a-hug { animation: aHug 1s ease-in-out infinite; }
 .a-shiver { animation: aShiver .12s linear infinite; }
 .a-sad { animation: aSad 1.2s ease-out both; }
+/* story stunts: fall on the back, stand up and stretch for something high, bend down to pick, lean into a push */
+.a-fall .body { transform-box: fill-box; transform-origin: 50% 60%; animation: bFall .8s cubic-bezier(.45,0,.55,1.3) forwards; }
+.a-fall .body > ellipse[fill="#1a1030"] { display: none; }
+.a-fall .r-leg1, .a-fall .r-leg2, .a-fall .r-arm1, .a-fall .r-arm2 { animation: lgKick .3s ease-in-out .8s infinite alternate; }
+.a-reach .beast { transform-box: fill-box; transform-origin: 22% 100%; animation: bReach 1.1s ease-in-out infinite alternate; }
+.a-reach .body:not(.beast) { transform-box: fill-box; transform-origin: 50% 100%; animation: hReach 1.1s ease-in-out infinite alternate; }
+.a-reach .body:not(.beast) .r-arm1, .a-reach .body:not(.beast) .r-arm2 { animation: amUp .5s ease-in-out infinite alternate; }
+.a-pick .body { transform-box: fill-box; transform-origin: 30% 100%; animation: bPick 1.3s ease-in-out infinite; }
+.a-push { animation: aWalk .8s linear infinite; }
+.a-hop { animation: aHop .85s ease-out infinite; }
+.a-push .body { transform-box: fill-box; transform-origin: 50% 100%; transform: rotate(9deg); }
+.item { transform-box: view-box; }
 .a-stomp { animation: aStomp .5s ease-in-out infinite; }
 /* ---------- rigged characters: legs, arms, head, tail and mouth move on their own ----------
    parts: .r-leg1 .r-leg2 (alternate; for four legs diagonal pairs) .r-arm1 (front arm / wing) .r-arm2 (back arm / wing)
@@ -337,6 +349,12 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 @keyframes aWave { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
 @keyframes aHug { 50% { transform: scale(1.05, .95); } }
 @keyframes aShiver { 25% { transform: translateX(-1.4px); } 75% { transform: translateX(1.4px); } }
+@keyframes aHop { 0% { transform: scale(1.1, .88); } 35% { transform: translateY(-30px) scale(.94, 1.08); } 60% { transform: translateY(-4px); } 75% { transform: scale(1.08, .9); } 100% { transform: none; } }
+@keyframes bFall { 0% { transform: none; } 35% { transform: translateY(-10px) rotate(-70deg); } 100% { transform: translateY(2px) rotate(-180deg); } }
+@keyframes lgKick { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
+@keyframes bReach { from { transform: rotate(-26deg); } to { transform: translateY(-3px) rotate(-34deg); } }
+@keyframes hReach { from { transform: scale(1, 1.03); } to { transform: translateY(-3px) scale(.98, 1.08); } }
+@keyframes bPick { 0%, 100% { transform: none; } 45%, 65% { transform: rotate(22deg) scale(1, .94); } }
 @keyframes aSad { to { transform: translateY(2px) rotate(-5deg) scale(1, .95); } }
 @keyframes aStomp { 50% { transform: translateY(-4px) rotate(-3deg); } }
 .build.grow { transition: transform 1.4s cubic-bezier(.3,1.4,.5,1); }
@@ -1796,6 +1814,11 @@ const PROP = {
   sword: [() => `<path d="M0 0 V-34" stroke="#c9cfe0" stroke-width="4"/><path d="M-8 -6 h16" ${O(2.4)}/><path d="M0 -34 l-2 -4 h4z" fill="#c9cfe0"/>`, 30, 'front'],
   cradle: [() => `${shadow(0, 0, 22)}<path d="M-24 -10 Q0 10 24 -10 V-24 H-24z" fill="#ffd6e0" ${O(1.6)}/><path d="M-20 0 L-26 6 M20 0 L26 6" ${O(2)}/>`, 30, 'back'],
   bench: [() => `<rect x="-26" y="-14" width="52" height="5" rx="2" fill="#a8743f" ${O(1.4)}/><path d="M-22 -9 v9 M22 -9 v9" ${O(2.4)}/><rect x="-26" y="-26" width="52" height="5" rx="2" fill="#a8743f" ${O(1.4)}/>`, 26, 'back'],
+  grapes: [() => `<path d="M0 -30 q2 -6 6 -8" stroke="#6a4a2a" stroke-width="2.2" fill="none"/><path d="M2 -32 q10 -8 16 -2 q-8 6 -16 2z" fill="#5cb85c" ${O(1.2)}/>${[[0, -26], [-6, -22], [6, -22], [-9, -15], [0, -16], [9, -15], [-5, -9], [5, -9], [0, -3]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="#8a4cc8" ${O(1.1)}/><circle cx="${x - 1.6}" cy="${y - 1.6}" r="1.3" fill="#fff" opacity=".55"/>`).join('')}`, 26, 'front'],
+  stump: [() => `${shadow(0, 0, 18)}<path d="M-16 0 L-13 -20 H13 L16 0z" fill="#a8743f" ${O()}/><ellipse cx="0" cy="-20" rx="13" ry="4.5" fill="#e0b47a" ${O(1.6)}/><ellipse cx="0" cy="-20" rx="7" ry="2.2" fill="none" stroke="#b8844a" stroke-width="1.2"/><path d="M-16 0 q-6 1 -8 4 M16 0 q6 1 8 4" ${O(1.6)}/>`, 20, 'front'],
+  vine: [() => `<path d="M-30 0 V-80 M30 0 V-80" stroke="#8a5a34" stroke-width="3.4"/><path d="M-36 -78 Q0 -86 36 -78" stroke="#6a4a2a" stroke-width="3" fill="none"/>${[-28, -12, 4, 20, 32].map((x, k) => `<ellipse cx="${x}" cy="${-82 + (k % 2) * 6}" rx="10" ry="7" fill="${k % 2 ? '#4aa34e' : '#5cb85c'}" ${O(1.2)}/>`).join('')}`, 84, 'back'],
+  butterfly: [() => `<g class="flap"><path d="M0 -8 q-10 -12 -12 -2 q2 8 12 2z" fill="#ff9fc0" ${O(1.1)}/><path d="M0 -8 q10 -12 12 -2 q-2 8 -12 2z" fill="#ffd34d" ${O(1.1)}/></g><path d="M0 -14 v10" ${O(1.6)}/>`, 12, 'front'],
+  fogbank: [() => `<g opacity=".93">${[[-90, -30, 46], [-40, -40, 52], [10, -34, 50], [60, -42, 54], [110, -30, 46], [-120, -10, 40], [140, -12, 40]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#f4f6fb"/>`).join('')}<rect x="-170" y="-34" width="340" height="40" fill="#f4f6fb"/></g>`, 90, 'front'],
   'garden-bed': [() => `<path d="M-30 0 h60" stroke="#8a5a34" stroke-width="8" stroke-linecap="round"/>${[-20, -6, 8, 22].map(x => `<path d="M${x} -2 q-4 -8 -1 -12 M${x} -2 q4 -8 1 -12" stroke="#3aa860" stroke-width="2.4" fill="none"/>`).join('')}`, 14, 'front'],
 };
 const propBoxes = {};
@@ -1893,7 +1916,8 @@ const MOODS = [
   ['happy', /გაუხარდ|გაეხარ|ბედნიერ|სიხარულ|გაიცინ|იცინ|გაეცინ|ღიმილ|გაუღიმ|მხიარულ|ხარობ|უხაროდ|კმაყოფ|მადლობ|გმადლობ|ჰოორა|ვაშა/],
   ['love', /უყვარ|სიყვარულ|გულში|საყვარელ/],
 ];
-const ANN_ACT = { walk: 'walk', run: 'run', fly: 'fly', swim: 'swim', jump: 'jump', come: 'come', leave: 'leave', talk: 'talk', sing: 'sing', dance: 'dance', eat: 'eat', drink: 'eat', sleep: 'sleep', wake: 'wake', sit: 'sit', lie: 'sit', look: 'look', think: 'think', work: 'work', give: 'come', hug: 'hug', wave: 'wave', cry: 'sad', laugh: 'joy', hide: 'leave', knock: 'work', play: 'jump', idle: 'idle' };
+const ANN_ACT = { walk: 'walk', run: 'run', fly: 'fly', swim: 'swim', jump: 'jump', come: 'come', leave: 'leave', talk: 'talk', sing: 'sing', dance: 'dance', eat: 'eat', drink: 'eat', sleep: 'sleep', wake: 'wake', sit: 'sit', lie: 'sit', look: 'look', think: 'think', work: 'work', give: 'come', hug: 'hug', wave: 'wave', cry: 'sad', laugh: 'joy', hide: 'leave', knock: 'work', play: 'jump', idle: 'idle',
+  hop: 'hop', fall: 'fall', reach: 'reach', climb: 'reach', pick: 'pick', push: 'push', roll: 'push', carry: 'walk', point: 'talk' };
 const ANN_MOOD = { cry: 'sad', laugh: 'happy', play: 'happy', give: 'happy' };
 const MOVES = new Set(['walk', 'run', 'fly', 'swim', 'leave', 'come', 'jump', 'hug']);
 const SPEED = { walk: 50, run: 125, fly: 85, swim: 60 };
@@ -2011,19 +2035,31 @@ function directParagraph(tale, text, i) {
   }
   const slots = (set.build ? [[56], [40, 160], [28, 150, 178], [22, 56, 148, 180], [20, 50, 140, 164, 186], [18, 44, 70, 140, 162, 184]] : [[100], [66, 138], [42, 100, 160], [30, 78, 124, 170], [24, 62, 100, 138, 176], [20, 52, 84, 116, 148, 180]])[cast.length - 1] || [];
   cast.forEach((a, k) => { a.home = a.home || slots[k]; });
+  // the plan can say where someone already is when the paragraph opens (on the stump, by the door)
+  if (q?.at) ids.forEach((key, k) => { const v = q.at[key]; if (v === undefined) return; cast[k].home = typeof v === 'number' ? v : v.x; cast[k].lift0 = v.y || 0; if (v.face) cast[k].face0 = v.face === 'left' ? -1 : 1; });
   // hand-checked acting, sentence by sentence (plans.json "beats"): who does what, who speaks
-  const anns = q?.beats?.length === sents.length ? q.beats : null;
+  const anns0 = q?.beats?.length === sents.length ? q.beats : null;
+  // a sentence with several things happening ("rolled the stump, climbed on it, reached the grapes") plays them in turn
+  const units = sents.flatMap((s, b) => { const A = anns0?.[b]; return A?.steps?.length ? A.steps.map((stp, j) => ({ s, b, f: j / A.steps.length, n: A.steps.length, A: { ...A, ...stp, steps: undefined } })) : [{ s, b, f: 0, n: 1, A }]; });
+  const anns = anns0 ? units.map(u => u.A) : null;
   const keyIdx = k => k ? ids.indexOf(k) : -1;
   const named = anns ? anns.map(A => [...new Set([...(A.who || []), A.say, A.to].map(keyIdx).filter(k => k >= 0))]) : sents.map(s => nameIn(s).map(w => ids.indexOf(w)).filter(k => k >= 0));
   const firstAt = cast.map((_, k) => { const j = named.findIndex(n => n.includes(k)); return j < 0 ? 0 : j; });
+  if (q?.at) ids.forEach((key, k) => { if (q.at[key] !== undefined) firstAt[k] = 0; });
   if (cast.length && !firstAt.includes(0)) firstAt[firstAt.indexOf(Math.min(...firstAt))] = 0;
   const sleepyEnd = tale.cat === 'sleep' && set.asleep;
   // the tale opens with its heroes walking into the picture
   const opening = k => i === 0 && !cast[k].fixed && firstAt[k] === 0;
   let st = cast.map((a, k) => ({ x: a.fixed || firstAt[k] === 0 && !opening(k) ? a.home : offstage(a.home), y: 0, on: firstAt[k] === 0 && !opening(k), face: firstAt[k] === 0 && !opening(k) ? (a.home > 100 ? -1 : 1) : (offstage(a.home) > a.home ? -1 : 1), act: 'idle', after: 'idle', mood: '', fx: [], dur: 0, sleep: !!(a.bed && sleepyEnd) }));
+  st.forEach((p, k) => { const a = cast[k]; if (a.lift0) { p.y = p.lift = a.lift0; } if (a.face0 && p.on) p.face = a.face0; });
   const start = st.map(p => ({ ...p, fx: [] }));
+  // things the story is about (the grapes, the stump): placed by the plan, moved, carried and handed over beat by beat
+  const ground0 = set.indoor ? 172 : 156;
+  let its = Object.entries(q?.items || {}).map(([key, d]) => ({ key, draw: d.draw || key, x: d.x ?? 100, y: d.y ?? ground0, h: d.h ?? (PROP[d.draw || key]?.[1] || 20),
+    on: d.on !== false, hold: d.hold ? ids.indexOf(d.hold) : -1, back: !!d.back, rot: d.rot || 0, ground: !!d.ground })).filter(it => PROP[it.draw]);
+  const itemDefs = its.map(({ key, draw, h, back }) => ({ key, draw, h, back }));
   let last = cast.length ? 0 : -1, prevCam = null, prevLead;
-  const beats = sents.map((s, b) => {
+  const beats = units.map(({ s }, b) => {
     // speech after a colon is what someone says, not what happens
     const narr = s.includes(':') ? s.slice(0, s.indexOf(':')) : s;
     let act = (ACTS.find(([, re]) => re.test(narr)) || [])[0] || (s.includes(':') || /!$/.test(s) && named[b].length ? 'talk' : 'idle');
@@ -2031,7 +2067,7 @@ function directParagraph(tale, text, i) {
     const A = anns?.[b];
     let speaker = -1;
     if (A) { act = ANN_ACT[A.do] || 'idle'; mood = A.mood || ANN_MOOD[A.do] || ''; speaker = keyIdx(A.say); }
-    const nx = st.map(p => ({ ...p, y: 0, dur: 0, act: p.sleep ? 'sleep' : 'idle', after: p.sleep ? 'sleep' : 'idle', mood: p.sleep ? 'sleep' : '', fx: p.sleep ? ['zzz'] : [], on: p.on && !p.gone, gone: false }));
+    const nx = st.map(p => ({ ...p, y: p.lift || 0, dur: 0, act: p.sleep ? 'sleep' : 'idle', after: p.sleep ? 'sleep' : 'idle', mood: p.sleep ? 'sleep' : '', fx: p.sleep ? ['zzz'] : [], on: p.on && !p.gone, gone: false }));
     const who = named[b];
     const together = who.length > 1 && /ნენ[\s,.!?:]|ერთად|ორივე|ყველამ|ყველანი|ყველა /.test(narr);
     let subj = who.length ? (together ? who : [who[0]]) : last >= 0 && nx[last].on && (act !== 'idle' || mood) ? [last] : [];
@@ -2053,6 +2089,7 @@ function directParagraph(tale, text, i) {
       let a2 = act;
       if (a.fixed && MOVES.has(a2)) a2 = 'idle';
       if (MOVES.has(a2)) {
+        p.lift = 0; p.y = 0;
         let tx = p.x;
         const t = target !== undefined && nx[target].on ? nx[target].x : null;
         if (a2 === 'leave') { tx = p.x < 100 ? -80 : 280; p.gone = true; }
@@ -2074,6 +2111,31 @@ function directParagraph(tale, text, i) {
       }
       p.mood = mood || (['dance', 'sing', 'hug'].includes(a2) ? 'happy' : '');
       p.fx = [...new Set([ACT_FX[a2 === 'leave' || a2 === 'come' ? p.act : a2], MOOD_FX[p.mood], a2 === 'think' ? (/მოიფიქრ|მიხვდ|გაახსენდ/.test(s) ? 'idea' : 'think') : '', a2 === 'look' && /ეძებ|დაეძებ|სად/.test(s) ? 'ask' : ''].filter(Boolean))];
+    });
+    // the plan can send someone to a spot or to a thing, or up onto it
+    if (A && (A.x !== undefined || A.go || A.y !== undefined)) subj.forEach(k => {
+      const a = cast[k], p = nx[k], it = A.go ? its.find(t => t.key === A.go) : null;
+      let tx = A.x ?? p.x;
+      if (it) tx = A.y !== undefined ? it.x : it.x + (p.x <= it.x ? -1 : 1) * (a.w * .45 + it.h * .4 + 4);
+      tx = clamp(tx, 10, 190); p.lift = A.y || 0;
+      if (Math.abs(tx - p.x) > 3 || p.lift !== p.y) {
+        const gait = A.do === 'run' ? 'run' : A.do === 'push' || A.do === 'roll' ? 'push' : SKY.has(a.who) ? 'fly' : SWIMMERS.has(a.who) ? 'swim' : 'walk';
+        if (Math.abs(tx - p.x) > 3) p.face = tx > p.x ? 1 : -1;
+        p.dur = clamp(Math.max(Math.abs(tx - p.x) / (SPEED[gait] || 45), Math.abs(p.lift - p.y) / 30), .8, 3.2);
+        p.x = tx; p.y = p.lift;
+        const fin = ANN_ACT[A.do]; p.after = fin && !MOVES.has(fin) && fin !== 'push' ? fin : MOOD_ACT[p.mood] || 'idle'; p.act = gait;
+      }
+    });
+    if (A?.face) subj.forEach(k => { nx[k].face = A.face === 'left' ? -1 : 1; });
+    if (A?.items) its = its.map(it => { const u = A.items[it.key]; if (!u) return it; const n = { ...it, ...u }; if ('hold' in u) n.hold = u.hold ? ids.indexOf(u.hold) : -1; return n; });
+    const itemsNow = its.map(it => {
+      if (it.hold >= 0 && cast[it.hold]) {
+        const a = cast[it.hold], p = nx[it.hold];
+        it.x = it.ground ? p.x + p.face * (a.w * .5 + it.h * .5) : p.x + p.face * a.w * .32;
+        it.y = it.ground ? a.ground : a.ground + p.y - a.h * .3;
+        return { key: it.key, x: it.x, y: it.y, on: it.on && p.on, dur: p.dur || .5, rot: it.rot };
+      }
+      return { key: it.key, x: it.x, y: it.y, on: it.on, dur: .8, rot: it.rot };
     });
     // the speech bubble belongs to whoever speaks, and only to them
     if (A) {
@@ -2115,9 +2177,9 @@ function directParagraph(tale, text, i) {
     if (prevCam && lead === prevLead) cam = prevCam;
     prevCam = cam; prevLead = lead;
     st = nx;
-    return { s, cam, actors: nx.map(p => ({ ...p })) };
+    return { s, sent: units[b].b, f: units[b].f, cam, actors: nx.map(p => ({ ...p })), items: itemsNow };
   });
-  return { ...set, cast, start, beats, weights: sents.map(s => s.length + 14) };
+  return { ...set, cast, start, beats, items: itemDefs, nSents: sents.length, weights: units.map(u => (u.s.length + 14) / u.n) };
 }
 
 const PLAYS = {};
@@ -2156,7 +2218,8 @@ const ACC_FOR = {
 };
 const NO_ACC = new Set(['king', 'prince', 'princess', 'witch', 'fairy', 'snowman', 'sun', 'star', 'moon', 'cloudy', 'windy', 'fish', 'ant', 'bee', 'firefly', 'hopper', 'devi', 'bun', 'snail', 'dolphin']);
 function dressUp(key, who, draw, o) {
-  if (NO_ACC.has(who) || o.cap || o.hat || o.hood) return '';
+  // animals stay as they are: no hats, bows or scarves
+  if (!HUMANS.has(who) || NO_ACC.has(who) || o.cap || o.hat || o.hood) return '';
   const h = hashOf('acc:' + LOOK_TALE + ':' + key), list = ACC_FOR[who] || ACC_FOR._beast;
   const b = headBox(draw, o); if (!b) return '';
   const n = HUMANS.has(who) ? 1 + (h % 2) : (h % 3 === 0 ? 0 : 1), picks = [];
@@ -2210,6 +2273,10 @@ function actorSvg(a, k, p) {
 // in the player: the background is a still picture (painted once), the characters and weather live in their own layer
 const STILL = /\sclass="(sway|twinkle|glow|wind|flutter|flyby|cloud|spin|flicker|drip|shoot|flap|wings|rise|appear|zf|breathe|ears|tail|eye|idle|bob|nod|dance|sad|roar|laugh|hop|neck|arm)"/g;
 const MOVING = /<g class="(fall|firefly)"[^>]*>(?:(?!<\/g>)[\s\S])*<\/g>/g;
+const itemsSvg = (para, back) => (para.items || []).filter(d => d.back === back).map(d => {
+  const s = para.beats[0]?.items.find(v => v.key === d.key) || { x: 100, y: 156, on: false };
+  return `<g class="item" data-i="${d.key}" style="transform:translate(${s.x}px,${s.y}px) rotate(${s.rot || 0}deg);opacity:${s.on ? 1 : 0}">${propFit(d.draw, 0, 0, d.h).svg}</g>`;
+}).join('');
 function paragraphHtml(para) {
   const [top, ground] = para.edge;
   const moving = (para.bg.match(MOVING) || []).join('');
@@ -2217,14 +2284,14 @@ function paragraphHtml(para) {
   const actors = para.cast.map((a, k) => actorSvg(a, k, para.start[k]) + (a.bed ? blanket() : '')).join('');
   return `<div class="camwrap"><svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
     <rect x="-400" y="-800" width="1000" height="801" fill="${top}"/><rect x="-400" y="199" width="1000" height="800" fill="${ground}"/>${still}</svg>
-    <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true"><g class="cam dir">${moving}${actors}${para.front || ''}</g></svg></div>`;
+    <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true"><g class="cam dir">${moving}${itemsSvg(para, true)}${actors}${itemsSvg(para, false)}${para.front || ''}</g></svg></div>`;
 }
 function paragraphSvg(para, st = para.start) {
   const [top, ground] = para.edge;
   const actors = para.cast.map((a, k) => actorSvg(a, k, st[k]) + (a.bed ? blanket() : '')).join('');
   return `<svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
     <rect x="-400" y="-800" width="1000" height="801" fill="${top}"/><rect x="-400" y="199" width="1000" height="800" fill="${ground}"/>
-    <g class="cam dir">${para.bg}${actors}${para.front || ''}</g></svg>`;
+    <g class="cam dir">${para.bg}${itemsSvg(para, true)}${actors}${itemsSvg(para, false)}${para.front || ''}</g></svg>`;
 }
 let beatTimers = [];
 function applyBeat(root, para, bi, instant) {
@@ -2241,6 +2308,11 @@ function applyBeat(root, para, bi, instant) {
     if ((el.dataset.mood || '') !== p.mood) { el.dataset.mood = p.mood; el.querySelector('.body').innerHTML = charSvg(a, p.mood); }
     const fxs = fxSvg(p.fx, a, p.face), fxEl = el.querySelector('.fx'); if (fxEl.dataset.v !== fxs) { fxEl.dataset.v = fxs; fxEl.innerHTML = fxs; }
     if (p.dur && p.after !== p.act) beatTimers.push(setTimeout(() => { actEl.setAttribute('class', `act a-${p.after}`); el.querySelector('.dust')?.remove(); }, p.dur * 1000));
+  });
+  root.querySelectorAll('.item').forEach(el => {
+    const s = beat.items?.find(v => v.key === el.dataset.i); if (!s) return;
+    el.style.transition = instant ? 'none' : `transform ${s.dur}s cubic-bezier(.42,0,.4,1), opacity .5s`;
+    el.style.transform = `translate(${s.x}px,${s.y}px) rotate(${s.rot || 0}deg)`; el.style.opacity = s.on ? 1 : 0;
   });
   // whatever is being built grows sentence by sentence
   const nb = para.beats.length, done = Math.min(1, (bi + 1) / Math.max(1, nb - 1));
@@ -2265,7 +2337,13 @@ function beatAt(id, para, pi, time) {
   if (!starts) return 0;
   // exact: the voice recording knows when every sentence starts
   const exact = T.sents?.[pi];
-  if (exact && exact.length === para.beats.length) { let bi = 0; while (bi + 1 < exact.length && exact[bi + 1] <= time + .05) bi++; return bi; }
+  if (exact && exact.length === (para.nSents || para.beats.length)) {
+    let si = 0; while (si + 1 < exact.length && exact[si + 1] <= time + .05) si++;
+    const end = exact[si + 1] ?? starts[pi + 1] ?? total, frac = (time - exact[si]) / Math.max(.5, end - exact[si]);
+    let bi = para.beats.findIndex(b => b.sent === si); if (bi < 0) return 0;
+    while (para.beats[bi + 1]?.sent === si && para.beats[bi + 1].f <= frac) bi++;
+    return bi;
+  }
   const a = starts[pi], z = starts[pi + 1] ?? total;
   const sum = para.weights.reduce((x, y) => x + y, 0);
   let acc = 0, bi = 0;
