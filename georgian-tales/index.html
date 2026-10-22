@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>ქართული ზღაპრები</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -415,6 +416,39 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .paintroom { position: fixed; inset: 0; z-index: 25; background: #fffaf2; display: flex; flex-direction: column; gap: 10px; color: #2a2440;
   padding-top: calc(env(safe-area-inset-top, 0px) + 10px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
   padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+/* ანბანი */
+.abc-intro { margin: -4px 4px 14px; color: var(--muted, #7a7290); font-size: .95rem; line-height: 1.4; }
+.abc-path { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 4px 6px 24px; }
+.abc-stone { position: relative; aspect-ratio: 1; border-radius: 50%; background: var(--card); box-shadow: 0 4px 0 rgba(0,0,0,.15); display: grid; place-items: center; font-family: 'Noto Sans Georgian', sans-serif; font-weight: 700; font-size: 2rem; color: var(--h); -webkit-text-stroke: 1px #3b2a4a; }
+.abc-stone.done { background: var(--h); color: #fff; }
+.abc-stone.here { animation: okPulse 1.2s ease-in-out infinite; outline: 4px solid var(--h); }
+.abc-stone.far { opacity: .45; }
+.abc-star { position: absolute; right: -2px; top: -4px; font-style: normal; color: #ffd34d; font-size: 1.2rem; -webkit-text-stroke: 1px #b8862a; }
+.abc-lock { position: absolute; right: -2px; bottom: -2px; background: #2a2440; border-radius: 50%; padding: 4px; line-height: 0; }
+.abcroom { background: linear-gradient(#fff6e8, #ffe9f2); }
+.abc-dots { display: flex; gap: 8px; } .abc-dots i { width: 14px; height: 14px; border-radius: 50%; background: #e6dcef; } .abc-dots i.on { background: #3aa860; } .abc-dots i.now { background: #ffb347; transform: scale(1.25); }
+.abc-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
+.abc-meet { display: grid; justify-items: center; gap: 6px; }
+.abc-big { background: none; } .abc-big.wave svg, .abc-dance { animation: abcWave 1.6s ease-in-out infinite; transform-origin: 50% 90%; }
+.abc-face .eye { animation: none; }
+.abc-pic { background: none; } .abc-pic.hop, .abc-pic.hop2 { animation: aJump .8s ease-out 2; }
+.abc-word { font-family: var(--display); font-size: 2.2rem; color: #2a2440; letter-spacing: .02em; } .abc-word b { font-size: 2.8rem; -webkit-text-stroke: 1px #3b2a4a; }
+.abc-go { width: 76px; height: 76px; border-radius: 50%; background: #3aa860; color: #fff; display: grid; place-items: center; box-shadow: 0 5px 0 #2a7a46; animation: okPulse 1.2s ease-in-out infinite; }
+.abc-ask { font-family: var(--display); font-size: 1.6rem; margin: 0; color: #2a2440; } .abc-ask b { font-size: 2.2rem; }
+.abc-find { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.abc-bubble { width: 128px; height: 128px; border-radius: 50%; background: #fff; border: 5px solid var(--h); font-family: 'Noto Sans Georgian', sans-serif; font-weight: 700; font-size: 4.4rem; color: var(--h); -webkit-text-stroke: 1.5px #3b2a4a; box-shadow: 0 6px 0 rgba(0,0,0,.12); }
+.abc-bubble.yes { animation: abcYes .9s cubic-bezier(.3,1.6,.5,1) both; background: var(--h); color: #fff; }
+.abc-bubble.no { animation: abcNo .45s ease-in-out; } .abc-bubble:disabled { opacity: .35; }
+.abc-canvas { width: min(78vw, 46vh); aspect-ratio: 1; background: #fff; border-radius: 28px; box-shadow: inset 0 0 0 3px #efe6f3; touch-action: none; }
+.abc-canvas canvas { width: 100%; height: 100%; touch-action: none; }
+.abc-colors { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; } .abc-colors button { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #d8cfe0; } .abc-colors button[aria-pressed="true"] { transform: scale(1.2); box-shadow: 0 0 0 3px #2a2440; }
+.abc-alive { display: flex; align-items: flex-end; gap: 8px; } .abc-dance { position: relative; width: 220px; height: 220px; } .abc-dance img, .abc-eyes { position: absolute; inset: 0; }
+.abc-end .cta { min-width: 240px; }
+.abc-confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; } .abc-confetti i { position: absolute; top: -20px; width: 10px; height: 16px; border-radius: 3px; animation: abcFall 2.6s ease-in forwards; }
+@keyframes abcWave { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg) translateY(-6px); } }
+@keyframes abcYes { 0% { transform: scale(1); } 50% { transform: scale(1.35) rotate(-8deg); } 100% { transform: scale(1.15); } }
+@keyframes abcNo { 0%, 100% { transform: none; } 25% { transform: translateX(-10px) rotate(-6deg); } 75% { transform: translateX(10px) rotate(6deg); } }
+@keyframes abcFall { to { transform: translateY(110vh) rotate(var(--r)); } }
 .paint-top { display: flex; justify-content: space-between; align-items: center; }
 .paint-tools { display: flex; gap: 10px; }
 .round.dark { background: #efe6f3; color: #2a2440; backdrop-filter: none; }
@@ -489,7 +523,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 
 /* ---------- bottom tab bar ---------- */
 .wrap { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 110px) !important; }
-.tabs { position: fixed; z-index: 15; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr);
+.tabs { position: fixed; z-index: 15; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(6, 1fr);
   background: var(--card); box-shadow: 0 -6px 24px rgba(0,0,0,.18);
   padding-top: 6px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
   padding-left: max(6px, env(safe-area-inset-left, 0px)); padding-right: max(6px, env(safe-area-inset-right, 0px)); }
@@ -570,6 +604,7 @@ header { display: flex; align-items: center; justify-content: space-between; gap
   <button data-tab="sleep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3a9 9 0 1 0 6 14A8 8 0 0 1 15 3z" fill="currentColor"/></svg>ზღაპრები<br>ძილის წინ</button>
   <button data-tab="world"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>მსოფლიოს<br>ზღაპრები</button>
   <button data-tab="short"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4c1.5 0 2 3 2 6H7c0-3 .5-6 2-6zm6 0c1.5 0 2 3 2 6h-4c0-3 .5-6 2-6zM5 15a7 6 0 0 0 14 0v-3H5z" fill="currentColor"/></svg>პატარა<br>ზღაპრები</button>
+  <button data-tab="abc"><svg viewBox="0 0 24 24" aria-hidden="true"><text x="12" y="19" text-anchor="middle" font-size="19" font-weight="700" font-family="'Noto Sans Georgian', sans-serif" fill="currentColor">ა</text></svg>ანბანი<br>&nbsp;</button>
   <button data-tab="paint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2s-1-1.5-1-2.5S14 15 15 15h2a4 4 0 0 0 4-4c0-4.5-4-8-9-8zM7.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>გაფერა-<br>დება</button>
 </nav>
 
@@ -598,6 +633,14 @@ header { display: flex; align-items: center; justify-content: space-between; gap
     </div>
     <span class="sleep-hint" id="hint"></span>
   </div>
+</div>
+
+<div class="paintroom abcroom" id="abc" hidden>
+  <div class="paint-top">
+    <button class="round dark" id="abcClose" aria-label="უკან"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="abc-dots" id="abcDots"></div><span style="width:52px"></span>
+  </div>
+  <div class="abc-stage" id="abcStage"></div>
 </div>
 
 <div class="paintroom" id="paint" hidden>
@@ -1819,6 +1862,10 @@ const PROP = {
   vine: [() => `<path d="M-30 0 V-80 M30 0 V-80" stroke="#8a5a34" stroke-width="3.4"/><path d="M-36 -78 Q0 -86 36 -78" stroke="#6a4a2a" stroke-width="3" fill="none"/>${[-28, -12, 4, 20, 32].map((x, k) => `<ellipse cx="${x}" cy="${-82 + (k % 2) * 6}" rx="10" ry="7" fill="${k % 2 ? '#4aa34e' : '#5cb85c'}" ${O(1.2)}/>`).join('')}`, 84, 'back'],
   butterfly: [() => `<g class="flap"><path d="M0 -8 q-10 -12 -12 -2 q2 8 12 2z" fill="#ff9fc0" ${O(1.1)}/><path d="M0 -8 q10 -12 12 -2 q-2 8 -12 2z" fill="#ffd34d" ${O(1.1)}/></g><path d="M0 -14 v10" ${O(1.6)}/>`, 12, 'front'],
   fogbank: [() => `<g opacity=".93">${[[-90, -30, 46], [-40, -40, 52], [10, -34, 50], [60, -42, 54], [110, -30, 46], [-120, -10, 40], [140, -12, 40]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#f4f6fb"/>`).join('')}<rect x="-170" y="-34" width="340" height="40" fill="#f4f6fb"/></g>`, 90, 'front'],
+  lightning: [() => `<path d="M8 -70 L-12 -32 H2 L-8 0 L18 -42 H4 L14 -70z" fill="#ffd34d" stroke="#3b2a4a" stroke-width="2.2" stroke-linejoin="round"/>`, 70, 'sky'],
+  spider: [() => `<path d="M0 -60 V-40" stroke="#3b2a4a" stroke-width="1.4"/>${[-1, 1].map(s => [0, 1, 2, 3].map(k => `<path d="M${s * 8} ${-26 + k * 5} q${s * 12} ${-10 + k * 4} ${s * 18} ${2 + k * 6}" fill="none" stroke="#3b2a4a" stroke-width="2.4" stroke-linecap="round"/>`).join('')).join('')}<ellipse cx="0" cy="-22" rx="12" ry="13" fill="#7a5ab8" stroke="#3b2a4a" stroke-width="2"/><circle cx="0" cy="-38" r="9" fill="#8a6ac8" stroke="#3b2a4a" stroke-width="2"/><circle cx="-3.5" cy="-39" r="2.6" fill="#fff"/><circle cx="3.5" cy="-39" r="2.6" fill="#fff"/><circle cx="-3" cy="-38.6" r="1.3" fill="#2a1f3a"/><circle cx="4" cy="-38.6" r="1.3" fill="#2a1f3a"/><path d="M-3 -33 q3 2.4 6 0" stroke="#3b2a4a" stroke-width="1.4" fill="none"/>`, 60, 'front'],
+  raspberry: [() => `<path d="M0 -40 q-10 -6 -14 -2 q6 4 14 2z M0 -40 q10 -6 14 -2 q-6 4 -14 2z" fill="#5cb85c" stroke="#3b2a4a" stroke-width="1.4"/>${[[0, -34], [-7, -30], [7, -30], [-9, -22], [0, -24], [9, -22], [-6, -14], [6, -14], [0, -6]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5.4" fill="#e2445c" stroke="#3b2a4a" stroke-width="1.2"/><circle cx="${x - 1.6}" cy="${y - 1.6}" r="1.2" fill="#fff" opacity=".6"/>`).join('')}`, 40, 'front'],
+  hippo: [() => `<ellipse cx="0" cy="0" rx="34" ry="5" fill="#1a1030" opacity=".18"/><rect x="-26" y="-18" width="10" height="18" rx="4" fill="#9a9ac8" stroke="#3b2a4a" stroke-width="2"/><rect x="14" y="-18" width="10" height="18" rx="4" fill="#9a9ac8" stroke="#3b2a4a" stroke-width="2"/><ellipse cx="-4" cy="-26" rx="32" ry="20" fill="#a8a8d8" stroke="#3b2a4a" stroke-width="2.2"/><ellipse cx="28" cy="-34" rx="16" ry="14" fill="#a8a8d8" stroke="#3b2a4a" stroke-width="2.2"/><ellipse cx="38" cy="-28" rx="11" ry="9" fill="#c0c0e8" stroke="#3b2a4a" stroke-width="2"/><circle cx="35" cy="-30" r="1.6" fill="#3b2a4a"/><circle cx="41" cy="-30" r="1.6" fill="#3b2a4a"/><circle cx="24" cy="-44" r="3" fill="#fff" stroke="#3b2a4a" stroke-width="1.4"/><circle cx="24.6" cy="-43.6" r="1.5" fill="#2a1f3a"/><circle cx="18" cy="-48" r="3.4" fill="#a8a8d8" stroke="#3b2a4a" stroke-width="1.6"/><ellipse cx="32" cy="-40" rx="3" ry="2" fill="#ff8fa8" opacity=".6"/>`, 50, 'front'],
   'garden-bed': [() => `<path d="M-30 0 h60" stroke="#8a5a34" stroke-width="8" stroke-linecap="round"/>${[-20, -6, 8, 22].map(x => `<path d="M${x} -2 q-4 -8 -1 -12 M${x} -2 q4 -8 1 -12" stroke="#3aa860" stroke-width="2.4" fill="none"/>`).join('')}`, 14, 'front'],
 };
 // more drawings of story things (items.json): { name: { svg, h } }, drawn with the bottom centre at 0,0
@@ -2616,6 +2663,7 @@ function openProfile() {
     <div class="avatars">${AVATARS.map(a => `<button data-av="${a}" aria-pressed="${a === profile.avatar}" aria-label="${a}">${faceOf(a)}</button>`).join('')}</div>
     <p><b>ზღაპრების სტიკერები:</b> ${got.length} / ${TALES.filter(ready).length}. ყოველი მოსმენილი ზღაპრისთვის — ახალი სტიკერი.</p>
     <div class="stickers">${got.map(t => `<div class="sticker" title="${t.title}">${faceOf(stickers[t.id])}</div>`).join('')}${Array.from({ length: Math.max(0, 8 - got.length) }, () => '<div class="sticker empty">?</div>').join('')}</div>
+    <p><b>ანბანი:</b> ${Object.keys(abcDone).length} / ${ABC.length} ასო ნასწავლია${Object.keys(abcDone).length ? ': ' + ABC.filter((_, i) => abcDone[i]).map(x => x[0]).join(' ') : ''}</p>
     <p><b>გაცოცხლებული სურათები:</b> ${pgot.length} / ${PAGES.length}. გააფერადე სურათი ბოლომდე და გააცოცხლე!</p>
     <div class="stickers">${pgot.map(pg => `<div class="sticker" title="${pg.title}">${stickerOfPage(pg)}</div>`).join('')}${Array.from({ length: Math.max(0, 4 - pgot.length) }, () => '<div class="sticker empty">?</div>').join('')}</div>
     <button class="cta" data-close>მზადაა</button>`);
@@ -2682,6 +2730,7 @@ function watchCovers() { document.querySelectorAll('#shelves .tile .art, #shelve
 function renderShelves() {
   $('testPill').hidden = !testMode;
   $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === tab));
+  if (tab === 'abc') return renderAbc();
   if (tab === 'paint') {
     // one big mixed album: every child colours whatever they like
     const groups = ['girls', 'boys', 'tales'].map(c => PAGES.filter(pg => pg.cat === c));
@@ -2715,6 +2764,7 @@ function renderShelves() {
   watchCovers();
 }
 $('shelves').addEventListener('click', e => {
+  const st = e.target.closest('[data-abc]'); if (st) return abcOpenLetter(+st.dataset.abc);
   const chip = e.target.closest('[data-pcat]'); if (chip) { paintCat = chip.dataset.pcat; store.set('paintCat', paintCat); return renderShelves(); }
   const tile = e.target.closest('.tile, .mini, .daily'); if (!tile) return;
   if (tile.dataset.page) { const pg = PAGES.find(x => x.id === tile.dataset.page); return pageOpen(pg) ? openPage(pg) : gate(paywall); }
@@ -5102,6 +5152,178 @@ $('parentBtn').onclick = () => gate(() => {
     if (e.target.closest('[data-sub]')) paywall();
   };
 });
+
+// =====================================================================
+// ანბანი — the Georgian alphabet, one letter at a time.
+// Built the way small children learn: a short visit (2–3 minutes) with one letter:
+// meet it (its sound and a word with a picture), find it among others, paint it with a finger —
+// and it comes alive, thanks you and gives a sticker. No timers, no scores, no "wrong":
+// a wrong tap just gently wiggles. Letters open one after another on a path, any learned one can be replayed.
+// =====================================================================
+const ABC = [
+  ['ა', 'არწივი', { who: 'eagle' }], ['ბ', 'ბატკანი', { who: 'sheep', o: { big: .8 } }], ['გ', 'გოგონა', { who: 'girl' }],
+  ['დ', 'დათვი', { who: 'bear' }], ['ე', 'ელვა', { prop: 'lightning' }], ['ვ', 'ვაშლი', { prop: 'apples' }],
+  ['ზ', 'ზღარბი', { who: 'hedgehog' }], ['თ', 'თაგვი', { who: 'mouse' }], ['ი', 'იხვი', { who: 'duck' }],
+  ['კ', 'კატა', { who: 'cat' }], ['ლ', 'ლომი', { who: 'lion' }], ['მ', 'მელია', { who: 'fox' }],
+  ['ნ', 'ნაძვი', { prop: 'pine' }], ['ო', 'ობობა', { prop: 'spider' }], ['პ', 'პეპელა', { prop: 'butterfly' }],
+  ['ჟ', 'ჟოლო', { prop: 'raspberry' }], ['რ', 'რაკეტა', { prop: 'rocket' }], ['ს', 'სახლი', { prop: 'house' }],
+  ['ტ', 'ტორტი', { prop: 'cake' }], ['უ', 'ურემი', { prop: 'cart' }], ['ფ', 'ფუტკარი', { who: 'bee' }],
+  ['ქ', 'ქათამი', { who: 'hen' }], ['ღ', 'ღრუბელი', { who: 'cloudy' }], ['ყ', 'ყვავილი', { prop: 'sunflower' }],
+  ['შ', 'შველი', { who: 'deer' }], ['ჩ', 'ჩიტი', { who: 'bird' }], ['ც', 'ცხენი', { who: 'horse' }],
+  ['ძ', 'ძაღლი', { who: 'dog' }], ['წ', 'წიწილა', { who: 'hen', o: { big: .6 } }], ['ჭ', 'ჭიანჭველა', { who: 'ant' }],
+  ['ხ', 'ხე', { prop: 'tree' }], ['ჯ', 'ჯიხვი', { who: 'goat' }], ['ჰ', 'ჰიპოპოტამი', { prop: 'hippo' }],
+];
+const FREE_LETTERS = 3;
+const ABC_HUES = ['#ff7f5a', '#ffb347', '#ffd34d', '#7fd07a', '#4fc3c9', '#7ab8f0', '#a98cf0', '#ff8fc0'];
+const abcDone = store.get('abcDone', {});
+const abcOpen = i => i < FREE_LETTERS || testMode || premium;
+const abcNext = () => { const i = ABC.findIndex((_, k) => !abcDone[k]); return i < 0 ? ABC.length : i; };
+const abcReachable = i => i <= abcNext();
+function picOf(spec, size = 120) {
+  const d = document.createElement('div');
+  const body = spec.who ? C[spec.who]({ ...(spec.o || {}), anim: 'none' }) : PROP[spec.prop][0]();
+  d.innerHTML = `<svg viewBox="0 0 200 200" width="${size}" height="${size}"><g data-who>${body}</g></svg>`;
+  fitArt(d.firstElementChild); return d.innerHTML;
+}
+const VOICE_OF_PIC = { eagle: 'caw', sheep: 'baa', bear: 'hum', hedgehog: 'squeak', mouse: 'squeak', duck: 'quack', cat: 'meow', lion: 'roar', fox: 'yip',
+  bee: 'buzz', hen: 'cluck', cloudy: 'whoosh', deer: 'squeak', bird: 'tweet', horse: 'neigh', dog: 'woof', ant: 'click', goat: 'baa', girl: 'lala',
+  rocket: 'rocket', house: 'bell', cake: 'yum', cart: 'horn', apples: 'yum', pine: 'rustle', tree: 'rustle', butterfly: 'rustle', sunflower: 'sparkle',
+  raspberry: 'yum', spider: 'boing', lightning: 'whoosh', hippo: 'hum' };
+// a big letter that is a little character: the glyph with two eyes and a smile
+function letterSvg(L, hue, { face = true, size = 200, id = '' } = {}) {
+  return `<svg ${id ? `id="${id}"` : ''} viewBox="0 0 200 200" width="${size}" height="${size}" class="abc-letter">
+    <text x="100" y="150" text-anchor="middle" font-family="'Noto Sans Georgian', sans-serif" font-weight="700" font-size="170"
+      fill="${hue}" stroke="${INK}" stroke-width="5" stroke-linejoin="round" paint-order="stroke">${L}</text>
+    ${face ? `<g class="abc-face">${eye(84, 86, false, 7)}${eye(116, 86, false, 7)}<path d="M90 104 q10 9 20 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>${blush(76, 100, 5)}${blush(124, 100, 5)}</g>` : ''}</svg>`;
+}
+// short voice lines (Ketevan, ElevenLabs): abc/<i>a.mp3 hello, abc/<i>b.mp3 "find me", and a few shared ones
+const abcAudio = new Audio();
+function say(name, then) {
+  abcAudio.onended = abcAudio.onerror = null;
+  abcAudio.src = `abc/${name}.mp3`;
+  let done = false; const fin = () => { if (!done) { done = true; then?.(); } };
+  abcAudio.onended = fin; abcAudio.onerror = () => setTimeout(fin, 900);
+  abcAudio.play().catch(() => setTimeout(fin, 900));
+}
+function renderAbc() {
+  const n = Object.keys(abcDone).length, next = abcNext();
+  $('shelves').innerHTML = `<div class="shelf-head"><h2>ანბანი</h2><small>${n} / ${ABC.length} ასო</small></div>
+    <p class="abc-intro">ყოველ დღე — ერთი ახალი ასო. გაიცანი, იპოვე, გააფერადე და ის გაცოცხლდება!</p>
+    <div class="abc-path">${ABC.map(([L], i) => {
+      const done = abcDone[i], here = i === next, locked = !abcOpen(i), far = !abcReachable(i);
+      // a winding path: left to right, then right to left
+      const row = Math.floor(i / 4), col = row % 2 ? 4 - i % 4 : i % 4 + 1;
+      return `<button class="abc-stone${done ? ' done' : ''}${here ? ' here' : ''}${far ? ' far' : ''}" data-abc="${i}" aria-label="ასო ${L}" style="--h:${ABC_HUES[i % ABC_HUES.length]};grid-row:${row + 1};grid-column:${col}">
+        <span>${L}</span>${done ? '<i class="abc-star">★</i>' : locked && !far ? `<i class="abc-lock">${LOCK}</i>` : ''}</button>`;
+    }).join('')}</div>`;
+}
+let abcIdx = 0, abcTimers = [];
+const abcLater = (fn, ms) => abcTimers.push(setTimeout(fn, ms));
+function abcClose() { abcTimers.forEach(clearTimeout); abcTimers = []; abcAudio.pause(); $('abc').hidden = true; if (tab === 'abc') renderAbc(); }
+function abcOpenLetter(i) {
+  if (!abcReachable(i)) { const L = ABC[abcNext()]?.[0]; toast(L ? `ჯერ ასო ${L}-ს გაიცანი` : ''); return; }
+  if (!abcOpen(i)) return gate(paywall);
+  abcIdx = i; $('abc').hidden = false; abcMeet();
+}
+function abcDots(step) { $('abcDots').innerHTML = [0, 1, 2].map(k => `<i class="${k < step ? 'on' : k === step ? 'now' : ''}"></i>`).join(''); }
+// 1. meet: the letter waves, says its sound and a word; the picture says its own sound
+function abcMeet() {
+  const [L, word, pic] = ABC[abcIdx], hue = ABC_HUES[abcIdx % ABC_HUES.length];
+  abcDots(0);
+  $('abcStage').innerHTML = `<div class="abc-meet">
+      <button class="abc-big wave" id="abcL" aria-label="ასო ${L}">${letterSvg(L, hue, { size: 220 })}</button>
+      <button class="abc-pic" id="abcPic" aria-label="${word}">${picOf(pic, 130)}</button>
+      <div class="abc-word"><b style="color:${hue}">${L}</b>${word.slice(L.length)}</div></div>
+    <button class="abc-go" id="abcGo" hidden aria-label="შემდეგი">${ARROW}</button>`;
+  const go = () => { const g = $('abcGo'); if (g) g.hidden = false; };
+  say(`${abcIdx}a`, go); abcLater(go, 6000);
+  $('abcL').onclick = () => say(`${abcIdx}a`);
+  $('abcPic').onclick = () => { const v = VOICE[VOICE_OF_PIC[pic.who || pic.prop]]; if (v) v(); $('abcPic').classList.remove('hop'); void $('abcPic').offsetWidth; $('abcPic').classList.add('hop'); };
+  $('abcGo').onclick = () => abcFind(0);
+}
+const ARROW = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+// 2. find: the letter among three others (learned ones first — a quiet review); twice
+function abcFind(round) {
+  const [L] = ABC[abcIdx];
+  abcDots(1);
+  const pool = ABC.map((x, k) => k).filter(k => k !== abcIdx);
+  const learned = pool.filter(k => abcDone[k]).sort(() => Math.random() - .5), rest = pool.filter(k => !abcDone[k]).sort(() => Math.random() - .5);
+  const picks = [...learned.slice(0, 2), ...rest].slice(0, 3).concat(abcIdx).sort(() => Math.random() - .5);
+  $('abcStage').innerHTML = `<p class="abc-ask">იპოვე ასო <b>${L}</b></p>
+    <div class="abc-find">${picks.map(k => `<button class="abc-bubble" data-k="${k}" style="--h:${ABC_HUES[k % ABC_HUES.length]}" aria-label="${ABC[k][0]}">${ABC[k][0]}</button>`).join('')}</div>`;
+  say(`${abcIdx}b`);
+  $('abcStage').onclick = e => {
+    const b = e.target.closest('[data-k]'); if (!b || b.disabled) return;
+    if (+b.dataset.k === abcIdx) {
+      b.classList.add('yes'); VOICE.sparkle(); $('abcStage').onclick = null;
+      say('yes'); abcLater(() => round ? abcPaint() : abcFind(1), 1500);
+    } else { b.classList.remove('no'); void b.offsetWidth; b.classList.add('no'); b.disabled = true; say('no'); }
+  };
+}
+// 3. paint with a finger: colour stays inside the letter; when it is nearly all coloured, it comes alive
+let abcCtx, abcMask, abcBrush = ABC_HUES[0], abcPainting = false, abcLast = null;
+function abcPaint() {
+  const [L] = ABC[abcIdx];
+  abcDots(2);
+  $('abcStage').innerHTML = `<p class="abc-ask">გამაფერადე თითით!</p>
+    <div class="abc-canvas"><canvas id="abcCnv" width="600" height="600"></canvas></div>
+    <div class="abc-colors">${ABC_HUES.map((c, k) => `<button data-c="${c}" style="background:${c}" aria-label="ფერი ${k + 1}" aria-pressed="${c === abcBrush}"></button>`).join('')}</div>`;
+  say('paint');
+  const cnv = $('abcCnv'); abcCtx = cnv.getContext('2d');
+  // the letter's shape, drawn once off-screen: where colour may go
+  abcMask = document.createElement('canvas'); abcMask.width = abcMask.height = 600;
+  const font = `700 510px 'Noto Sans Georgian', sans-serif`;
+  const drawMask = () => { const m = abcMask.getContext('2d'); m.clearRect(0, 0, 600, 600); m.font = font; m.textAlign = 'center'; m.fillStyle = '#000'; m.fillText(L, 300, 450); abcStrokes.length = 0; abcRedraw(); };
+  (document.fonts?.load ? document.fonts.load(font, L) : Promise.resolve()).then(drawMask, drawMask);
+  const pos = e => { const r = cnv.getBoundingClientRect(); return [(e.clientX - r.left) * 600 / r.width, (e.clientY - r.top) * 600 / r.height]; };
+  cnv.onpointerdown = e => { e.preventDefault(); cnv.setPointerCapture(e.pointerId); abcPainting = true; abcLast = pos(e); abcStrokes.push({ c: abcBrush, pts: [abcLast] }); abcRedraw(); };
+  cnv.onpointermove = e => { if (!abcPainting) return; const p = pos(e); abcStrokes[abcStrokes.length - 1].pts.push(p); abcRedraw(); };
+  cnv.onpointerup = cnv.onpointercancel = () => { if (!abcPainting) return; abcPainting = false; if (abcCover() > .72) abcAlive(); };
+  $('abcStage').querySelector('.abc-colors').onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; abcBrush = b.dataset.c; $('abcStage').querySelectorAll('[data-c]').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+}
+const abcStrokes = [];
+const abcPaintLayer = document.createElement('canvas'); abcPaintLayer.width = abcPaintLayer.height = 600;
+function abcRedraw() {
+  const p = abcPaintLayer.getContext('2d'), L = ABC[abcIdx][0];
+  p.globalCompositeOperation = 'source-over'; p.clearRect(0, 0, 600, 600); p.lineCap = p.lineJoin = 'round'; p.lineWidth = 64;
+  abcStrokes.forEach(s => { p.strokeStyle = s.c; p.beginPath(); p.moveTo(...s.pts[0]); s.pts.forEach(q => p.lineTo(...q)); if (s.pts.length === 1) p.lineTo(s.pts[0][0] + .1, s.pts[0][1]); p.stroke(); });
+  p.globalCompositeOperation = 'destination-in'; p.drawImage(abcMask, 0, 0);
+  const c = abcCtx; c.clearRect(0, 0, 600, 600);
+  c.font = `700 510px 'Noto Sans Georgian', sans-serif`; c.textAlign = 'center'; c.fillStyle = '#ffffff'; c.fillText(L, 300, 450);
+  c.drawImage(abcPaintLayer, 0, 0);
+  c.lineWidth = 9; c.strokeStyle = INK; c.lineJoin = 'round'; c.strokeText(L, 300, 450);
+}
+function abcCover() {
+  const m = abcMask.getContext('2d').getImageData(0, 0, 600, 600).data, p = abcPaintLayer.getContext('2d').getImageData(0, 0, 600, 600).data;
+  let inside = 0, painted = 0;
+  for (let i = 3; i < m.length; i += 16) if (m[i] > 128) { inside++; if (p[i] > 100) painted++; }
+  return inside ? painted / inside : 0;
+}
+// 4. alive: the painted letter opens its eyes, dances, says thank you; the picture joins; a sticker
+function abcAlive() {
+  const [L, word, pic] = ABC[abcIdx], fresh = !abcDone[abcIdx];
+  const img = $('abcCnv').toDataURL();
+  abcDots(3);
+  $('abcStage').innerHTML = `<div class="abc-alive">
+      <div class="abc-dance"><img src="${img}" alt="${L}" width="220" height="220"><svg viewBox="0 0 200 200" width="220" height="220" class="abc-eyes">${eye(84, 86, false, 7)}${eye(116, 86, false, 7)}<path d="M88 104 q12 12 24 0" stroke="${INK}" stroke-width="3.4" fill="#7a3a4a" stroke-linecap="round"/></svg></div>
+      <div class="abc-pic hop2">${picOf(pic, 120)}</div></div>
+    <div class="abc-end"><button class="cta" id="abcAgain">${ABC[abcIdx + 1] && abcOpen(abcIdx + 1) ? `შემდეგი ასო: ${ABC[abcIdx + 1][0]}` : 'ანბანზე დაბრუნება'}</button></div>`;
+  VOICE.fanfare(); confettiBurst();
+  say('done', () => { const v = VOICE[VOICE_OF_PIC[pic.who || pic.prop]]; if (v) v(); });
+  if (fresh) { abcDone[abcIdx] = 1; store.set('abcDone', abcDone); }
+  $('abcAgain').onclick = () => { if (ABC[abcIdx + 1] && abcOpen(abcIdx + 1)) { abcIdx++; abcMeet(); } else abcClose(); };
+  if (fresh) abcLater(() => {
+    const el = document.createElement('div'); el.className = 'reward';
+    el.innerHTML = `<div class="reward-card"><div class="sticker">${picOf(pic, 90)}</div><h3>ახალი სტიკერი!</h3><p>${profile.name ? profile.name + ', ' : ''}შენ ისწავლე ასო ${L} — ${word}</p><button class="cta" style="width:100%">ვაშა!</button></div>`;
+    document.body.appendChild(el); chime(); el.onclick = () => el.remove();
+  }, 3800);
+}
+function confettiBurst() {
+  const box = document.createElement('div'); box.className = 'abc-confetti';
+  box.innerHTML = Array.from({ length: 40 }, (_, k) => `<i style="left:${Math.random() * 100}%;background:${ABC_HUES[k % ABC_HUES.length]};animation-delay:${Math.random() * .5}s;--r:${Math.random() * 720 - 360}deg"></i>`).join('');
+  $('abc').appendChild(box); setTimeout(() => box.remove(), 3000);
+}
+$('abcClose').onclick = abcClose;
 
 function toast(msg) {
   const el = document.createElement('div'); el.className = 'toast'; el.textContent = msg;
