@@ -2737,7 +2737,9 @@ function renderShelves() {
     const groups = ['girls', 'boys', 'tales'].map(c => PAGES.filter(pg => pg.cat === c));
     const shown = Array.from({ length: Math.max(...groups.map(g => g.length)) }, (_, i) => groups.map(g => g[i])).flat().filter(Boolean);
     const free = shown.filter(pg => pg.free), rest = shown.filter(pg => !pg.free);
+    const any = PAGES.some(pg => saved[pg.id]);
     $('shelves').innerHTML = `<div class="shelf-head"><h2>გააფერადე და გააცოცხლე!</h2><small>${PAGES.length} სურათი</small></div>
+      ${any ? '<button class="abc-reset" data-paintreset>↺ ყველა სურათის გასუფთავება</button><div style="clear:both"></div>' : ''}
       <div class="grid">${[...free, ...rest].map(pg => `
         <button class="tile page ${pageOpen(pg) ? '' : 'locked'}" data-page="${pg.id}" aria-label="${pg.title}">
           <div class="art">${pageThumb(pg)}</div>
@@ -2766,6 +2768,7 @@ function renderShelves() {
 }
 $('shelves').addEventListener('click', e => {
   const st = e.target.closest('[data-abc]'); if (st) return abcOpenLetter(+st.dataset.abc);
+  if (e.target.closest('[data-paintreset]')) return gate(() => { Object.keys(saved).forEach(k => delete saved[k]); store.set('paint2', saved); renderShelves(); toast('ყველა სურათი ისევ თეთრია'); });
   if (e.target.closest('[data-abcreset]')) return gate(() => { Object.keys(abcDone).forEach(k => delete abcDone[k]); store.set('abcDone', abcDone); renderAbc(); toast('ანბანი თავიდან იწყება'); });
   const chip = e.target.closest('[data-pcat]'); if (chip) { paintCat = chip.dataset.pcat; store.set('paintCat', paintCat); return renderShelves(); }
   const tile = e.target.closest('.tile, .mini, .daily'); if (!tile) return;
@@ -4463,7 +4466,7 @@ function restore(url) { if (!url) return; const img = new Image(); img.onload = 
 function savePage() { try { saved[page.id] = cnv.toDataURL('image/png'); store.set('paint2', saved); } catch {} }
 function openPage(pg) {
   page = pg; paintHistory = [];
-  $('paint').hidden = false;
+  $('paint').hidden = false; $('alive').classList.remove('live');
   fitPage();
   $('pageArt').innerHTML = pageSvg(pg); toLineArt($('pageArt').firstElementChild); fitArt($('pageArt').firstElementChild, pw / ph);
   restore(saved[pg.id]); mapRegions();
@@ -4483,7 +4486,7 @@ cnv.addEventListener('pointermove', e => { if (!drawing) return; const p = at(e)
 const endStroke = () => { if (!drawing) return; drawing = false; savePage(); checkDone(); };
 cnv.addEventListener('pointerup', endStroke); cnv.addEventListener('pointercancel', endStroke);
 $('undoPaint').onclick = () => { const h = paintHistory.pop(); if (h) { ctx.putImageData(h, 0, 0); savePage(); checkDone(); } };
-$('clearPaint').onclick = () => { paintHistory.push(ctx.getImageData(0, 0, cnv.width, cnv.height)); ctx.clearRect(0, 0, pw, ph); savePage(); checkDone(); };
+$('clearPaint').onclick = () => { paintHistory.push(ctx.getImageData(0, 0, cnv.width, cnv.height)); ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cnv.width, cnv.height); ctx.restore(); $('alive').classList.remove('live'); delete saved[page.id]; store.set('paint2', saved); checkDone(); toast('სურათი გასუფთავდა'); };
 $('okPaint').onclick = () => { if (DONE.ready) comeAlive(); else { toast('ჯერ ყველაფერი გააფერადე — თეთრი ადგილები აციმციმდა'); showMissing(); } };
 window.addEventListener('resize', () => { if ($('paint').hidden) return; const url = cnv.toDataURL(); fitPage(); fitArt($('pageArt').firstElementChild, pw / ph); restore(url); mapRegions(); });
 // =====================================================================
